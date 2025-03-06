@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Exam 2 Review
-permalink: /questions/
+permalink: /questions2/
 ---
 
 <!DOCTYPE html>
@@ -12,13 +12,71 @@ permalink: /questions/
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Quiz Results</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        #results {
+            margin-top: 30px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #qrCode {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        select,
+        button {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #results h3,
+        #results h4 {
+            color: #007bff;
+        }
+
+        #results p {
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
 
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyN7iNI-AArSM5k9AcZAny4yeAdAfF_G9tfn7fvauOQwviEEUvSrJcVGlZcZUh1ffmxMw/exec";
         const RESET_URL = "https://script.google.com/macros/s/AKfycbxOgo1pQ42b8jOwlhns8tPQZ2b-GpiPfC_6Fa9xyzzCl0LXKHsjPkjMP5QzRUQvYwSvEw/exec";
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
         const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
-
 
         let quizData = {}; // Store quiz results globally
         let chartInstance = null; // Store Chart.js instance
@@ -38,7 +96,6 @@ permalink: /questions/
                 defaultOption.value = "";
                 dropdown.appendChild(defaultOption);
 
-                // Add options for each question
                 for (let question in quizData) {
                     let option = document.createElement("option");
                     option.text = question;
@@ -46,21 +103,27 @@ permalink: /questions/
                     dropdown.appendChild(option);
                 }
 
-                // Load the saved question from localStorage
+                // Set selected question from localStorage if available
                 let savedQuestion = localStorage.getItem("selectedQuestion");
                 if (savedQuestion && quizData[savedQuestion]) {
-                    dropdown.value = savedQuestion;  // Select the saved question
-                    displayResults(savedQuestion);   // Display results for the saved question
+                    dropdown.value = savedQuestion;
+                    displayResults(); // Display results for saved question
                 } else {
-                    dropdown.selectedIndex = 1;  // Automatically select the first question
-                    displayResults(); // Display results for the first question
+                    dropdown.selectedIndex = 1; // Automatically select the first question
+                    displayResults();
+                }
+
+                if (dropdown.options.length > 1) {
+                    dropdown.selectedIndex = 1; // Automatically select the first question
+                    displayResults();
+                } else {
+                    document.getElementById("results").innerHTML = "<p>No questions available.</p>";
                 }
             } catch (error) {
                 console.error("Error fetching results:", error);
                 document.getElementById("results").innerHTML = "<p>Error loading data.</p>";
             }
         }
-
 
         function displayResults() {
             let selectedQuestion = document.getElementById("questionSelect").value;
@@ -94,12 +157,13 @@ permalink: /questions/
                     renderTextCloud(responses);
                 }
 
-                // Store the selected question in localStorage for persistence across page reloads
-                localStorage.setItem("selectedQuestion", selectedQuestion);
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
                 chartCanvas.style.display = "none"; // Hide chart when no question is selected
             }
+
+            // Store the selected question in localStorage for persistence across page reloads
+            localStorage.setItem("selectedQuestion", selectedQuestion);
         }
 
         function renderBarChart(labels, counts) {
@@ -159,15 +223,7 @@ permalink: /questions/
 
         function generateQRCode() {
             let qrCodeDiv = document.getElementById("qrCode");
-            let qrCodeImage = document.createElement("img");
-
-            let qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}`;
-            qrCodeImage.src = qrCodeUrl;
-            qrCodeImage.alt = "QR Code";
-
-            // Clear previous QR code (if any)
-            qrCodeDiv.innerHTML = "";
-            qrCodeDiv.appendChild(qrCodeImage);
+            qrCodeDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}" alt="QR Code">`;
         }
 
         // Refresh results every 5 seconds
