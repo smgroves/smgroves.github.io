@@ -107,7 +107,7 @@ permalink: /questions/
             let resultsDiv = document.getElementById("results");
             // let chartCanvas = document.getElementById("resultsChart");
 
-            resultsDiv.innerHTML = "<h3>Live Results</h3>";
+            resultsDiv.innerHTML = "<h3>Question:</h3>";
             // chartCanvas.style.display = "none"; // Hide the chart by default
 
             if (selectedQuestion && quizData[selectedQuestion]) {
@@ -119,7 +119,6 @@ permalink: /questions/
                 resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
                 resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
-                resultsDiv.innerHTML += `<p><strong>Question Type:</strong> ${questionType}</p>`;
 
                 // let labels = [];
                 // let counts = [];
@@ -254,17 +253,28 @@ permalink: /questions/
                         display: true,
                         labels: {
                             generateLabels: function (chart) {
-                                const dataset = chart.data.datasets[0];
-                                let correctAnswers = quizData[selectedQuestion].correctAnswer
-                                    .split(",")
-                                    .map(answer => answer.trim().toLowerCase());
+                                let correctShown = false;
+                                let incorrectShown = false;
 
-                                return dataset.data.map((_, index) => ({
-                                    text: `${dataset.label} (${correctAnswers.includes(labels[index].toLowerCase()) ? "Correct" : "Incorrect"})`,
-                                    fillStyle: dataset.backgroundColor[index],
-                                    strokeStyle: dataset.borderColor[index],
-                                    hidden: false
-                                }));
+                                return chart.data.datasets.map((dataset, i) => {
+                                    let label = dataset.label.includes("Correct") ? "Correct" : "Incorrect";
+
+                                    // Ensure "Correct" and "Incorrect" appear only once
+                                    if ((label === "Correct" && correctShown) || (label === "Incorrect" && incorrectShown)) {
+                                        return null;
+                                    }
+
+                                    if (label === "Correct") correctShown = true;
+                                    if (label === "Incorrect") incorrectShown = true;
+
+                                    return {
+                                        text: label,
+                                        fillStyle: dataset.backgroundColor,
+                                        strokeStyle: dataset.borderColor,
+                                        hidden: !chart.isDatasetVisible(i),
+                                        datasetIndex: i
+                                    };
+                                }).filter(label => label !== null); // Remove duplicates
                             }
                         }
                     },
@@ -284,55 +294,13 @@ permalink: /questions/
                     barThickness: 10
                 }
             });
-            // chartInstance = new Chart(ctx, {
-            //     type: "horizontalBar", // Use horizontal bar chart
-            //     data: {
-            //         labels: labels,
-            //         datasets: [{
-            //             label: "Number of Responses",
-            //             data: counts,
-            //             backgroundColor: backgroundColors, // Apply special color for correct answers
-            //             borderColor: "rgba(0, 0, 0, 1)",
-            //             borderWidth: 1
-            //         }]
-            //     },
-            //     options: {
-            //         responsive: true,
-            //         maintainAspectRatio: false,
-            //         indexAxis: 'y', // Horizontal bar chart
-            //         scales: {
-            //             xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
-            //                 ticks: {
-            //                     beginAtZero: true,
-            //                     min: 0, // Ensure the axis starts at 0
-            //                     max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
-            //                     stepSize: 1 // Force integer tick marks
-            //                 }
-            //             }],
-            //             yAxes: [{
-            //                 ticks: {
-            //                     autoSkip: false // Prevent labels from being skipped
-            //                 }
-            //             }]
-            //         },
-            //         plugins: {
-            //             tooltip: {
-            //                 callbacks: {
-            //                     label: function (tooltipItem) {
-            //                         return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
-            //                     }
-            //                 }
-            //             }
-            //         },
-            //         barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
-            //     }
-            // });
+
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
         function renderBarChart(labels, counts) {
-            const barHeight = 30; // Set a fixed height per bar
+            const barHeight = 20; // Set a fixed height per bar
             const minHeight = 50; // Minimum height for small datasets
             const maxHeight = 600; // Max height to prevent excessive stretching
 
@@ -341,6 +309,8 @@ permalink: /questions/
 
             // Apply the new height to the canvas
             let canvas = document.getElementById("resultsChart");
+            let ctx = canvas.getContext("2d");
+
             canvas.height = newHeight;
             canvas.style.height = newHeight + "px"; // Ensure CSS reflects the change
 
