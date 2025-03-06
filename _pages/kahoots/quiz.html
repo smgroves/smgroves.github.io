@@ -202,58 +202,149 @@ permalink: /questions/
             // Create a new dataset for the chart
             let backgroundColors = counts.map(answer => {
                 // Check if this label is a correct answer
-                return correctAnswers.includes(answer) ? "rgba(255, 99, 132, 1)" : "rgba(36, 145, 32, 1)";
+                return correctAnswers.includes(answer) ? "rgba(179, 37, 37, 1)" : "rgba(36, 145, 32, 1)";
             });
-
             chartInstance = new Chart(ctx, {
-                type: "horizontalBar", // Use horizontal bar chart
+                type: "horizontalBar",
                 data: {
-                    labels: labels,
+                    labels: labels, // Answer options (split from responses)
                     datasets: [{
-                        label: "Number of Responses",
+                        label: "Responses",
                         data: counts,
-                        backgroundColor: backgroundColors, // Apply special color for correct answers
-                        borderColor: "rgba(0, 0, 0, 1)",
+                        backgroundColor: labels.map(label => {
+                            // Ensure correctAnswer is treated as an array
+                            let correctAnswers = quizData[selectedQuestion].correctAnswer
+                                .split(", ") // Convert correct answers into an array
+                                .map(answer => answer.trim().toLowerCase());
+
+                            // Check if the current label is one of the correct answers
+                            return correctAnswers.includes(label.toLowerCase())
+                                ? "rgba(36, 145, 32, 1)"  // Green for correct
+                                : "rgba(179, 37, 37, 1)"; // Red for incorrect
+                        }),
+                        borderColor: labels.map(label => {
+                            let correctAnswers = quizData[selectedQuestion].correctAnswer
+                                .split(", ")
+                                .map(answer => answer.trim().toLowerCase());
+
+                            return correctAnswers.includes(label.toLowerCase())
+                                ? "rgba(36, 145, 32, 1)"
+                                : "rgba(179, 37, 37, 1)";
+                        }),
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y', // Horizontal bar chart
                     scales: {
-                        xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
+                        xAxes: [{
                             ticks: {
                                 beginAtZero: true,
-                                min: 0, // Ensure the axis starts at 0
-                                max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
-                                stepSize: 1 // Force integer tick marks
+                                min: 0,
+                                max: Math.max(10, Math.max(...counts) + 1),
+                                stepSize: 1
                             }
                         }],
                         yAxes: [{
-                            ticks: {
-                                autoSkip: false // Prevent labels from being skipped
-                            }
+                            ticks: { autoSkip: false }
                         }]
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
-                                }
+                    legend: {
+                        display: true,
+                        labels: {
+                            generateLabels: function (chart) {
+                                const dataset = chart.data.datasets[0];
+                                let correctAnswers = quizData[selectedQuestion].correctAnswer
+                                    .split(",")
+                                    .map(answer => answer.trim().toLowerCase());
+
+                                return dataset.data.map((_, index) => ({
+                                    text: `${dataset.label} (${correctAnswers.includes(labels[index].toLowerCase()) ? "Correct" : "Incorrect"})`,
+                                    fillStyle: dataset.backgroundColor[index],
+                                    strokeStyle: dataset.borderColor[index],
+                                    hidden: false
+                                }));
                             }
                         }
                     },
-                    barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                let answer = data.labels[tooltipItem.index];
+                                let correctAnswers = quizData[selectedQuestion].correctAnswer
+                                    .split(",")
+                                    .map(answer => answer.trim().toLowerCase());
+
+                                let isCorrect = correctAnswers.includes(answer.toLowerCase());
+                                return `${answer}: ${tooltipItem.xLabel} responses (${isCorrect ? "Correct" : "Incorrect"})`;
+                            }
+                        }
+                    },
+                    barThickness: 10
                 }
             });
+            // chartInstance = new Chart(ctx, {
+            //     type: "horizontalBar", // Use horizontal bar chart
+            //     data: {
+            //         labels: labels,
+            //         datasets: [{
+            //             label: "Number of Responses",
+            //             data: counts,
+            //             backgroundColor: backgroundColors, // Apply special color for correct answers
+            //             borderColor: "rgba(0, 0, 0, 1)",
+            //             borderWidth: 1
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         maintainAspectRatio: false,
+            //         indexAxis: 'y', // Horizontal bar chart
+            //         scales: {
+            //             xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
+            //                 ticks: {
+            //                     beginAtZero: true,
+            //                     min: 0, // Ensure the axis starts at 0
+            //                     max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
+            //                     stepSize: 1 // Force integer tick marks
+            //                 }
+            //             }],
+            //             yAxes: [{
+            //                 ticks: {
+            //                     autoSkip: false // Prevent labels from being skipped
+            //                 }
+            //             }]
+            //         },
+            //         plugins: {
+            //             tooltip: {
+            //                 callbacks: {
+            //                     label: function (tooltipItem) {
+            //                         return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
+            //                     }
+            //                 }
+            //             }
+            //         },
+            //         barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
+            //     }
+            // });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
         function renderBarChart(labels, counts) {
-            let ctx = document.getElementById("resultsChart").getContext("2d");
+            const barHeight = 30; // Set a fixed height per bar
+            const minHeight = 50; // Minimum height for small datasets
+            const maxHeight = 600; // Max height to prevent excessive stretching
+
+            // Calculate the new height dynamically
+            let newHeight = Math.min(maxHeight, Math.max(minHeight, labels.length * barHeight));
+
+            // Apply the new height to the canvas
+            let canvas = document.getElementById("resultsChart");
+            canvas.height = newHeight;
+            canvas.style.height = newHeight + "px"; // Ensure CSS reflects the change
+
+            // let ctx = document.getElementById("resultsChart").getContext("2d");
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
@@ -283,7 +374,7 @@ permalink: /questions/
                             if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
                                 return "rgba(36, 145, 32, 1)"; // Green for correct
                             } else {
-                                return "rgba(255, 99, 132, 1)"; // Red for incorrect
+                                return "rgba(179, 37, 37, 1)"; // Red for incorrect
                             }
                         }),
                         borderColor: counts.map((count, index) => {
@@ -292,7 +383,7 @@ permalink: /questions/
                             if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
                                 return "rgba(36, 145, 32, 1)"; // Green border for correct
                             } else {
-                                return "rgba(255, 99, 132, 1)"; // Red border for incorrect
+                                return "rgba(179, 37, 37, 1)"; // Red border for incorrect
                             }
                         }),
                         borderWidth: 1
