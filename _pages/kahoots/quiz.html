@@ -201,7 +201,7 @@ permalink: /questions/
             // Create a new dataset for the chart
             let backgroundColors = counts.map(answer => {
                 // Check if this label is a correct answer
-                return correctAnswers.includes(answer) ? "rgba(255, 99, 132, 1)" : "rgba(75, 192, 192, 1)";
+                return correctAnswers.includes(answer) ? "rgba(255, 99, 132, 1)" : "rgba(36, 145, 32, 1)";
             });
 
             chartInstance = new Chart(ctx, {
@@ -221,19 +221,19 @@ permalink: /questions/
                     maintainAspectRatio: false,
                     indexAxis: 'y', // Horizontal bar chart
                     scales: {
-                        x: {
-                            beginAtZero: true,
-                            min: 0, // Force start at 0
-                            max: Math.max(...counts) + 1, // Dynamically adjust max
+                        xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
                             ticks: {
-                                stepSize: 1, // Ensure integer labels
+                                beginAtZero: true,
+                                min: 0, // Ensure the axis starts at 0
+                                max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
+                                stepSize: 1 // Force integer tick marks
                             }
-                        },
-                        y: {
+                        }],
+                        yAxes: [{
                             ticks: {
-                                autoSkip: false, // Ensure labels are not skipped
+                                autoSkip: false // Prevent labels from being skipped
                             }
-                        }
+                        }]
                     },
                     plugins: {
                         tooltip: {
@@ -269,7 +269,7 @@ permalink: /questions/
             //     return correctAnswers.includes(answer) ? "rgba(227, 53, 23, 1)" : "rgba(10, 140, 16, 1)";
             // });
             chartInstance = new Chart(ctx, {
-                type: "bar", // Set to bar chart
+                type: "horizontalBar", // Set to bar chart
                 data: {
                     labels: labels, // Labels for each answer option
                     datasets: [{
@@ -280,7 +280,7 @@ permalink: /questions/
                             // Assuming you have an array of correct answers for each question
                             const correctAnswer = quizData[selectedQuestion].correctAnswer; // Replace with your logic for correct answer
                             if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
-                                return "rgba(75, 192, 192, 1)"; // Green for correct
+                                return "rgba(36, 145, 32, 1)"; // Green for correct
                             } else {
                                 return "rgba(255, 99, 132, 1)"; // Red for incorrect
                             }
@@ -289,7 +289,7 @@ permalink: /questions/
                             // Use the same logic to set border color for bars
                             const correctAnswer = quizData[selectedQuestion].correctAnswer;
                             if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
-                                return "rgba(75, 192, 192, 1)"; // Green border for correct
+                                return "rgba(36, 145, 32, 1)"; // Green border for correct
                             } else {
                                 return "rgba(255, 99, 132, 1)"; // Red border for incorrect
                             }
@@ -302,19 +302,19 @@ permalink: /questions/
                     maintainAspectRatio: false,
                     indexAxis: 'y', // Make it horizontal
                     scales: {
-                        x: {
-                            beginAtZero: true,
-                            min: 0, // Force start at 0
-                            max: Math.max(...counts) + 1, // Dynamically adjust max
+                        xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
                             ticks: {
-                                stepSize: 1, // Ensure integer labels
+                                beginAtZero: true,
+                                min: 0, // Ensure the axis starts at 0
+                                max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
+                                stepSize: 1 // Force integer tick marks
                             }
-                        },
-                        y: {
+                        }],
+                        yAxes: [{
                             ticks: {
-                                autoSkip: false, // Ensure labels are not skipped
+                                autoSkip: false // Prevent labels from being skipped
                             }
-                        }
+                        }]
                     },
                     plugins: {
                         tooltip: {
