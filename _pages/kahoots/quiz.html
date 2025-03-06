@@ -13,7 +13,45 @@ permalink: /questions/
     <title>Live Quiz Results</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud2@1.0.1/src/wordcloud2.js"></script>
+    <style>
+        .bubble-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
+        .bubble {
+            background-color: #00aaff;
+            color: white;
+            border-radius: 50%;
+            padding: 15px;
+            font-size: 14px;
+            text-align: center;
+            position: relative;
+            display: inline-block;
+            min-width: 80px;
+            min-height: 80px;
+            margin: 5px;
+            box-sizing: border-box;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .bubble .count {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 12px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+    </style>
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxWsEN4nYpgxZM3Tw3vE_7Li1STZRrYRx8UYtha7z5oyuNqfLVY8Yr8n5CMqUMxaYZZhA/exec";
         const RESET_URL = "https://script.google.com/macros/s/AKfycbxOgo1pQ42b8jOwlhns8tPQZ2b-GpiPfC_6Fa9xyzzCl0LXKHsjPkjMP5QzRUQvYwSvEw/exec";
@@ -99,7 +137,9 @@ permalink: /questions/
                     renderBarChart(labels, counts);
                 } else if (questionType === "Short Answer") {
                     // Handle short-answer responses (Text Cloud or something else)
-                    renderTextCloud(responses);
+                    // renderTextCloud(responses);
+                    renderShortAnswerBubbles(responses);
+
                 }
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
@@ -107,6 +147,29 @@ permalink: /questions/
             }
         }
 
+        function renderShortAnswerBubbles(responses) {
+            let bubblesDiv = document.getElementById("resultsChart"); // Use the same canvas div for bubbles
+            bubblesDiv.innerHTML = ""; // Clear previous content
+
+            let bubbleContainer = document.createElement("div");
+            bubbleContainer.className = "bubble-container";
+
+            for (let answer in responses) {
+                let bubble = document.createElement("div");
+                bubble.className = "bubble";
+                bubble.textContent = answer;
+
+                let countDiv = document.createElement("div");
+                countDiv.className = "count";
+                countDiv.textContent = responses[answer];
+
+                bubble.appendChild(countDiv);
+                bubbleContainer.appendChild(bubble);
+            }
+
+            bubblesDiv.appendChild(bubbleContainer);
+            bubblesDiv.style.display = "block"; // Show the bubbles container
+        }
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
@@ -205,9 +268,10 @@ permalink: /questions/
             qrCodeDiv.innerHTML = "";
             qrCodeDiv.appendChild(qrCodeImage);
         }
+        fetchResults();
 
         // Refresh results every 60 seconds
-        setInterval(fetchResults, 60000);
+        setInterval(fetchResults, 10000);
     </script>
 </head>
 
