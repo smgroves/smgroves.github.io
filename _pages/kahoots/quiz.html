@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Exam 2 Review
+title: Kahoots
 permalink: /questions/
 ---
 
@@ -188,6 +188,7 @@ permalink: /questions/
 
         function renderMultipleSelectBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
+            document.getElementById("resultsChart").height = labels.length * 25; // 25px per bar
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
@@ -300,67 +301,17 @@ permalink: /questions/
                     barThickness: 10
                 }
             });
-            // chartInstance = new Chart(ctx, {
-            //     type: "horizontalBar", // Use horizontal bar chart
-            //     data: {
-            //         labels: labels,
-            //         datasets: [{
-            //             label: "Number of Responses",
-            //             data: counts,
-            //             backgroundColor: backgroundColors, // Apply special color for correct answers
-            //             borderColor: "rgba(0, 0, 0, 1)",
-            //             borderWidth: 1
-            //         }]
-            //     },
-            //     options: {
-            //         responsive: true,
-            //         maintainAspectRatio: false,
-            //         indexAxis: 'y', // Horizontal bar chart
-            //         scales: {
-            //             xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
-            //                 ticks: {
-            //                     beginAtZero: true,
-            //                     min: 0, // Ensure the axis starts at 0
-            //                     max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
-            //                     stepSize: 1 // Force integer tick marks
-            //                 }
-            //             }],
-            //             yAxes: [{
-            //                 ticks: {
-            //                     autoSkip: false // Prevent labels from being skipped
-            //                 }
-            //             }]
-            //         },
-            //         plugins: {
-            //             tooltip: {
-            //                 callbacks: {
-            //                     label: function (tooltipItem) {
-            //                         return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
-            //                     }
-            //                 }
-            //             }
-            //         },
-            //         barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
-            //     }
-            // });
+
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
         function renderBarChart(labels, counts) {
-            const barHeight = 0; // Set a fixed height per bar
-            const minHeight = 50; // Minimum height for small datasets
-            const maxHeight = 600; // Max height to prevent excessive stretching
 
-            // Calculate the new height dynamically
-            let newHeight = Math.min(maxHeight, Math.max(minHeight, labels.length * barHeight));
 
             // Apply the new height to the canvas
             let canvas = document.getElementById("resultsChart");
             let ctx = canvas.getContext("2d");
-
-            canvas.height = newHeight;
-            canvas.style.height = newHeight + "px"; // Ensure CSS reflects the change
 
             // let ctx = document.getElementById("resultsChart").getContext("2d");
 
