@@ -316,6 +316,9 @@ permalink: /questions/
             let ctx = canvas.getContext("2d");
 
             // let ctx = document.getElementById("resultsChart").getContext("2d");
+            // Set canvas dimensions before initializing chart
+            canvas.height = labels.length * 25; // Adjust height based on number of bars (each bar is 25px)
+            canvas.width = 400; // Set your desired width here
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
@@ -489,7 +492,7 @@ permalink: /questions/
     </div>
 
     <div id="bubbleResults" style="display: none;"></div>
-    <canvas id="resultsChart" width="400" height="40" style="display: none;"></canvas>
+    <canvas id="resultsChart" style="display: none;"></canvas>
 
     <button onclick="resetResponses()">Reset Responses</button>
 </body>
