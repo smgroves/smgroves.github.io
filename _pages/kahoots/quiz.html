@@ -107,7 +107,7 @@ permalink: /questions/
             // let chartCanvas = document.getElementById("resultsChart");
 
             resultsDiv.innerHTML = "<h3>Live Results</h3>";
-            chartCanvas.style.display = "none"; // Hide the chart by default
+            // chartCanvas.style.display = "none"; // Hide the chart by default
 
             if (selectedQuestion && quizData[selectedQuestion]) {
                 let responses = quizData[selectedQuestion].responses || {};
@@ -154,7 +154,7 @@ permalink: /questions/
                 // }
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
-                chartCanvas.style.display = "none"; // Hide chart when no question is selected
+                // chartCanvas.style.display = "none"; // Hide chart when no question is selected
             }
         }
 
