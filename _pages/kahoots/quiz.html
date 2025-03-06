@@ -14,6 +14,50 @@ permalink: /questions/
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud2@1.0.1/src/wordcloud2.js"></script>
     <style>
+        /* Style the dropdown box */
+        #questionSelect {
+            font-size: 20px;
+            /* Larger font size for better visibility */
+            padding: 10px 15px;
+            /* Add padding for spacing */
+            border: 2px solid #480587;
+            /* Border for the dropdown */
+            border-radius: 10px;
+            /* Rounded corners */
+            background-color: #f9f9f9;
+            /* Light background color */
+            color: #333;
+            /* Dark text color for contrast */
+            display: block;
+            width: 100%;
+            /* Full width */
+            margin: 20px 0;
+            /* Space above and below */
+        }
+
+        /* Style the dropdown options */
+        #questionSelect option {
+            font-size: 18px;
+            /* Make the options slightly larger */
+            padding: 10px;
+            background-color: #ffffff;
+            color: #480587;
+        }
+
+        /* Make the selected option look like a heading */
+        #questionSelect option:checked {
+            font-weight: bold;
+            font-size: 22px;
+            background-color: #480587;
+            color: white;
+        }
+
+        /* Optional: Add a hover effect for better interaction */
+        #questionSelect option:hover {
+            background-color: #f1f1f1;
+            color: #480587;
+        }
+
         .bubble-container {
             display: flex;
             flex-wrap: wrap;
@@ -107,7 +151,7 @@ permalink: /questions/
             let resultsDiv = document.getElementById("results");
             // let chartCanvas = document.getElementById("resultsChart");
 
-            resultsDiv.innerHTML = "<h3>Question:</h3>";
+            // resultsDiv.innerHTML = "<h3>Question:</h3>";
             // chartCanvas.style.display = "none"; // Hide the chart by default
 
             if (selectedQuestion && quizData[selectedQuestion]) {
@@ -116,7 +160,7 @@ permalink: /questions/
                 let totalCount = quizData[selectedQuestion].total || 0;
                 let questionType = quizData[selectedQuestion].questionType || "Multiple Choice"; // Default to "Multiple Choice"
 
-                resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
+                // resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
                 resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
 
@@ -477,7 +521,7 @@ permalink: /questions/
 </head>
 
 <body onload="fetchResults(); generateQRCode();">
-    <h1>Live Quiz Results</h1>
+    <h1>Kahoots Quiz</h1>
 
     <p><strong>Submit Answers Here:</strong> <a href="https://bit.ly/smgroves" target="_blank">Click Here</a></p>
     <div id="qrCode"></div>
