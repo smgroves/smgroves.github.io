@@ -105,6 +105,9 @@ permalink: /questions/
             /* Space between heading and QR code */
             align-items: center;
             /* Vertically align the items */
+            width: 100%;
+            /* Ensure full width for the container */
+
         }
 
         h1 {
@@ -543,12 +546,15 @@ permalink: /questions/
 </head>
 
 <body onload="fetchResults(); generateQRCode();">
-    <h1>Kahoots Quiz</h1>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://example.com&size=150x150" alt="QR Code"
-        class="qr-code">
+    <div class="heading-container">
+        <h1>Kahoots Quiz</h1>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://example.com&size=150x150" alt="QR Code"
+            class="qr-code">
+    </div>
+
 
     <p><strong>Submit Answers Here:</strong> <a href="https://bit.ly/smgroves" target="_blank">Click Here</a></p>
-    <div id="qrCode"></div>
+    <div id="qrCodeDiv"></div>
 
     <label for="questionSelect">Choose a question:</label>
     <select id="questionSelect" onchange="displayResults()">
