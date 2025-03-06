@@ -149,7 +149,7 @@ permalink: /questions/
                     let labels = Object.keys(individualCounts);
                     let counts = labels.map(label => individualCounts[label]);
 
-                    renderChart(labels, counts);
+                    renderBarChart(labels, counts);
                 } else if (questionType === "Short Answer") {
                     renderShortAnswerBubbles(responses);
                 }
@@ -183,7 +183,7 @@ permalink: /questions/
 
             bubblesDiv.appendChild(bubbleContainer);
         }
-        function renderChart(labels, counts) {
+        function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
             if (chartInstance) {
@@ -200,7 +200,7 @@ permalink: /questions/
             });
 
             chartInstance = new Chart(ctx, {
-                type: "horizontalBar", // Use horizontal bar chart
+                type: "bar", // Use horizontal bar chart
                 data: {
                     labels: labels,
                     datasets: [{
