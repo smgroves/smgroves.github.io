@@ -19,6 +19,7 @@ permalink: /questions/
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
         const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
 
+
         let quizData = {}; // Store quiz results globally
         let chartInstance = null; // Store Chart.js instance
 
@@ -26,6 +27,7 @@ permalink: /questions/
             try {
                 let response = await fetch(SHEET_API_URL);
                 let data = await response.json();
+                console.log("Fetched data:", data); // Debugging output
                 quizData = data; // Store data globally
 
                 let dropdown = document.getElementById("questionSelect");
@@ -43,9 +45,15 @@ permalink: /questions/
                     dropdown.appendChild(option);
                 }
 
-                displayResults(); // Display the first available question
+                if (dropdown.options.length > 1) {
+                    dropdown.selectedIndex = 1; // Automatically select the first question
+                    displayResults();
+                } else {
+                    document.getElementById("results").innerHTML = "<p>No questions available.</p>";
+                }
             } catch (error) {
                 console.error("Error fetching results:", error);
+                document.getElementById("results").innerHTML = "<p>Error loading data.</p>";
             }
         }
 
@@ -57,12 +65,13 @@ permalink: /questions/
             resultsDiv.innerHTML = "<h3>Live Results</h3>";
 
             if (selectedQuestion && quizData[selectedQuestion]) {
-                let responses = quizData[selectedQuestion].responses;
-                let correctCount = quizData[selectedQuestion].correct;
-                let totalCount = quizData[selectedQuestion].total;
+                let responses = quizData[selectedQuestion].responses || {};
+                let correctAnswer = quizData[selectedQuestion].correctAnswer || "Unknown"; // Ensure correct answer exists
+                let totalCount = quizData[selectedQuestion].total || 0;
 
                 resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
-                resultsDiv.innerHTML += `<p><strong>Correct Answers:</strong> ${correctCount}/${totalCount}</p>`;
+                resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
+                resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
 
                 let labels = [];
                 let counts = [];
@@ -99,9 +108,12 @@ permalink: /questions/
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            stepSize: 1
                         }
                     }
                 }
@@ -126,7 +138,15 @@ permalink: /questions/
 
         function generateQRCode() {
             let qrCodeDiv = document.getElementById("qrCode");
-            qrCodeDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}" alt="QR Code">`;
+            let qrCodeImage = document.createElement("img");
+
+            let qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}`;
+            qrCodeImage.src = qrCodeUrl;
+            qrCodeImage.alt = "QR Code";
+
+            // Clear previous QR code (if any)
+            qrCodeDiv.innerHTML = "";
+            qrCodeDiv.appendChild(qrCodeImage);
         }
 
         // Refresh results every 5 seconds
@@ -137,7 +157,7 @@ permalink: /questions/
 <body onload="fetchResults(); generateQRCode();">
     <h1>Live Quiz Results</h1>
 
-    <p><strong>Submit Answers Here:</strong> <a href="YOUR_SHORTENED_FORM_URL" target="_blank">Click Here</a></p>
+    <p><strong>Submit Answers Here:</strong> <a href="https://bit.ly/smgroves" target="_blank">Click Here</a></p>
     <div id="qrCode"></div>
 
     <label for="questionSelect">Choose a question:</label>
