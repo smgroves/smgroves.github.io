@@ -104,7 +104,7 @@ permalink: /questions/
         function displayResults() {
             let selectedQuestion = document.getElementById("questionSelect").value;
             let resultsDiv = document.getElementById("results");
-            let chartCanvas = document.getElementById("resultsChart");
+            // let chartCanvas = document.getElementById("resultsChart");
 
             resultsDiv.innerHTML = "<h3>Live Results</h3>";
             chartCanvas.style.display = "none"; // Hide the chart by default
@@ -120,42 +120,49 @@ permalink: /questions/
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
                 resultsDiv.innerHTML += `<p><strong>Question Type:</strong> ${questionType}</p>`;
 
-                let labels = [];
-                let counts = [];
+                // let labels = [];
+                // let counts = [];
                 // Store the selected question in localStorage for persistence across page reloads
                 localStorage.setItem("selectedQuestion", selectedQuestion);
 
-                // Clear previous chart (if any) and decide which type to display
+
+                // Clear previous results
+                document.getElementById("resultsChart").style.display = "none"; // Hide bar chart
+                document.getElementById("bubbleResults").innerHTML = ""; // Clear previous bubbles
+
                 if (questionType === "Multiple Choice") {
-                    // Handle multiple-choice chart (Bar Chart)
-                    let labels = [];
-                    let counts = [];
-
-                    for (let answer in responses) {
-                        labels.push(answer);
-                        counts.push(responses[answer]);
-                    }
-                    renderBarChart(labels, counts);
+                    renderBarChart(Object.keys(responses), Object.values(responses));
                 } else if (questionType === "Short Answer") {
-                    // Handle short-answer responses (Text Cloud or something else)
-                    // renderTextCloud(responses);
                     renderShortAnswerBubbles(responses);
-
                 }
+                // Clear previous chart (if any) and decide which type to display
+                // if (questionType === "Multiple Choice") {
+                //     // Handle multiple-choice chart (Bar Chart)
+                //     let labels = [];
+                //     let counts = [];
+
+                //     for (let answer in responses) {
+                //         labels.push(answer);
+                //         counts.push(responses[answer]);
+                //     }
+                //     renderBarChart(labels, counts);
+                // } else if (questionType === "Short Answer") {
+                //     // Handle short-answer responses (Text Cloud or something else)
+                //     // renderTextCloud(responses);
+                //     renderShortAnswerBubbles(responses);
+
+                // }
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
                 chartCanvas.style.display = "none"; // Hide chart when no question is selected
             }
         }
 
+
         function renderShortAnswerBubbles(responses) {
-
-            if (chartInstance) {
-                chartInstance.destroy(); // Destroy old chart before creating a new one
-            }
-
-            let bubblesDiv = document.getElementById("resultsChart"); // Use the same canvas div for bubbles
+            let bubblesDiv = document.getElementById("bubbleResults");
             bubblesDiv.innerHTML = ""; // Clear previous content
+            bubblesDiv.style.display = "block"; // Ensure it's visible
 
             let bubbleContainer = document.createElement("div");
             bubbleContainer.className = "bubble-container";
@@ -174,7 +181,6 @@ permalink: /questions/
             }
 
             bubblesDiv.appendChild(bubbleContainer);
-            bubblesDiv.style.display = "block"; // Show the bubbles container
         }
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
@@ -220,7 +226,7 @@ permalink: /questions/
                             }
                         }
                     },
-                    barThickness: 10 // Make the bars skinnier (you can adjust this value)
+                    barThickness: 2 // Make the bars skinnier (you can adjust this value)
                 }
             });
 
@@ -301,6 +307,7 @@ permalink: /questions/
         <h3>Loading results...</h3>
     </div>
 
+    <div id="bubbleResults" style="display: none;"></div>
     <canvas id="resultsChart" width="400" height="200" style="display: none;"></canvas>
 
     <button onclick="resetResponses()">Reset Responses</button>
