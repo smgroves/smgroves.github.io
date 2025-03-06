@@ -184,6 +184,8 @@ permalink: /questions/
             bubblesDiv.appendChild(bubbleContainer);
         }
 
+
+
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
@@ -203,21 +205,38 @@ permalink: /questions/
             });
 
             chartInstance = new Chart(ctx, {
-                type: "bar", // Use horizontal bar chart
+                type: "bar", // Set to bar chart
                 data: {
-                    labels: labels,
+                    labels: labels, // Labels for each answer option
                     datasets: [{
                         label: "Number of Responses",
-                        data: counts,
-                        backgroundColor: backgroundColors, // Apply special color for correct answers
-                        borderColor: "rgba(54, 162, 235, 1)",
+                        data: counts, // Response counts for each option
+                        backgroundColor: counts.map((count, index) => {
+                            // For each response, determine if it's correct or incorrect
+                            // Assuming you have an array of correct answers for each question
+                            const correctAnswer = quizData[selectedQuestion].correctAnswer; // Replace with your logic for correct answer
+                            if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
+                                return "rgba(75, 192, 192, 0.6)"; // Green for correct
+                            } else {
+                                return "rgba(255, 99, 132, 0.6)"; // Red for incorrect
+                            }
+                        }),
+                        borderColor: counts.map((count, index) => {
+                            // Use the same logic to set border color for bars
+                            const correctAnswer = quizData[selectedQuestion].correctAnswer;
+                            if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
+                                return "rgba(75, 192, 192, 1)"; // Green border for correct
+                            } else {
+                                return "rgba(255, 99, 132, 1)"; // Red border for incorrect
+                            }
+                        }),
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y', // Horizontal bar chart
+                    indexAxis: 'y', // Make it horizontal
                     scales: {
                         x: {
                             beginAtZero: true,
@@ -237,72 +256,17 @@ permalink: /questions/
                         tooltip: {
                             callbacks: {
                                 label: function (tooltipItem) {
-                                    return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
+                                    return tooltipItem.raw + " responses"; // Tooltip showing the number of responses
                                 }
                             }
                         }
                     },
-                    barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
+                    barThickness: 10 // Adjust bar thickness (optional)
                 }
             });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
-
-        // function renderBarChart(labels, counts) {
-        //     let ctx = document.getElementById("resultsChart").getContext("2d");
-
-        //     if (chartInstance) {
-        //         chartInstance.destroy(); // Destroy old chart before creating a new one
-        //     }
-
-        //     chartInstance = new Chart(ctx, {
-        //         type: "bar", // Use horizontal bar chart
-        //         data: {
-        //             labels: labels,
-        //             datasets: [{
-        //                 label: "Number of Responses",
-        //                 data: counts,
-        //                 backgroundColor: "rgba(54, 162, 235, 0.6)",
-        //                 borderColor: "rgba(54, 162, 235, 1)",
-        //                 borderWidth: 1
-        //             }]
-        //         },
-        //         options: {
-        //             responsive: true,
-        //             maintainAspectRatio: false,
-        //             indexAxis: 'y', // Horizontal bar chart
-
-        //             scales: {
-        //                 x: {
-        //                     beginAtZero: true,
-        //                     suggestedMin: 0, // Ensure it starts at 0
-        //                     suggestedMax: Math.max(10, ...counts), // Set max dynamically (at least 10)
-        //                     ticks: {
-        //                         stepSize: 1, // Ensure integer labels
-        //                     }
-        //                 },
-        //                 y: {
-        //                     ticks: {
-        //                         autoSkip: false, // Ensure labels are not skipped
-        //                     }
-        //                 }
-        //             },
-        //             plugins: {
-        //                 tooltip: {
-        //                     callbacks: {
-        //                         label: function (tooltipItem) {
-        //                             return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
-        //                         }
-        //                     }
-        //                 }
-        //             },
-        //             barThickness: 2 // Make the bars skinnier (you can adjust this value)
-        //         }
-        //     });
-
-        //     document.getElementById("resultsChart").style.display = "block"; // Show chart
-        // }
 
 
         function renderTextCloud(responses) {
@@ -379,7 +343,7 @@ permalink: /questions/
     </div>
 
     <div id="bubbleResults" style="display: none;"></div>
-    <canvas id="resultsChart" width="400" height="200" style="display: none;"></canvas>
+    <canvas id="resultsChart" width="400" height="150" style="display: none;"></canvas>
 
     <button onclick="resetResponses()">Reset Responses</button>
 </body>
