@@ -183,6 +183,7 @@ permalink: /questions/
 
             bubblesDiv.appendChild(bubbleContainer);
         }
+
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
@@ -191,6 +192,8 @@ permalink: /questions/
             }
 
             // Assuming you have a list of correct answers (in case of multiple selection, this is a list of answers)
+            let selectedQuestion = document.getElementById("questionSelect").value;
+
             let correctAnswers = quizData[selectedQuestion].correctAnswer || [];
 
             // Create a new dataset for the chart
