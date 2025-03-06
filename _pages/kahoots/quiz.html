@@ -126,7 +126,7 @@ permalink: /questions/
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxQ4i8gMNZg2QCLQfO2Pz1Xb3FjoCoQz5quM4QhejcDc10QcSg-AGcbS2N2I-CD4jaxvg/exec";
         const RESET_URL = "https://script.google.com/macros/s/AKfycbzWC_ZfTge6vKEeiop-zbGSMrF6GTEopBfHJWJ9Gwc_ZFdgbFYUZkvJRM8NSdvE98Ll8g/exec";
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
-        const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
+        const SHORT_FORM_URL = "https://tinyurl.com/smgroves"; // Use a URL shortener like bit.ly
 
 
         let quizData = {}; // Store quiz results globally
@@ -526,18 +526,18 @@ permalink: /questions/
             }
         }
 
-        function generateQRCode() {
-            let qrCodeDiv = document.getElementById("qrCode");
-            let qrCodeImage = document.createElement("img");
+        // function generateQRCode() {
+        //     let qrCodeDiv = document.getElementById("qrCode");
+        //     let qrCodeImage = document.createElement("img");
 
-            let qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}`;
-            qrCodeImage.src = qrCodeUrl;
-            qrCodeImage.alt = "QR Code";
+        //     let qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}`;
+        //     qrCodeImage.src = qrCodeUrl;
+        //     qrCodeImage.alt = "QR Code";
 
-            // Clear previous QR code (if any)
-            qrCodeDiv.innerHTML = "";
-            qrCodeDiv.appendChild(qrCodeImage);
-        }
+        //     // Clear previous QR code (if any)
+        //     qrCodeDiv.innerHTML = "";
+        //     qrCodeDiv.appendChild(qrCodeImage);
+        // }
         fetchResults();
 
         // Refresh results every 60 seconds
@@ -545,11 +545,10 @@ permalink: /questions/
     </script>
 </head>
 
-<body onload="fetchResults(); generateQRCode();">
+<body onload="fetchResults();">
     <div class="heading-container">
         <h1>Kahoots Quiz</h1>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://example.com&size=150x150" alt="QR Code"
-            class="qr-code">
+        <img src="assets/img/smgroves_400.png" alt="QR Code" class="qr-code">
     </div>
 
 
