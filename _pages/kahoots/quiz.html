@@ -124,7 +124,7 @@ permalink: /questions/
     </style>
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxQ4i8gMNZg2QCLQfO2Pz1Xb3FjoCoQz5quM4QhejcDc10QcSg-AGcbS2N2I-CD4jaxvg/exec";
-        const RESET_URL = "https://script.google.com/macros/s/AKfycbxhZzqvWw4S1If-2kAgHaW_t4RciKmkLeAnw08V6I4inQXXInJC-i52B9NaWXRNn6QK/exec";
+        const RESET_URL = "https://script.google.com/macros/s/AKfycbxpj3DSSXpMTB7y4oHldR1ZjBucoPDJV9SQKFh2FrwcBgl_aYzthJyH0IJm6ehqm-Fn/exec";
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
         const SHORT_FORM_URL = "https://tinyurl.com/smgroves"; // Use a URL shortener like bit.ly
 
@@ -513,12 +513,32 @@ permalink: /questions/
             textCloudDiv.style.display = "block"; // Show the text cloud
         }
 
+        // async function resetResponses() {
+        //     if (confirm("Are you sure you want to clear all responses?")) {
+        //         try {
+        //             let response = await fetch(RESET_URL);
+        //             let text = await response.text();
+        //             alert(text);
+        //             fetchResults(); // Refresh results after reset
+        //         } catch (error) {
+        //             console.error("Error resetting responses:", error);
+        //             alert("Failed to reset responses.");
+        //         }
+        //     }
+        // }
         async function resetResponses() {
             if (confirm("Are you sure you want to clear all responses?")) {
                 try {
-                    let response = await fetch(RESET_URL);
+                    // Adjust the fetch to call your web app endpoint
+                    let response = await fetch(RESET_URL, {
+                        method: 'POST',  // Make sure it's a POST request
+                        body: JSON.stringify({ action: 'resetResponses' }), // Send data to indicate which action to perform
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
                     let text = await response.text();
-                    alert(text);
+                    alert(text); // Alert the response from the server (e.g., success message)
+
                     fetchResults(); // Refresh results after reset
                 } catch (error) {
                     console.error("Error resetting responses:", error);
@@ -526,7 +546,6 @@ permalink: /questions/
                 }
             }
         }
-
         // function generateQRCode() {
         //     let qrCodeDiv = document.getElementById("qrCode");
         //     let qrCodeImage = document.createElement("img");
