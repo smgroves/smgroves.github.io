@@ -96,6 +96,28 @@ permalink: /questions/
             padding: 2px 5px;
             border-radius: 5px;
         }
+
+        /* Styling for the heading and QR code */
+        .heading-container {
+            display: flex;
+            /* Use flexbox to align items side by side */
+            justify-content: space-between;
+            /* Space between heading and QR code */
+            align-items: center;
+            /* Vertically align the items */
+        }
+
+        h1 {
+            margin: 0;
+            /* Remove margin from heading */
+        }
+
+        .qr-code {
+            max-width: 100px;
+            /* Set maximum width for the QR code */
+            height: auto;
+            /* Maintain aspect ratio */
+        }
     </style>
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxQ4i8gMNZg2QCLQfO2Pz1Xb3FjoCoQz5quM4QhejcDc10QcSg-AGcbS2N2I-CD4jaxvg/exec";
@@ -522,6 +544,8 @@ permalink: /questions/
 
 <body onload="fetchResults(); generateQRCode();">
     <h1>Kahoots Quiz</h1>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://example.com&size=150x150" alt="QR Code"
+        class="qr-code">
 
     <p><strong>Submit Answers Here:</strong> <a href="https://bit.ly/smgroves" target="_blank">Click Here</a></p>
     <div id="qrCode"></div>
