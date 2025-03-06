@@ -149,7 +149,7 @@ permalink: /questions/
                     let labels = Object.keys(individualCounts);
                     let counts = labels.map(label => individualCounts[label]);
 
-                    renderBarChart(labels, counts);
+                    renderMultipleSelectBarChart(labels, counts);
                 } else if (questionType === "Short Answer") {
                     renderShortAnswerBubbles(responses);
                 }
@@ -186,7 +186,7 @@ permalink: /questions/
 
 
 
-        function renderBarChart(labels, counts) {
+        function renderMultipleSelectBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
             if (chartInstance) {
@@ -201,7 +201,7 @@ permalink: /questions/
             // Create a new dataset for the chart
             let backgroundColors = counts.map(answer => {
                 // Check if this label is a correct answer
-                return correctAnswers.includes(answer) ? "rgba(227, 53, 23, 1)" : "rgba(10, 140, 16, 1)";
+                return correctAnswers.includes(answer) ? "rgba(255, 99, 132, 1)" : "rgba(75, 192, 192, 1)";
             });
 
             chartInstance = new Chart(ctx, {
@@ -250,6 +250,88 @@ permalink: /questions/
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
+
+        function renderBarChart(labels, counts) {
+            let ctx = document.getElementById("resultsChart").getContext("2d");
+
+            if (chartInstance) {
+                chartInstance.destroy(); // Destroy old chart before creating a new one
+            }
+
+            // Assuming you have a list of correct answers (in case of multiple selection, this is a list of answers)
+            let selectedQuestion = document.getElementById("questionSelect").value;
+
+            let correctAnswers = quizData[selectedQuestion].correctAnswer || [];
+
+            // Create a new dataset for the chart
+            // let backgroundColors = counts.map(answer => {
+            //     // Check if this label is a correct answer
+            //     return correctAnswers.includes(answer) ? "rgba(227, 53, 23, 1)" : "rgba(10, 140, 16, 1)";
+            // });
+            chartInstance = new Chart(ctx, {
+                type: "bar", // Set to bar chart
+                data: {
+                    labels: labels, // Labels for each answer option
+                    datasets: [{
+                        label: "Number of Responses",
+                        data: counts, // Response counts for each option
+                        backgroundColor: counts.map((count, index) => {
+                            // For each response, determine if it's correct or incorrect
+                            // Assuming you have an array of correct answers for each question
+                            const correctAnswer = quizData[selectedQuestion].correctAnswer; // Replace with your logic for correct answer
+                            if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
+                                return "rgba(75, 192, 192, 1)"; // Green for correct
+                            } else {
+                                return "rgba(255, 99, 132, 1)"; // Red for incorrect
+                            }
+                        }),
+                        borderColor: counts.map((count, index) => {
+                            // Use the same logic to set border color for bars
+                            const correctAnswer = quizData[selectedQuestion].correctAnswer;
+                            if (labels[index].toLowerCase() === correctAnswer.toLowerCase()) {
+                                return "rgba(75, 192, 192, 1)"; // Green border for correct
+                            } else {
+                                return "rgba(255, 99, 132, 1)"; // Red border for incorrect
+                            }
+                        }),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Make it horizontal
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            min: 0, // Force start at 0
+                            max: Math.max(...counts) + 1, // Dynamically adjust max
+                            ticks: {
+                                stepSize: 1, // Ensure integer labels
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false, // Ensure labels are not skipped
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    return tooltipItem.raw + " responses"; // Tooltip showing the number of responses
+                                }
+                            }
+                        }
+                    },
+                    barThickness: 10 // Adjust bar thickness (optional)
+                }
+            });
+
+            document.getElementById("resultsChart").style.display = "block"; // Show chart
+        }
+
 
 
         function renderTextCloud(responses) {
