@@ -11,33 +11,103 @@ permalink: /questions/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Quiz Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwXNMPsU7BiAEP9Xtzrh9Nd5S26B3XdbvbCC2tVIErd0qqtt_tE9Wrj5570vBxajxpKqw/exec";
-        const RESET_URL = "https://script.google.com/macros/s/AKfycbwmaAVTpMmpI35WtcaVvX9UNQ-hwZM4KrPKxyeB0nTCxKGict0GwEC7O3b7v6UHIE_jRQ/exec?reset=true";
+        const RESET_URL = "https://script.google.com/macros/s/AKfycbwmaAVTpMmpI35WtcaVvX9UNQ-hwZM4KrPKxyeB0nTCxKGict0GwEC7O3b7v6UHIE_jRQ/exec";
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
+        const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
+
+        let quizData = {}; // Store quiz results globally
+        let chartInstance = null; // Store Chart.js instance
 
         async function fetchResults() {
             try {
                 let response = await fetch(SHEET_API_URL);
                 let data = await response.json();
+                quizData = data; // Store data globally
 
-                let resultsDiv = document.getElementById("results");
-                resultsDiv.innerHTML = "<h3>Live Results</h3>";
+                let dropdown = document.getElementById("questionSelect");
+                dropdown.innerHTML = ""; // Clear previous options
 
-                for (let question in data) {
-                    resultsDiv.innerHTML += `<h4>${question}</h4>`;
-                    let responses = data[question].responses;
-                    let correctCount = data[question].correct;
-                    let totalCount = data[question].total;
+                let defaultOption = document.createElement("option");
+                defaultOption.text = "Select a question";
+                defaultOption.value = "";
+                dropdown.appendChild(defaultOption);
 
-                    for (let answer in responses) {
-                        resultsDiv.innerHTML += `<p>${answer}: ${responses[answer]} votes</p>`;
-                    }
-
-                    resultsDiv.innerHTML += `<p><strong>Correct Answers:</strong> ${correctCount}/${totalCount}</p>`;
+                for (let question in quizData) {
+                    let option = document.createElement("option");
+                    option.text = question;
+                    option.value = question;
+                    dropdown.appendChild(option);
                 }
+
+                displayResults(); // Display the first available question
             } catch (error) {
                 console.error("Error fetching results:", error);
             }
+        }
+
+        function displayResults() {
+            let selectedQuestion = document.getElementById("questionSelect").value;
+            let resultsDiv = document.getElementById("results");
+            let chartCanvas = document.getElementById("resultsChart");
+
+            resultsDiv.innerHTML = "<h3>Live Results</h3>";
+
+            if (selectedQuestion && quizData[selectedQuestion]) {
+                let responses = quizData[selectedQuestion].responses;
+                let correctCount = quizData[selectedQuestion].correct;
+                let totalCount = quizData[selectedQuestion].total;
+
+                resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
+                resultsDiv.innerHTML += `<p><strong>Correct Answers:</strong> ${correctCount}/${totalCount}</p>`;
+
+                let labels = [];
+                let counts = [];
+
+                for (let answer in responses) {
+                    labels.push(answer);
+                    counts.push(responses[answer]);
+                }
+
+                renderChart(labels, counts);
+            } else {
+                resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
+                chartCanvas.style.display = "none"; // Hide chart when no question is selected
+            }
+        }
+
+        function renderChart(labels, counts) {
+            let ctx = document.getElementById("resultsChart").getContext("2d");
+
+            if (chartInstance) {
+                chartInstance.destroy(); // Destroy old chart before creating a new one
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Number of Responses",
+                        data: counts,
+                        backgroundColor: "rgba(54, 162, 235, 0.6)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
         async function resetResponses() {
@@ -54,20 +124,32 @@ permalink: /questions/
             }
         }
 
+        function generateQRCode() {
+            let qrCodeDiv = document.getElementById("qrCode");
+            qrCodeDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}" alt="QR Code">`;
+        }
+
         // Refresh results every 5 seconds
         setInterval(fetchResults, 5000);
     </script>
 </head>
 
-<body onload="fetchResults()">
+<body onload="fetchResults(); generateQRCode();">
     <h1>Live Quiz Results</h1>
-    <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header"
-        width="100%" height="500px" style="border:none;"></iframe>
+
+    <p><strong>Submit Answers Here:</strong> <a href="YOUR_SHORTENED_FORM_URL" target="_blank">Click Here</a></p>
+    <div id="qrCode"></div>
+
+    <label for="questionSelect">Choose a question:</label>
+    <select id="questionSelect" onchange="displayResults()">
+        <option value="">Loading questions...</option>
+    </select>
 
     <div id="results">
         <h3>Loading results...</h3>
     </div>
+
+    <canvas id="resultsChart" width="400" height="200" style="display: none;"></canvas>
 
     <button onclick="resetResponses()">Reset Responses</button>
 </body>
