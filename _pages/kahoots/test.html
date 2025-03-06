@@ -1,9 +1,3 @@
----
-layout: default
-title: Exam 2 Review
-permalink: /questions/
----
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,11 +9,10 @@ permalink: /questions/
     <script src="https://cdn.jsdelivr.net/npm/wordcloud2@1.0.1/src/wordcloud2.js"></script>
 
     <script>
-        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxWsEN4nYpgxZM3Tw3vE_7Li1STZRrYRx8UYtha7z5oyuNqfLVY8Yr8n5CMqUMxaYZZhA/exec";
-        const RESET_URL = "https://script.google.com/macros/s/AKfycbxOgo1pQ42b8jOwlhns8tPQZ2b-GpiPfC_6Fa9xyzzCl0LXKHsjPkjMP5QzRUQvYwSvEw/exec";
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
-        const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
-
+        const SHEET_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL";
+        const RESET_URL = "YOUR_RESET_SCRIPT_URL?reset=true";
+        const FORM_URL = "YOUR_GOOGLE_FORM_URL";
+        const SHORT_FORM_URL = "YOUR_SHORTENED_FORM_URL";
 
         let quizData = {}; // Store quiz results globally
         let chartInstance = null; // Store Chart.js instance
@@ -39,7 +32,6 @@ permalink: /questions/
                 defaultOption.value = "";
                 dropdown.appendChild(defaultOption);
 
-                // Add options for each question
                 for (let question in quizData) {
                     let option = document.createElement("option");
                     option.text = question;
@@ -47,21 +39,24 @@ permalink: /questions/
                     dropdown.appendChild(option);
                 }
 
-                // Load the saved question from localStorage
-                let savedQuestion = localStorage.getItem("selectedQuestion");
-                if (savedQuestion && quizData[savedQuestion]) {
-                    dropdown.value = savedQuestion;  // Select the saved question
-                    displayResults(savedQuestion);   // Display results for the saved question
+                // Check if a question is stored in localStorage
+                let selectedQuestion = localStorage.getItem("selectedQuestion");
+                if (selectedQuestion) {
+                    dropdown.value = selectedQuestion; // Set the selected question from localStorage
+                    displayResults(); // Update results immediately
+                }
+
+                if (dropdown.options.length > 1) {
+                    dropdown.selectedIndex = 1; // Automatically select the first question
+                    displayResults();
                 } else {
-                    dropdown.selectedIndex = 1;  // Automatically select the first question
-                    displayResults(); // Display results for the first question
+                    document.getElementById("results").innerHTML = "<p>No questions available.</p>";
                 }
             } catch (error) {
                 console.error("Error fetching results:", error);
                 document.getElementById("results").innerHTML = "<p>Error loading data.</p>";
             }
         }
-
 
         function displayResults() {
             let selectedQuestion = document.getElementById("questionSelect").value;
@@ -81,8 +76,6 @@ permalink: /questions/
                 resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
 
-                let labels = [];
-                let counts = [];
                 // Store the selected question in localStorage for persistence across page reloads
                 localStorage.setItem("selectedQuestion", selectedQuestion);
 
@@ -104,6 +97,7 @@ permalink: /questions/
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
                 chartCanvas.style.display = "none"; // Hide chart when no question is selected
+
             }
         }
 
@@ -111,11 +105,11 @@ permalink: /questions/
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
             if (chartInstance) {
-                chartInstance.destroy(); // Destroy old chart before creating a new one
+                chartInstance.destroy(); // Destroy the existing chart before creating a new one
             }
 
             chartInstance = new Chart(ctx, {
-                type: "horizontalBar", // Use horizontal bar chart
+                type: "bar",
                 data: {
                     labels: labels,
                     datasets: [{
@@ -130,7 +124,6 @@ permalink: /questions/
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y', // Horizontal bar chart
-
                     scales: {
                         x: {
                             beginAtZero: true,
@@ -141,23 +134,12 @@ permalink: /questions/
                                 autoSkip: false, // Ensure labels are not skipped
                             }
                         }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
-                                }
-                            }
-                        }
-                    },
-                    barThickness: 10 // Make the bars skinnier (you can adjust this value)
+                    }
                 }
             });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
-
 
         function renderTextCloud(responses) {
             let textCloudDiv = document.getElementById("resultsChart"); // Use the same canvas div for text cloud
@@ -179,43 +161,15 @@ permalink: /questions/
             textCloudDiv.style.display = "block"; // Show the text cloud
         }
 
-        async function resetResponses() {
-            if (confirm("Are you sure you want to clear all responses?")) {
-                try {
-                    let response = await fetch(RESET_URL);
-                    let text = await response.text();
-                    alert(text);
-                    fetchResults(); // Refresh results after reset
-                } catch (error) {
-                    console.error("Error resetting responses:", error);
-                    alert("Failed to reset responses.");
-                }
-            }
-        }
-
-        function generateQRCode() {
-            let qrCodeDiv = document.getElementById("qrCode");
-            let qrCodeImage = document.createElement("img");
-
-            let qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}`;
-            qrCodeImage.src = qrCodeUrl;
-            qrCodeImage.alt = "QR Code";
-
-            // Clear previous QR code (if any)
-            qrCodeDiv.innerHTML = "";
-            qrCodeDiv.appendChild(qrCodeImage);
-        }
-
-        // Refresh results every 60 seconds
-        setInterval(fetchResults, 60000);
+        // Refresh results every 5 seconds
+        setInterval(fetchResults, 5000);
     </script>
 </head>
 
-<body onload="fetchResults(); generateQRCode();">
+<body onload="fetchResults();">
     <h1>Live Quiz Results</h1>
 
-    <p><strong>Submit Answers Here:</strong> <a href="https://bit.ly/smgroves" target="_blank">Click Here</a></p>
-    <div id="qrCode"></div>
+    <p><strong>Submit Answers Here:</strong> <a href="YOUR_SHORTENED_FORM_URL" target="_blank">Click Here</a></p>
 
     <label for="questionSelect">Choose a question:</label>
     <select id="questionSelect" onchange="displayResults()">
