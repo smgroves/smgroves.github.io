@@ -232,7 +232,7 @@ permalink: /questions/
 
         function renderMultipleSelectBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
-            document.getElementById("resultsChart").height = labels.length * 25; // 25px per bar
+            document.getElementById("resultsChart").height = labels.length * 2; // 25px per bar
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
