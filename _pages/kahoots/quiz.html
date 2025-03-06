@@ -135,23 +135,6 @@ permalink: /questions/
                 } else if (questionType === "Short Answer") {
                     renderShortAnswerBubbles(responses);
                 }
-                // Clear previous chart (if any) and decide which type to display
-                // if (questionType === "Multiple Choice") {
-                //     // Handle multiple-choice chart (Bar Chart)
-                //     let labels = [];
-                //     let counts = [];
-
-                //     for (let answer in responses) {
-                //         labels.push(answer);
-                //         counts.push(responses[answer]);
-                //     }
-                //     renderBarChart(labels, counts);
-                // } else if (questionType === "Short Answer") {
-                //     // Handle short-answer responses (Text Cloud or something else)
-                //     // renderTextCloud(responses);
-                //     renderShortAnswerBubbles(responses);
-
-                // }
             } else {
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
                 // chartCanvas.style.display = "none"; // Hide chart when no question is selected
@@ -184,6 +167,7 @@ permalink: /questions/
         }
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
+            let maxCount = Math.max(...counts, 10); // Ensure min range is 10
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
@@ -209,7 +193,11 @@ permalink: /questions/
                     scales: {
                         x: {
                             beginAtZero: true,
-                            stepSize: 1
+                            min: 0, // Force start at 0
+                            max: maxCount, // Dynamically adjust max
+                            ticks: {
+                                stepSize: 1, // Ensure integer labels
+                            }
                         },
                         y: {
                             ticks: {
