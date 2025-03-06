@@ -45,6 +45,17 @@ permalink: /questions/
                     dropdown.appendChild(option);
                 }
 
+
+                // Set selected question from localStorage if available
+                let savedQuestion = localStorage.getItem("selectedQuestion");
+                if (savedQuestion && quizData[savedQuestion]) {
+                    dropdown.value = savedQuestion;
+                    displayResults(); // Display results for saved question
+                } else {
+                    dropdown.selectedIndex = 1; // Automatically select the first question
+                    displayResults();
+                }
+
                 if (dropdown.options.length > 1) {
                     dropdown.selectedIndex = 1; // Automatically select the first question
                     displayResults();
@@ -86,6 +97,10 @@ permalink: /questions/
                 resultsDiv.innerHTML += `<p>Select a question to view results.</p>`;
                 chartCanvas.style.display = "none"; // Hide chart when no question is selected
             }
+            // Store the selected question in localStorage for persistence across page reloads
+
+            localStorage.setItem("selectedQuestion", selectedQuestion);
+
         }
 
         function renderChart(labels, counts) {
