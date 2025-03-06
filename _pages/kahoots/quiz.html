@@ -12,9 +12,10 @@ permalink: /questions/
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Quiz Results</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud2@1.0.1/src/wordcloud2.js"></script>
 
     <script>
-        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyN7iNI-AArSM5k9AcZAny4yeAdAfF_G9tfn7fvauOQwviEEUvSrJcVGlZcZUh1ffmxMw/exec";
+        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxWsEN4nYpgxZM3Tw3vE_7Li1STZRrYRx8UYtha7z5oyuNqfLVY8Yr8n5CMqUMxaYZZhA/exec";
         const RESET_URL = "https://script.google.com/macros/s/AKfycbxOgo1pQ42b8jOwlhns8tPQZ2b-GpiPfC_6Fa9xyzzCl0LXKHsjPkjMP5QzRUQvYwSvEw/exec";
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1NEmVQayWxy3f91zbbnf_92NAY7JKVLC6jRE4tkMG7uXP7w/viewform?usp=header";
         const SHORT_FORM_URL = "https://bit.ly/smgroves"; // Use a URL shortener like bit.ly
@@ -68,6 +69,7 @@ permalink: /questions/
             let chartCanvas = document.getElementById("resultsChart");
 
             resultsDiv.innerHTML = "<h3>Live Results</h3>";
+            chartCanvas.style.display = "none"; // Hide the chart by default
 
             if (selectedQuestion && quizData[selectedQuestion]) {
                 let responses = quizData[selectedQuestion].responses || {};
@@ -82,15 +84,19 @@ permalink: /questions/
                 let labels = [];
                 let counts = [];
 
+                // Clear previous chart (if any) and decide which type to display
                 if (questionType === "Multiple Choice") {
-                    // Handle multiple-choice chart
+                    // Handle multiple-choice chart (Bar Chart)
+                    let labels = [];
+                    let counts = [];
+
                     for (let answer in responses) {
                         labels.push(answer);
                         counts.push(responses[answer]);
                     }
                     renderBarChart(labels, counts);
                 } else if (questionType === "Short Answer") {
-                    // Handle short-answer chart (Text Cloud or something else)
+                    // Handle short-answer responses (Text Cloud or something else)
                     renderTextCloud(responses);
                 }
 
@@ -124,23 +130,54 @@ permalink: /questions/
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    indexAxis: 'y', // Horizontal bar chart
+
                     scales: {
                         x: {
                             beginAtZero: true,
                             stepSize: 1
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false, // Ensure labels are not skipped
+                            }
                         }
-                    }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
+                                }
+                            }
+                        }
+                    },
+                    barThickness: 10 // Make the bars skinnier (you can adjust this value)
                 }
             });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
+
         function renderTextCloud(responses) {
-            // Render text cloud (or other visualization) for short answers
-            let wordCloudDiv = document.getElementById("resultsChart");
-            wordCloudDiv.style.display = "block";
-            wordCloudDiv.innerHTML = "<p>Short Answer responses are not supported with a chart.</p>";
+            let textCloudDiv = document.getElementById("resultsChart"); // Use the same canvas div for text cloud
+            textCloudDiv.innerHTML = ""; // Clear previous content
+
+            let wordArray = [];
+            for (let answer in responses) {
+                wordArray.push([answer, responses[answer]]);
+            }
+
+            WordCloud(textCloudDiv, {
+                list: wordArray,
+                gridSize: 15,
+                weightFactor: 4,
+                fontFamily: 'Times, serif',
+                color: 'random-light',
+                backgroundColor: '#f0f0f0'
+            });
+            textCloudDiv.style.display = "block"; // Show the text cloud
         }
 
         async function resetResponses() {

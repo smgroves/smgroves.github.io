@@ -226,8 +226,8 @@ permalink: /questions2/
             qrCodeDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(FORM_URL)}" alt="QR Code">`;
         }
 
-        // Refresh results every 5 seconds
-        setInterval(fetchResults, 5000);
+        // Refresh results every minute
+        setInterval(fetchResults, 60000);
     </script>
 </head>
 
