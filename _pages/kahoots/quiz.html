@@ -11,7 +11,7 @@ permalink: /questions/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Quiz Results</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud2@1.0.1/src/wordcloud2.js"></script>
     <style>
         .bubble-container {
@@ -132,6 +132,24 @@ permalink: /questions/
 
                 if (questionType === "Multiple Choice") {
                     renderBarChart(Object.keys(responses), Object.values(responses));
+                } else if (questionType === "Multiple Selection") {
+                    // Process multiple-selection responses
+                    let individualCounts = {};
+
+                    for (let response in responses) {
+                        let selections = response.split(",").map(s => s.trim()); // Split by comma and trim spaces
+                        selections.forEach(selection => {
+                            if (!individualCounts[selection]) {
+                                individualCounts[selection] = 0;
+                            }
+                            individualCounts[selection] += responses[response]; // Increment count
+                        });
+                    }
+
+                    let labels = Object.keys(individualCounts);
+                    let counts = labels.map(label => individualCounts[label]);
+
+                    renderChart(labels, counts);
                 } else if (questionType === "Short Answer") {
                     renderShortAnswerBubbles(responses);
                 }
@@ -165,21 +183,30 @@ permalink: /questions/
 
             bubblesDiv.appendChild(bubbleContainer);
         }
-        function renderBarChart(labels, counts) {
+        function renderChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
             }
 
+            // Assuming you have a list of correct answers (in case of multiple selection, this is a list of answers)
+            let correctAnswers = quizData[selectedQuestion].correctAnswer || [];
+
+            // Create a new dataset for the chart
+            let backgroundColors = counts.map(answer => {
+                // Check if this label is a correct answer
+                return correctAnswers.includes(answer) ? "rgba(75, 192, 192, 0.6)" : "rgba(54, 162, 235, 0.6)";
+            });
+
             chartInstance = new Chart(ctx, {
-                type: "bar", // Use horizontal bar chart
+                type: "horizontalBar", // Use horizontal bar chart
                 data: {
                     labels: labels,
                     datasets: [{
                         label: "Number of Responses",
                         data: counts,
-                        backgroundColor: "rgba(54, 162, 235, 0.6)",
+                        backgroundColor: backgroundColors, // Apply special color for correct answers
                         borderColor: "rgba(54, 162, 235, 1)",
                         borderWidth: 1
                     }]
@@ -188,12 +215,11 @@ permalink: /questions/
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y', // Horizontal bar chart
-
                     scales: {
                         x: {
                             beginAtZero: true,
-                            suggestedMin: 0, // Ensure it starts at 0
-                            suggestedMax: Math.max(10, ...counts), // Set max dynamically (at least 10)
+                            min: 0, // Force start at 0
+                            max: Math.max(...counts) + 1, // Dynamically adjust max
                             ticks: {
                                 stepSize: 1, // Ensure integer labels
                             }
@@ -213,12 +239,67 @@ permalink: /questions/
                             }
                         }
                     },
-                    barThickness: 2 // Make the bars skinnier (you can adjust this value)
+                    barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
                 }
             });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
+
+        // function renderBarChart(labels, counts) {
+        //     let ctx = document.getElementById("resultsChart").getContext("2d");
+
+        //     if (chartInstance) {
+        //         chartInstance.destroy(); // Destroy old chart before creating a new one
+        //     }
+
+        //     chartInstance = new Chart(ctx, {
+        //         type: "bar", // Use horizontal bar chart
+        //         data: {
+        //             labels: labels,
+        //             datasets: [{
+        //                 label: "Number of Responses",
+        //                 data: counts,
+        //                 backgroundColor: "rgba(54, 162, 235, 0.6)",
+        //                 borderColor: "rgba(54, 162, 235, 1)",
+        //                 borderWidth: 1
+        //             }]
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false,
+        //             indexAxis: 'y', // Horizontal bar chart
+
+        //             scales: {
+        //                 x: {
+        //                     beginAtZero: true,
+        //                     suggestedMin: 0, // Ensure it starts at 0
+        //                     suggestedMax: Math.max(10, ...counts), // Set max dynamically (at least 10)
+        //                     ticks: {
+        //                         stepSize: 1, // Ensure integer labels
+        //                     }
+        //                 },
+        //                 y: {
+        //                     ticks: {
+        //                         autoSkip: false, // Ensure labels are not skipped
+        //                     }
+        //                 }
+        //             },
+        //             plugins: {
+        //                 tooltip: {
+        //                     callbacks: {
+        //                         label: function (tooltipItem) {
+        //                             return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
+        //                         }
+        //                     }
+        //                 }
+        //             },
+        //             barThickness: 2 // Make the bars skinnier (you can adjust this value)
+        //         }
+        //     });
+
+        //     document.getElementById("resultsChart").style.display = "block"; // Show chart
+        // }
 
 
         function renderTextCloud(responses) {
