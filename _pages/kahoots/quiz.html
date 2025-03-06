@@ -118,11 +118,12 @@ permalink: /questions/
                 resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
                 resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
+                resultsDiv.innerHTML += `<p><strong>Question Type:</strong> ${questionType}</p>`;
 
                 let labels = [];
                 let counts = [];
                 // Store the selected question in localStorage for persistence across page reloads
-                localStorage.setItem("selectedQuestion", selectedQuestion);
+                // localStorage.setItem("selectedQuestion", selectedQuestion);
 
                 // Clear previous chart (if any) and decide which type to display
                 if (questionType === "Multiple Choice") {
