@@ -167,14 +167,13 @@ permalink: /questions/
         }
         function renderBarChart(labels, counts) {
             let ctx = document.getElementById("resultsChart").getContext("2d");
-            let maxCount = Math.max(...counts, 10); // Ensure min range is 10
 
             if (chartInstance) {
                 chartInstance.destroy(); // Destroy old chart before creating a new one
             }
 
             chartInstance = new Chart(ctx, {
-                type: "horizontalBar", // Use horizontal bar chart
+                type: "bar", // Use horizontal bar chart
                 data: {
                     labels: labels,
                     datasets: [{
@@ -193,8 +192,8 @@ permalink: /questions/
                     scales: {
                         x: {
                             beginAtZero: true,
-                            min: 0, // Force start at 0
-                            max: maxCount, // Dynamically adjust max
+                            suggestedMin: 0, // Ensure it starts at 0
+                            suggestedMax: Math.max(10, ...counts), // Set max dynamically (at least 10)
                             ticks: {
                                 stepSize: 1, // Ensure integer labels
                             }
