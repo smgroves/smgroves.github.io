@@ -22,11 +22,11 @@ permalink: /questions/
         }
 
         .bubble {
-            background-color: #00aaff;
+            background-color: #480587;
             color: white;
             border-radius: 20px;
             padding: 15px;
-            font-size: 14px;
+            font-size: 16px;
             text-align: center;
             position: relative;
             display: inline-block;
@@ -44,10 +44,11 @@ permalink: /questions/
 
         .bubble .count {
             position: absolute;
+            color: white;
             bottom: 5px;
             right: 5px;
             font-size: 12px;
-            background-color: rgba(0, 0, 0, 0.5);
+            /* background-color: rgb(208, 208, 208); */
             padding: 2px 5px;
             border-radius: 5px;
         }
@@ -273,7 +274,7 @@ permalink: /questions/
                 data: {
                     labels: labels, // Labels for each answer option
                     datasets: [{
-                        label: "Number of Responses",
+                        label: "Responses",
                         data: counts, // Response counts for each option
                         backgroundColor: counts.map((count, index) => {
                             // For each response, determine if it's correct or incorrect
@@ -316,12 +317,28 @@ permalink: /questions/
                             }
                         }]
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    return tooltipItem.raw + " responses"; // Tooltip showing the number of responses
-                                }
+                    legend: {
+                        display: true,
+                        labels: {
+                            generateLabels: function (chart) {
+                                const dataset = chart.data.datasets[0]; // Get the dataset
+                                const correctAnswer = quizData[selectedQuestion].correctAnswer.toLowerCase();
+
+                                return dataset.data.map((_, index) => ({
+                                    text: `${dataset.label} (${labels[index].toLowerCase() === correctAnswer ? "Correct" : "Incorrect"})`,
+                                    fillStyle: dataset.backgroundColor[index],
+                                    strokeStyle: dataset.borderColor[index],
+                                    hidden: false
+                                }));
+                            }
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                let answer = data.labels[tooltipItem.index];
+                                let isCorrect = answer.toLowerCase() === quizData[selectedQuestion].correctAnswer.toLowerCase();
+                                return `${answer}: ${tooltipItem.xLabel} responses (${isCorrect ? "Correct" : "Incorrect"})`;
                             }
                         }
                     },
