@@ -253,28 +253,34 @@ permalink: /questions/
                         display: true,
                         labels: {
                             generateLabels: function (chart) {
-                                let correctShown = false;
-                                let incorrectShown = false;
+                                const dataset = chart.data.datasets[0]; // Get the dataset
+                                let correctAnswers = quizData[selectedQuestion].correctAnswer
+                                    .split(",")
+                                    .map(answer => answer.trim().toLowerCase());
 
-                                return chart.data.datasets.map((dataset, i) => {
-                                    let label = dataset.label.includes("Correct") ? "Correct" : "Incorrect";
+                                // Create a Set to track which labels have been added
+                                let seenLabels = new Set();
 
-                                    // Ensure "Correct" and "Incorrect" appear only once
-                                    if ((label === "Correct" && correctShown) || (label === "Incorrect" && incorrectShown)) {
-                                        return null;
-                                    }
+                                return dataset.data
+                                    .map((_, index) => {
+                                        let labelType = correctAnswers.includes(labels[index].toLowerCase()) ? "Correct" : "Incorrect";
+                                        let labelText = `Responses (${labelType})`;
 
-                                    if (label === "Correct") correctShown = true;
-                                    if (label === "Incorrect") incorrectShown = true;
+                                        // If we've already added this label, skip it
+                                        if (seenLabels.has(labelType)) {
+                                            return null;
+                                        }
 
-                                    return {
-                                        text: label,
-                                        fillStyle: dataset.backgroundColor,
-                                        strokeStyle: dataset.borderColor,
-                                        hidden: !chart.isDatasetVisible(i),
-                                        datasetIndex: i
-                                    };
-                                }).filter(label => label !== null); // Remove duplicates
+                                        seenLabels.add(labelType); // Mark this label as seen
+
+                                        return {
+                                            text: labelText,
+                                            fillStyle: dataset.backgroundColor[index],
+                                            strokeStyle: dataset.borderColor[index],
+                                            hidden: false
+                                        };
+                                    })
+                                    .filter(label => label !== null); // Remove null values (duplicates)
                             }
                         }
                     },
@@ -294,13 +300,55 @@ permalink: /questions/
                     barThickness: 10
                 }
             });
-
+            // chartInstance = new Chart(ctx, {
+            //     type: "horizontalBar", // Use horizontal bar chart
+            //     data: {
+            //         labels: labels,
+            //         datasets: [{
+            //             label: "Number of Responses",
+            //             data: counts,
+            //             backgroundColor: backgroundColors, // Apply special color for correct answers
+            //             borderColor: "rgba(0, 0, 0, 1)",
+            //             borderWidth: 1
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         maintainAspectRatio: false,
+            //         indexAxis: 'y', // Horizontal bar chart
+            //         scales: {
+            //             xAxes: [{ // In Chart.js 2.x, use `xAxes` instead of `x`
+            //                 ticks: {
+            //                     beginAtZero: true,
+            //                     min: 0, // Ensure the axis starts at 0
+            //                     max: Math.max(10, Math.max(...counts) + 1), // Ensure at least 0-10, or max responses
+            //                     stepSize: 1 // Force integer tick marks
+            //                 }
+            //             }],
+            //             yAxes: [{
+            //                 ticks: {
+            //                     autoSkip: false // Prevent labels from being skipped
+            //                 }
+            //             }]
+            //         },
+            //         plugins: {
+            //             tooltip: {
+            //                 callbacks: {
+            //                     label: function (tooltipItem) {
+            //                         return tooltipItem.raw + " responses"; // Add extra detail to the tooltip
+            //                     }
+            //                 }
+            //             }
+            //         },
+            //         barThickness: 10 // Adjust the bar thickness (you can tweak this as needed)
+            //     }
+            // });
 
             document.getElementById("resultsChart").style.display = "block"; // Show chart
         }
 
         function renderBarChart(labels, counts) {
-            const barHeight = 20; // Set a fixed height per bar
+            const barHeight = 0; // Set a fixed height per bar
             const minHeight = 50; // Minimum height for small datasets
             const maxHeight = 600; // Max height to prevent excessive stretching
 
@@ -486,7 +534,7 @@ permalink: /questions/
     </div>
 
     <div id="bubbleResults" style="display: none;"></div>
-    <canvas id="resultsChart" width="400" height="150" style="display: none;"></canvas>
+    <canvas id="resultsChart" width="400" height="40" style="display: none;"></canvas>
 
     <button onclick="resetResponses()">Reset Responses</button>
 </body>
