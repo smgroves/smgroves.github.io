@@ -513,32 +513,12 @@ permalink: /questions/
             textCloudDiv.style.display = "block"; // Show the text cloud
         }
 
-        // async function resetResponses() {
-        //     if (confirm("Are you sure you want to clear all responses?")) {
-        //         try {
-        //             let response = await fetch(RESET_URL);
-        //             let text = await response.text();
-        //             alert(text);
-        //             fetchResults(); // Refresh results after reset
-        //         } catch (error) {
-        //             console.error("Error resetting responses:", error);
-        //             alert("Failed to reset responses.");
-        //         }
-        //     }
-        // }
         async function resetResponses() {
             if (confirm("Are you sure you want to clear all responses?")) {
                 try {
-                    // Adjust the fetch to call your web app endpoint
-                    let response = await fetch(RESET_URL, {
-                        method: 'POST',  // Make sure it's a POST request
-                        body: JSON.stringify({ action: 'resetResponses' }), // Send data to indicate which action to perform
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-
+                    let response = await fetch(RESET_URL);
                     let text = await response.text();
-                    alert(text); // Alert the response from the server (e.g., success message)
-
+                    alert(text);
                     fetchResults(); // Refresh results after reset
                 } catch (error) {
                     console.error("Error resetting responses:", error);
@@ -546,6 +526,26 @@ permalink: /questions/
                 }
             }
         }
+        // async function resetResponses() {
+        //     if (confirm("Are you sure you want to clear all responses?")) {
+        //         try {
+        //             // Adjust the fetch to call your web app endpoint
+        //             let response = await fetch(RESET_URL, {
+        //                 method: 'POST',  // Make sure it's a POST request
+        //                 body: JSON.stringify({ action: 'resetResponses' }), // Send data to indicate which action to perform
+        //                 headers: { 'Content-Type': 'application/json' }
+        //             });
+
+        //             let text = await response.text();
+        //             alert(text); // Alert the response from the server (e.g., success message)
+
+        //             fetchResults(); // Refresh results after reset
+        //         } catch (error) {
+        //             console.error("Error resetting responses:", error);
+        //             alert("Failed to reset responses.");
+        //         }
+        //     }
+        // }
         // function generateQRCode() {
         //     let qrCodeDiv = document.getElementById("qrCode");
         //     let qrCodeImage = document.createElement("img");
