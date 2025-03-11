@@ -2,6 +2,8 @@
 # Run this in a Pluto.jl session
 
 using PlutoUI, Plots, DifferentialEquations
+using PlutoSliderServer
+
 
 # Define the interactive notebook
 md"# Interactive Differential Equations Notebook"

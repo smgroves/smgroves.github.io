@@ -11,10 +11,14 @@ description: "This is a detailed explanation of how to visualize differential eq
 date: 2025-03-01
 ---
 
-# Play with Differential Equations
+<!-- # Play with Differential Equations
 Explore slope fields and solutions dynamically using Julia and Pluto notebooks.
 
 <iframe src="https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?urlpath=%2Fjulia%2Fdifferential_equations.jl"
         width="100%" height="600px"></iframe>
 
-[Open in a new tab](https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?urlpath=%2Fjulia%2Fdifferential_equations.jl)
+[Open in a new tab](https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?urlpath=%2Fjulia%2Fdifferential_equations.jl) -->
+
+<head>
+  <meta http-equiv="refresh" content="0; url={{ site.baseurl }}/julia/differential_equations.html" />
+</head>
