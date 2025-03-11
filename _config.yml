@@ -154,7 +154,7 @@ collections:
   teaching:
     output: true 
     permalink: /teaching/:path/
-  explainerposts:
+  explainers:
     output: true
     permalink: /explainers/:path/
 
