@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Visual Explainers
+permalink: /explainers/
 agination:
   enabled: true
   collection: posts
