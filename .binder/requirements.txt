@@ -1,5 +1,0 @@
-julia
-Pluto
-Plots
-DifferentialEquations
-PlutoUI

@@ -1,0 +1,8 @@
+name: pluto-environment
+channels:
+  - conda-forge
+dependencies:
+  - julia
+  - pip
+  - pip:
+      - pluto
