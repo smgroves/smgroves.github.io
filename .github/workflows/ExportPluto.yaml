@@ -57,7 +57,6 @@ jobs:
                     Export_cache_dir="pluto_state_cache",
                     Export_baked_notebookfile=false,
                     Export_baked_state=false,
-                    SliderServer_watch_dir="julia",
                     SliderServer_serve_static_export_folder="julia",
                   )'
 
