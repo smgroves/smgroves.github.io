@@ -65,5 +65,5 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   branch: gh-pages
-                  folder: .  # Deploy the whole repo (including Pluto folder)
+                  folder: julia  # Deploy the whole repo (including Pluto folder)
                   single-commit: true
