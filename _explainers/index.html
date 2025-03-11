@@ -11,24 +11,10 @@ permalink: /explainers/
     <h2>{{ site.explainers_description | default: "Learn about differential equations and more." }}</h2>
   </div>
 
-  {% if site.display_tags %}
-  <div class="tag-list">
-    <ul class="p-0 m-0">
-      {% for tag in site.display_tags %}
-      <li>
-        <i class="fas fa-hashtag fa-sm"></i> <a href="{{ tag | prepend: '/explainers/tag/' | relative_url }}">{{ tag
-          }}</a>
-      </li>
-      {% unless forloop.last %}
-      <p>&bull;</p>
-      {% endunless %}
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
 
   <ul class="post-list">
-    {% for explainer in site.explainers.posts %}
+    {% for explainer in site.explainers %}
+    {% if explainer.title != "Explainers" %}
     {% assign read_time = explainer.content | number_of_words | divided_by: 180 | plus: 1 %}
     {% assign year = explainer.date | date: "%Y" %}
     {% assign tags = explainer.tags | join: "" %}
@@ -64,6 +50,7 @@ permalink: /explainers/
         {% endif %}
       </p>
     </li>
+    {% endif %}
 
     {% endfor %}
   </ul>
