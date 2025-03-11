@@ -130,6 +130,14 @@ pagination:
     # rss_url: https://medium.com/@al-folio/feed
 
 # -----------------------------------------------------------------------------
+# Explainers
+# -----------------------------------------------------------------------------
+
+explainers_name: Explainers # blog_name will be displayed in your blog page
+explainers_nav_title: explainers # your blog must have a title for it to be displayed in the nav bar
+explainers_description: Visual and written explainers on scientific concepts
+permalink: /explainers/:title/ 
+# -----------------------------------------------------------------------------
 # Collections
 # -----------------------------------------------------------------------------
 
@@ -147,6 +155,8 @@ collections:
     permalink: /teaching/:path/
   explainers:
     output: true
+    permalink: /:path/
+    posts_dir: "_explainers/posts"  # Specify the subfolder where the explainer posts are located.
 
 news_scrollable: false # adds a vertical scroll bar if there are more than 3 news items
 news_limit: 3 # leave blank to include all the news in the `_news` folder

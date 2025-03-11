@@ -1,6 +1,14 @@
 ---
 layout: default
 title: Interactive Differential Equations
+permalink: /explainers/DE/
+tags:
+  - differential equations
+  - slope field
+categories:
+  - mathematics
+description: "This is a detailed explanation of how to visualize differential equations."
+date: 2025-03-01
 ---
 
 # Play with Differential Equations
