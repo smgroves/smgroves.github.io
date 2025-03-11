@@ -57,7 +57,8 @@ jobs:
                     Export_cache_dir="pluto_state_cache",
                     Export_baked_notebookfile=false,
                     Export_baked_state=false,
-                    SliderServer_serve_static_export_folder="pluto"  # Set a static folder where notebooks will be exported
+                    SliderServer_watch_dir = "julia"
+                    SliderServer_serve_static_export_folder="julia"  # Set a static folder where notebooks will be exported
                   )'
 
             - name: Deploy to gh-pages
