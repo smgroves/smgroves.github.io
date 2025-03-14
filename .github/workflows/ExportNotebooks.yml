@@ -79,12 +79,15 @@ jobs:
               run: |
                 mkdir -p site_output/pluto
                 cp -r master_source/julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
+                echo "Current workspace: ${{ github.workspace }}"
                 ls -l -a site_output  # Debugging: Verify contents before deploying
-            
-            - name: Checkout 🛎️
-              uses: actions/checkout@v4
-              with:
-                ref: gh-pages 
+
+            - name: 🏗 Confirm Deployment Directory Exists
+              run: |
+                  echo "Current workspace: ${{ github.workspace }}"
+                  echo "Checking deployment directory..."
+                  ls -l -a ${{ github.workspace }}/site_output || echo "❌ site_output is missing!"
+
 
             - name: 🚀 Deploy updated site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
