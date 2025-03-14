@@ -36,7 +36,11 @@ jobs:
                 echo "Checking if src/ has any notebooks..."
                 ls -l julia/src
 
-
+            - name: 🏗 Checkout gh-pages branch to preserve existing site
+              uses: actions/checkout@v4
+              with:
+                  ref: gh-pages  # Get the current live website
+                  path: site_output
 
             - name: 🏗 Generate Pluto notebook exports
               run: |
@@ -50,11 +54,11 @@ jobs:
               env:
                 JULIA_PKG_SERVER: ""
                 
-            - name: 🏗 Ensure pluto directory exists
+            - name: 🏗 Ensure julia directory exists
               run: |
-                mkdir -p pluto  # Create the pluto directory if it doesn’t exist
-                echo "Checking pluto/ directory:"
-                ls -l pluto  # List files to confirm it's not empty
+                mkdir -p julia  # Create the pluto directory if it doesn’t exist
+                echo "Checking julia/ directory:"
+                ls -l julia  # List files to confirm it's not empty
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
@@ -65,9 +69,16 @@ jobs:
                   echo "    url: \"/julia/$filename.html\"" >> _data/pluto_notebooks.yml
                 done
 
-            - name: 🚀 Deploy to GitHub Pages
+            - name: 🔄 Merge Pluto notebooks with existing Jekyll site
+              run: |
+                mkdir -p site_output/pluto
+                cp -r julia/* site_output/pluto  # Move Pluto notebooks to /pluto/ inside the existing site
+                ls -l site_output  # Debugging: Check what’s inside before deploying
+            
+            - name: 🚀 Deploy Merged Site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   branch: gh-pages
-                  folder: julia
+                  folder: site_output
+
