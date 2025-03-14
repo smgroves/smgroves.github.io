@@ -61,11 +61,12 @@ jobs:
               run: |
                 mkdir -p julia  # Create the pluto directory if it doesn’t exist
                 echo "Checking julia/ directory:"
-                ls -l julia  # List files to confirm it's not empty
+                ls -l -a julia  # List files to confirm it's not empty
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
                   mkdir -p _data  # Ensure _data/ exists
+                  ls -l -a master_source/julia/src
                   echo "notebooks:" > _data/pluto_notebooks.yml
                   find master_source/julia/src -name "*.html" | while read file; do
                     filename=$(basename "$file" .html)
@@ -78,8 +79,15 @@ jobs:
               run: |
                 mkdir -p site_output/pluto
                 cp -r master_source/julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
-                ls -l site_output  # Debugging: Verify contents before deploying
-
+                ls -l -a site_output  # Debugging: Verify contents before deploying
+            
+            - name: Check updated site (Jekyll + Pluto)
+              run: |
+                  cd site_output  # Move into the site_output directory where the site is stored
+                  ls -l -a  # Debugging: List contents before deploying
+                  cd ..  # Move back to the root GitHub Actions workspace
+                  ls -l -a  # Debugging: Ensure we are in the correct directory
+              
             - name: 🚀 Deploy updated site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
               with:
