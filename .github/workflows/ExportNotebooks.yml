@@ -14,8 +14,16 @@ jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         steps:
-            - name: 📥 Checkout master branch
+            - name: 📥 Checkout existing GitHub Pages deployment (preserve Jekyll site)
               uses: actions/checkout@v4
+              with:
+                  ref: gh-pages  # Fetch the currently deployed website
+                  path: site_output
+
+            - name: 📥 Checkout master branch (Pluto source)
+              uses: actions/checkout@v4
+              with:
+                  path: master_source
 
             - name: 🔧 Install Julia
               uses: julia-actions/setup-julia@v2
@@ -36,12 +44,6 @@ jobs:
                 echo "Checking if src/ has any notebooks..."
                 ls -l julia/src
 
-            - name: 🏗 Checkout gh-pages branch to preserve existing site
-              uses: actions/checkout@v4
-              with:
-                  ref: gh-pages  # Get the current live website
-                  path: site_output
-
             - name: 🏗 Generate Pluto notebook exports
               run: |
                 julia --project=pluto-deployment-environment -e '
@@ -56,26 +58,27 @@ jobs:
                 
             - name: 🏗 Ensure julia directory exists
               run: |
-                mkdir -p julia  # Create the pluto directory if it doesn’t exist
+                mkdir -p julia/src  # Create the pluto directory if it doesn’t exist
                 echo "Checking julia/ directory:"
-                ls -l julia  # List files to confirm it's not empty
+                ls -l julia/src  # List files to confirm it's not empty
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
                 echo "notebooks:" > _data/pluto_notebooks.yml
-                find _site/julia -name "*.html" | while read file; do
+                find master_source/julia/src -name "*.html" | while read file; do
                   filename=$(basename "$file" .html)
-                  echo "  - title: \"$filename\"" >> _data/pluto_notebooks.yml
-                  echo "    url: \"/julia/$filename.html\"" >> _data/pluto_notebooks.yml
+                  formatted_name=$(echo "$filename" | sed 's/_/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
+                  echo "  - title: \"$formatted_name\"" >> _data/pluto_notebooks.yml
+                  echo "    url: \"/pluto/$filename.html\"" >> _data/pluto_notebooks.yml
                 done
 
-            - name: 🔄 Merge Pluto notebooks with existing Jekyll site
+            - name: 🏗 Merge Pluto notebooks into existing site
               run: |
                 mkdir -p site_output/pluto
-                cp -r julia/* site_output/pluto  # Move Pluto notebooks to /pluto/ inside the existing site
-                ls -l site_output  # Debugging: Check what’s inside before deploying
-            
-            - name: 🚀 Deploy Merged Site (Jekyll + Pluto)
+                cp -r master_source/julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
+                ls -l site_output  # Debugging: Verify contents before deploying
+
+            - name: 🚀 Deploy updated site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
