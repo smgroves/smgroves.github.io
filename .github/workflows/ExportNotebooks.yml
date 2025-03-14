@@ -82,11 +82,21 @@ jobs:
                 echo "Current workspace: ${{ github.workspace }}"
                 echo "Current branch is ${GITHUB_REF#refs/heads/}"
                 ls -l -a site_output  # Debugging: Verify contents before deploying
-
-            - name: Checkout 🛎️
+            
+            - name: 🏗 Temporarily Move `site_output/` Before Checkout
+              run: |
+                  mv site_output /tmp/site_output_backup
+              
+            - name: Checkout 🛎️ (Fetch gh-pages branch)
               uses: actions/checkout@v4
               with:
-                ref: gh-pages 
+                  ref: gh-pages
+                  clean: false  # Prevents deletion of workspace
+              
+            - name: 🏗 Restore `site_output/` After Checkout
+              run: |
+                  mv /tmp/site_output_backup site_output
+                  ls -l -a site_output  # Debugging: Ensure files are restored
 
             - name: 🏗 Confirm Deployment Directory Exists
               run: |
