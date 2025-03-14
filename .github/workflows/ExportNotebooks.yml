@@ -59,19 +59,20 @@ jobs:
                 
             - name: 🏗 Ensure julia directory exists
               run: |
-                mkdir -p julia/src  # Create the pluto directory if it doesn’t exist
+                mkdir -p julia  # Create the pluto directory if it doesn’t exist
                 echo "Checking julia/ directory:"
-                ls -l julia/src  # List files to confirm it's not empty
+                ls -l julia  # List files to confirm it's not empty
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
-                echo "notebooks:" > _data/pluto_notebooks.yml
-                find master_source/julia/src -name "*.html" | while read file; do
-                  filename=$(basename "$file" .html)
-                  formatted_name=$(echo "$filename" | sed 's/_/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
-                  echo "  - title: \"$formatted_name\"" >> _data/pluto_notebooks.yml
-                  echo "    url: \"/pluto/$filename.html\"" >> _data/pluto_notebooks.yml
-                done
+                  mkdir -p _data  # Ensure _data/ exists
+                  echo "notebooks:" > _data/pluto_notebooks.yml
+                  find master_source/julia/src -name "*.html" | while read file; do
+                    filename=$(basename "$file" .html)
+                    formatted_name=$(echo "$filename" | sed 's/_/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
+                    echo "  - title: \"$formatted_name\"" >> _data/pluto_notebooks.yml
+                    echo "    url: \"/pluto/$filename.html\"" >> _data/pluto_notebooks.yml
+                  done
 
             - name: 🏗 Merge Pluto notebooks into existing site
               run: |
