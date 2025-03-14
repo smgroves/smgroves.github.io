@@ -143,6 +143,9 @@ permalink: /explainers/:title/
 # -----------------------------------------------------------------------------
 
 collections:
+  blog:
+    output: true
+    # permalink: /blog/:path/  
   news:
     defaults:
       layout: post

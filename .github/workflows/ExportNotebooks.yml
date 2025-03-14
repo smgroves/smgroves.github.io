@@ -19,11 +19,13 @@ jobs:
               with:
                   ref: gh-pages  # Fetch the currently deployed website
                   path: site_output
+                  clean: false  # Prevents deletion of workspace
+
 
             - name: 📥 Checkout master branch (Pluto source)
               uses: actions/checkout@v4
               with:
-                  # path: master_source
+                  path: master_source
                   clean: false  # Prevents deletion of workspace
 
 
@@ -44,9 +46,9 @@ jobs:
               run: |
                 echo "Current workspace: ${{ github.workspace }}"
                 echo "Current branch is ${GITHUB_REF#refs/heads/}"
-                mkdir -p julia/src
+                mkdir -p master_source/julia/src
                 echo "Checking if src/ has any notebooks..."
-                ls -l julia/src
+                ls -l master_source/julia/src
 
             - name: 🏗 Generate Pluto notebook exports
               run: |
@@ -56,7 +58,7 @@ jobs:
                   Pkg.add("PlutoPages")
                   import PlutoPages
                   
-                  PlutoPages.generate("julia"; html_report_path="generation_report.html")'
+                  PlutoPages.generate("master_source/julia"; html_report_path="generation_report.html")'
                   
               env:
                 JULIA_PKG_SERVER: ""
@@ -73,14 +75,14 @@ jobs:
                 echo "Checking julia/ directory:"
                 ls -l -a julia  # List files to confirm it's not empty
                 echo "Checking if src/ has any notebooks AFTER generation..."
-                ls -l julia/src || echo "❌ No notebooks found in julia/src/"
+                ls -l master_source/julia/src || echo "❌ No notebooks found in julia/src/"
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
                   mkdir -p _data  # Ensure _data/ exists
-                  ls -l -a julia/src
+                  ls -l -a master_source/julia/src
                   echo "notebooks:" > _data/pluto_notebooks.yml
-                  find julia/src -name "*.html" | while read file; do
+                  find master_source/julia/src -name "*.html" | while read file; do
                     filename=$(basename "$file" .html)
                     formatted_name=$(echo "$filename" | sed 's/_/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
                     echo "  - title: \"$formatted_name\"" >> _data/pluto_notebooks.yml
@@ -90,7 +92,7 @@ jobs:
             - name: 🏗 Merge Pluto notebooks into existing site
               run: |
                 mkdir -p site_output/pluto
-                cp -r julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
+                cp -r master_source/julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
                 echo "Current workspace: ${{ github.workspace }}"
                 echo "Current branch is ${GITHUB_REF#refs/heads/}"
                 ls -l -a site_output  # Debugging: Verify contents before deploying
