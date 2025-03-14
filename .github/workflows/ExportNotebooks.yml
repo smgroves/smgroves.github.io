@@ -45,7 +45,7 @@ jobs:
                   Pkg.instantiate()
                   import PlutoPages
                   
-                  PlutoPages.generate("julia";output_path="pluto", html_report_path="generation_report.html")'
+                  PlutoPages.generate("julia"; html_report_path="generation_report.html")'
                   
               env:
                 JULIA_PKG_SERVER: ""
@@ -70,4 +70,4 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   branch: gh-pages
-                  folder: pluto
+                  folder: julia

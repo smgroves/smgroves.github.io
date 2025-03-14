@@ -195,7 +195,7 @@ keep_files:
   - CNAME
   - .nojekyll
   - .git
-  - pluto
+  - julia
 
 # Plug-ins
 plugins:
