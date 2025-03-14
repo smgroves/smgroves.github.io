@@ -20,7 +20,7 @@ jobs:
             - name: 🔧 Install Julia
               uses: julia-actions/setup-julia@v2
               with:
-                  version: "1.10.4"
+                  version: "1.11"
 
             - name: ⏱ Cache Pluto notebook states
               uses: actions/cache@v4
@@ -35,6 +35,12 @@ jobs:
                 mkdir -p julia/src
                 echo "Checking if src/ has any notebooks..."
                 ls -l julia/src
+                
+            - name: 🏗 Ensure pluto directory exists
+              run: |
+                mkdir -p pluto  # Create the pluto directory if it doesn’t exist
+                echo "Checking pluto/ directory:"
+                ls -l pluto  # List files to confirm it's not empty
 
             - name: 🏗 Generate Pluto notebook exports
               run: |
@@ -43,7 +49,7 @@ jobs:
                   Pkg.instantiate()
                   import PlutoPages
                   
-                  PlutoPages.generate("julia/src"; html_report_path="generation_report.html")'
+                  PlutoPages.generate("julia/src";output_path="pluto", html_report_path="generation_report.html")'
                   
               env:
                 JULIA_PKG_SERVER: ""
@@ -62,4 +68,4 @@ jobs:
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   branch: gh-pages
-                  folder: _site
+                  folder: pluto
