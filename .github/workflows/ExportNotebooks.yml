@@ -35,7 +35,7 @@ jobs:
                 mkdir -p julia/src
                 echo "Checking if src/ has any notebooks..."
                 ls -l julia/src
-                
+
             - name: 🏗 Ensure pluto directory exists
               run: |
                 mkdir -p pluto  # Create the pluto directory if it doesn’t exist
