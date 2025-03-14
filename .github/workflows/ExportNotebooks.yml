@@ -83,6 +83,8 @@ jobs:
             
             - name: Checkout 🛎️
               uses: actions/checkout@v4
+              with:
+                ref: gh-pages 
 
             - name: 🚀 Deploy updated site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
