@@ -81,13 +81,9 @@ jobs:
                 cp -r master_source/julia/src/* site_output/pluto  # Move Pluto notebooks to /pluto/
                 ls -l -a site_output  # Debugging: Verify contents before deploying
             
-            - name: Check updated site (Jekyll + Pluto)
-              run: |
-                  cd site_output  # Move into the site_output directory where the site is stored
-                  ls -l -a  # Debugging: List contents before deploying
-                  cd ..  # Move back to the root GitHub Actions workspace
-                  ls -l -a  # Debugging: Ensure we are in the correct directory
-              
+            - name: Checkout 🛎️
+              uses: actions/checkout@v4
+
             - name: 🚀 Deploy updated site (Jekyll + Pluto)
               uses: JamesIves/github-pages-deploy-action@v4
               with:
