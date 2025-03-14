@@ -6,7 +6,7 @@ title: Explainers
 <h1>Explainers</h1>
 <ul>
   {% for notebook in site.static_files %}
-  {% if notebook.path contains "julia/" and notebook.extname == ".html" %}
+  {% if notebook.path contains "pluto/" and notebook.extname == ".html" %}
   <li>
     <a href="{{ notebook.path }}">{{ notebook.name | replace: '_', ' ' }}</a>
   </li>
