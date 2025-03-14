@@ -1,0 +1,60 @@
+name: Export Pluto Notebooks & Deploy to GitHub Pages
+
+on:
+    push:
+        branches:
+            - master
+    workflow_dispatch:
+
+concurrency:
+    group: export
+    cancel-in-progress: true
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📥 Checkout master branch
+              uses: actions/checkout@v4
+
+            - name: 🔧 Install Julia
+              uses: julia-actions/setup-julia@v2
+              with:
+                  version: "1.10.4"
+
+            - name: ⏱ Cache Pluto notebook states
+              uses: actions/cache@v4
+              with:
+                path: _cache
+                key: ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
+                restore-keys: |
+                    ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+
+            - name: 🏗 Generate Pluto notebook exports
+              run: |
+                julia --project=pluto-deployment-environment -e '
+                  import Pkg
+                  Pkg.instantiate()
+                  import PlutoPages
+                  
+                  PlutoPages.generate("julia"; html_report_path="generation_report.html")
+                  
+                  cp("./netlify.toml", "./_site/netlify.toml")'
+              env:
+                JULIA_PKG_SERVER: ""
+
+            - name: 📜 Generate Notebook List for Jekyll
+              run: |
+                echo "notebooks:" > _data/pluto_notebooks.yml
+                find _site/julia -name "*.html" | while read file; do
+                  filename=$(basename "$file" .html)
+                  echo "  - title: \"$filename\"" >> _data/pluto_notebooks.yml
+                  echo "    url: \"/julia/$filename.html\"" >> _data/pluto_notebooks.yml
+                done
+
+            - name: 🚀 Deploy to GitHub Pages
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  branch: gh-pages
+                  folder: _site

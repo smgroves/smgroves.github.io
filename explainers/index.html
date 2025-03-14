@@ -1,0 +1,13 @@
+---
+layout: page
+title: Explainers
+---
+
+<h1>Explainers</h1>
+<ul>
+  {% for notebook in site.data.pluto_notebooks.notebooks %}
+    <li>
+      <a href="{{ notebook.url }}">{{ notebook.title | replace: '_', ' ' }}</a>
+    </li>
+  {% endfor %}
+</ul>

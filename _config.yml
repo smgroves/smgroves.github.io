@@ -187,6 +187,10 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
+  - julia/ # Prevent Jekyll from modifying exported Pluto HTML
+  - pluto-deployment-environment/
+  - Dockerfile.pluto
+  - Dockerfile.jekyll
 keep_files:
   - CNAME
   - .nojekyll
