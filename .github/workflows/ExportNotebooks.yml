@@ -20,7 +20,7 @@ jobs:
             - name: 🔧 Install Julia
               uses: julia-actions/setup-julia@v2
               with:
-                  version: "1.10.4"
+                  version: "latest"
 
             - name: ⏱ Cache Pluto notebook states
               uses: actions/cache@v4
@@ -29,6 +29,12 @@ jobs:
                 key: ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}-${{ github.run_id }}
                 restore-keys: |
                     ${{ runner.os }}-pluto_state_cache-v3-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+            
+            - name: 🏗 Ensure Pluto src directory exists
+              run: |
+                mkdir -p julia/src
+                echo "Checking if src/ has any notebooks..."
+                ls -l julia/src
 
             - name: 🏗 Generate Pluto notebook exports
               run: |
@@ -37,9 +43,8 @@ jobs:
                   Pkg.instantiate()
                   import PlutoPages
                   
-                  PlutoPages.generate("julia"; html_report_path="generation_report.html")
+                  PlutoPages.generate("julia/src"; html_report_path="generation_report.html")'
                   
-                  cp("./netlify.toml", "./_site/netlify.toml")'
               env:
                 JULIA_PKG_SERVER: ""
 
