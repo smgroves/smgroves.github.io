@@ -49,6 +49,7 @@ jobs:
                 julia --project=pluto-deployment-environment -e '
                   import Pkg
                   Pkg.instantiate()
+                  Pkg.add("PlutoPages")
                   import PlutoPages
                   
                   PlutoPages.generate("julia"; html_report_path="generation_report.html")'
