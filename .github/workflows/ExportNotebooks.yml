@@ -24,6 +24,8 @@ jobs:
               uses: actions/checkout@v4
               with:
                   path: master_source
+                  clean: false  # Prevents deletion of workspace
+
 
             - name: 🔧 Install Julia
               uses: julia-actions/setup-julia@v2
@@ -40,6 +42,8 @@ jobs:
             
             - name: 🏗 Ensure Pluto src directory exists
               run: |
+                echo "Current workspace: ${{ github.workspace }}"
+                echo "Current branch is ${GITHUB_REF#refs/heads/}"
                 mkdir -p julia/src
                 echo "Checking if src/ has any notebooks..."
                 ls -l julia/src
@@ -56,12 +60,20 @@ jobs:
                   
               env:
                 JULIA_PKG_SERVER: ""
-                
+
+            - name: 📰 Upload PlutoPages Generation Report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: PlutoPages Report
+                  path: master_source/generation_report.html
+
             - name: 🏗 Ensure julia directory exists
               run: |
                 mkdir -p julia  # Create the pluto directory if it doesn’t exist
                 echo "Checking julia/ directory:"
                 ls -l -a julia  # List files to confirm it's not empty
+                echo "Checking if src/ has any notebooks AFTER generation..."
+                ls -l master_source/julia/src || echo "❌ No notebooks found in julia/src/"
 
             - name: 📜 Generate Notebook List for Jekyll
               run: |
