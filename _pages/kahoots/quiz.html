@@ -170,17 +170,17 @@ permalink: /questions/
             }
         }
 
-        // function toggleCorrectAnswer(button, correctAnswer) {
-        //     let correctAnswerDisplay = button.previousElementSibling; // Get the correct answer <p> element
+        function toggleCorrectAnswer(button, correctAnswer) {
+            let correctAnswerDisplay = button.previousElementSibling; // Get the correct answer <p> element
 
-        //     if (correctAnswerDisplay.style.display === "none") {
-        //         correctAnswerDisplay.style.display = "block";  // Show the correct answer
-        //         button.textContent = "Hide Correct Answer";  // Change button text
-        //     } else {
-        //         correctAnswerDisplay.style.display = "none";  // Hide the correct answer
-        //         button.textContent = "Show Correct Answer";  // Change button text
-        //     }
-        // }
+            if (correctAnswerDisplay.style.display === "none") {
+                correctAnswerDisplay.style.display = "block";  // Show the correct answer
+                button.textContent = "Hide Correct Answer";  // Change button text
+            } else {
+                correctAnswerDisplay.style.display = "none";  // Hide the correct answer
+                button.textContent = "Show Correct Answer";  // Change button text
+            }
+        }
         function displayResults() {
             let selectedQuestion = document.getElementById("questionSelect").value;
             let resultsDiv = document.getElementById("results");
