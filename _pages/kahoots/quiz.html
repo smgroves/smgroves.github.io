@@ -192,6 +192,8 @@ permalink: /questions/
             if (selectedQuestion && quizData[selectedQuestion]) {
                 let responses = quizData[selectedQuestion].responses || {};
                 let correctAnswer = quizData[selectedQuestion].correctAnswer || "Unknown"; // Ensure correct answer exists
+                console.log("Correct Answer:", correctAnswer);  // 🔍 Debugging line
+
                 let totalCount = quizData[selectedQuestion].total || 0;
                 let questionType = quizData[selectedQuestion].questionType || "Multiple Choice"; // Default to "Multiple Choice"
 
