@@ -211,13 +211,17 @@ permalink: /questions/
                 // resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, \`${correctAnswer.replace(/'/g, "\\'")}\`)">Show Correct Answer</button>`;
 
                 // Define correct answer but keep it hidden
-                let correctAnswerContainer = `<p id="correctAnswerDisplay" style="display: none;"><strong>Correct Answer:</strong> <span>${correctAnswer.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}</span></p>`;
+                let safeCorrectAnswer = (correctAnswer || "").toString();
+
+                let correctAnswerContainer = `<p id="correctAnswerDisplay" style="display: none;"><strong>Correct Answer:</strong> <span>${safeCorrectAnswer.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}</span></p>`;
 
                 // Add the correct answer container to the results div
                 resultsDiv.innerHTML += correctAnswerContainer;
 
                 // Escape correctAnswer properly and add the button to toggle visibility
-                resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, \`${correctAnswer.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}\`)">Show Correct Answer</button>`;
+                resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, decodeURIComponent('${encodeURIComponent(safeCorrectAnswer)}'))">Show Correct Answer</button>`;
+
+                // resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, \`${correctAnswer.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}\`)">Show Correct Answer</button>`;
                 // resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, '${correctAnswer}')">Show Correct Answer</button>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
 
