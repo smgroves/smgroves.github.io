@@ -197,18 +197,17 @@ permalink: /questions/
 
                 // resultsDiv.innerHTML += `<h4>${selectedQuestion}</h4>`;
                 // resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
-                resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
+                // resultsDiv.innerHTML += `<p><strong>Correct Answer(s):</strong> ${correctAnswer}</p>`;
 
 
                 // // Define correct answer but keep it hidden
-                // let correctAnswerContainer = `<p id="correctAnswerDisplay" style="display: none;">
-                // <strong>Correct Answer:</strong> <span>${correctAnswer}</span></p>`;
+                let correctAnswerContainer = `<p id="correctAnswerDisplay" style="display: none;"><strong>Correct Answer:</strong> <span>${correctAnswer}</span></p>`;
 
                 // // Add the correct answer container to the results div
-                // resultsDiv.innerHTML += correctAnswerContainer;
+                resultsDiv.innerHTML += correctAnswerContainer;
 
                 // // Add the button to toggle visibility
-                // resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, '${correctAnswer}')">Show Correct Answer</button>`;
+                resultsDiv.innerHTML += `<button id="toggleCorrectAnswer" onclick="toggleCorrectAnswer(this, '${correctAnswer}')">Show Correct Answer</button>`;
                 resultsDiv.innerHTML += `<p><strong>Total Responses:</strong> ${totalCount}</p>`;
 
                 // let labels = [];
