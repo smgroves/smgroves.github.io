@@ -5,8 +5,8 @@ interactive:
   type: "interactive"
 
 cahn_hilliard_with_alpha:
-  title: "Cahn-Hilliard Equation with Alpha"
-  description: "Explaining the Cahn-Hilliard equation with an alpha parameter"
-  tags: ["pde", "cahn-hilliard"]
+  title: "Cahn Hilliard Dynamics"
+  description: "Constraining parameters in the Cahn Hilliard equation to model biological condensates in mitosis."
+  tags: ["pde", "cahn-hilliard", "phase-separation"]
   type: "static"
 

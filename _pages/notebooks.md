@@ -3,14 +3,31 @@ layout: page
 title: Interactive Notebooks
 permalink: /notebooks/
 ---
+<style>
+/* More specific selectors and !important everywhere */
+.btn-group .btn-outline-primary.type-toggle.active {
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #007bff !important;
+}
+
+.btn-group .btn-outline-secondary.type-toggle.active {
+  background-color:rgb(148, 100, 188) !important;
+  color: white !important;
+  border-color: rgb(148, 100, 188) !important;
+}
+</style>
+
+
 
 <p><strong>Explore Pluto notebooks</strong>, both live and static:</p>
 
 <!-- Type Filter Pills -->
 <div class="btn-group mb-3" role="group" aria-label="Type filter">
-  <button type="button" class="btn btn-outline-primary active" data-type="interactive">Interactive</button>
-  <button type="button" class="btn btn-outline-secondary active" data-type="static">Static</button>
+  <button type="button" class="btn btn-outline-primary active type-toggle" data-type="interactive">Interactive</button>
+  <button type="button" class="btn btn-outline-primary active type-toggle" data-type="static">Static</button>
 </div>
+
 
 <!-- Tag Filter -->
 <label for="tag-filter">Filter by tag:</label>
@@ -85,7 +102,7 @@ function renderList() {
     item.innerHTML = `
       <h4>
         <a href="${n.url}" target="_blank">${n.title}</a>
-        <span class="badge badge-${n.type === 'interactive' ? 'primary' : 'secondary'} ml-2">${n.type}</span>
+        <span class="badge badge-${n.type === 'interactive' ? 'primary' : 'primary'} ml-2">${n.type}</span>
       </h4>
       <p>${n.description}</p>
       ${n.tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${n.tags.join(", ")}</p>` : ""}
