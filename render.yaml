@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: pluto-slider-server
+    env: docker
+    plan: free
+    autoDeploy: true
