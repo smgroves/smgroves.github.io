@@ -4,14 +4,14 @@ title: Interactive Notebooks
 permalink: /pluto/
 ---
 
-<p>Below are live, interactive Pluto notebooks hosted on Render:</p>
+<p>Below are live, interactive Pluto notebooks hosted on Railway:</p>
 
 <ul id="pluto-notebooks">
   <li>Loading notebook list...</li>
 </ul>
 
 <script>
-fetch("https://smgroves-github-io.onrender.com/")
+fetch("https://pluto-slider-server-production.up.railway.app/")
   .then(res => res.text())
   .then(html => {
     const parser = new DOMParser();
