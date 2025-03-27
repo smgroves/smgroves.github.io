@@ -4,121 +4,109 @@ title: Interactive Notebooks
 permalink: /notebooks/
 ---
 
-<p>Explore live Pluto notebooks hosted on Railway:</p>
+<p><strong>Explore Pluto notebooks</strong>, both live and static:</p>
 
+<!-- Type Filter Pills -->
+<div class="btn-group mb-3" role="group" aria-label="Type filter">
+  <button type="button" class="btn btn-outline-primary active" data-type="interactive">Interactive</button>
+  <button type="button" class="btn btn-outline-secondary active" data-type="static">Static</button>
+</div>
+
+<!-- Tag Filter -->
 <label for="tag-filter">Filter by tag:</label>
-<select id="tag-filter">
+<select id="tag-filter" class="form-control mb-3" style="max-width: 300px;">
   <option value="">All tags</option>
 </select>
 
-<br><br>
-
+<!-- Search Bar -->
 <label for="search-input">Search:</label>
-<input type="text" id="search-input" placeholder="Type to search..." />
+<input type="text" id="search-input" class="form-control mb-4" placeholder="Type to search..." style="max-width: 400px;" />
 
-<div id="pluto-catalogue">
+<!-- Notebook List -->
+<div id="notebook-list">
   <p>Loading notebooks...</p>
 </div>
 
 <script>
-const meta = {{ site.data.notebooks | jsonify }};
-const BASE_URL = "https://pluto-slider-server-production.up.railway.app/";
+const metadata = {{ site.data.notebooks | jsonify }};
+const INTERACTIVE_BASE = "https://pluto-slider-server-production.up.railway.app/";
+const STATIC_BASE = "https://smgroves.github.io/julia/";
 
-function buildList(filterTag = "", searchTerm = "") {
-  const container = document.getElementById("pluto-catalogue");
-  container.innerHTML = "";
+let allNotebooks = [];
 
-  Object.entries(meta).forEach(([key, data]) => {
-    const title = data.title || key;
-    const desc = data.description || "";
-    const tags = data.tags || [];
-
-    const matchesTag = !filterTag || tags.includes(filterTag);
-    const matchesSearch = title.toLowerCase().includes(searchTerm) || desc.toLowerCase().includes(searchTerm);
-
-    if (matchesTag && matchesSearch) {
-      const item = document.createElement("div");
-      item.style.marginBottom = "1.5em";
-      item.innerHTML = `
-        <h3><a href="${BASE_URL + key}.html" target="_blank">${title}</a></h3>
-        <p>${desc}</p>
-        ${tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${tags.join(", ")}</p>` : ""}
-      `;
-      container.appendChild(item);
-    }
+function normalizeMeta() {
+  allNotebooks = Object.entries(metadata).map(([key, data]) => {
+    const type = data.type || (key.includes("interactive") ? "interactive" : "static");
+    const base = type === "interactive" ? INTERACTIVE_BASE : STATIC_BASE;
+    return {
+      key,
+      title: data.title || key,
+      description: data.description || "",
+      tags: data.tags || [],
+      type,
+      url: `${base}${key}.html`
+    };
   });
 }
 
-function populateTagDropdown() {
+function buildTagDropdown() {
   const tagSet = new Set();
-  Object.values(meta).forEach(n => (n.tags || []).forEach(tag => tagSet.add(tag)));
+  allNotebooks.forEach(n => (n.tags || []).forEach(tag => tagSet.add(tag)));
 
-  const tagFilter = document.getElementById("tag-filter");
+  const tagSelect = document.getElementById("tag-filter");
   tagSet.forEach(tag => {
     const opt = document.createElement("option");
     opt.value = tag;
     opt.textContent = tag;
-    tagFilter.appendChild(opt);
+    tagSelect.appendChild(opt);
+  });
+}
+
+function renderList() {
+  const container = document.getElementById("notebook-list");
+  const searchTerm = document.getElementById("search-input").value.toLowerCase();
+  const selectedTag = document.getElementById("tag-filter").value;
+  const activeTypes = Array.from(document.querySelectorAll(".btn-group .btn.active")).map(btn => btn.dataset.type);
+
+  const filtered = allNotebooks.filter(n => {
+    const matchesType = activeTypes.includes(n.type);
+    const matchesTag = !selectedTag || n.tags.includes(selectedTag);
+    const matchesSearch = n.title.toLowerCase().includes(searchTerm) || n.description.toLowerCase().includes(searchTerm);
+    return matchesType && matchesTag && matchesSearch;
+  });
+
+  container.innerHTML = filtered.length
+    ? ""
+    : "<p>No notebooks match your filters.</p>";
+
+  filtered.forEach(n => {
+    const item = document.createElement("div");
+    item.className = "mb-4";
+    item.innerHTML = `
+      <h4>
+        <a href="${n.url}" target="_blank">${n.title}</a>
+        <span class="badge badge-${n.type === 'interactive' ? 'primary' : 'secondary'} ml-2">${n.type}</span>
+      </h4>
+      <p>${n.description}</p>
+      ${n.tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${n.tags.join(", ")}</p>` : ""}
+    `;
+    container.appendChild(item);
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("search-input");
-  const tagFilter = document.getElementById("tag-filter");
+  normalizeMeta();
+  buildTagDropdown();
+  renderList();
 
-  populateTagDropdown();
-  buildList();
+  document.getElementById("search-input").addEventListener("input", renderList);
+  document.getElementById("tag-filter").addEventListener("change", renderList);
 
-  searchInput.addEventListener("input", () => {
-    buildList(tagFilter.value, searchInput.value.toLowerCase());
-  });
-
-  tagFilter.addEventListener("change", () => {
-    buildList(tagFilter.value, searchInput.value.toLowerCase());
+  document.querySelectorAll(".btn-group .btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("active");
+      renderList();
+    });
   });
 });
 </script>
-
-<!-- ---
-layout: page
-title: Interactive Notebooks
-permalink: /notebooks/
----
-
-<p>Below are live, interactive Pluto notebooks hosted on Railway:</p>
-
-<ul id="pluto-notebooks">
-  <li>Loading notebook list...</li>
-</ul>
-
-<script>
-fetch("https://pluto-slider-server-production.up.railway.app/")
-  .then(res => res.text())
-  .then(html => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    const links = Array.from(doc.querySelectorAll("a"))
-      .filter(a =>
-        a.getAttribute("href").endsWith(".html") &&
-        !a.getAttribute("href").includes("index.html")
-      );
-
-    const list = document.getElementById("pluto-notebooks");
-    list.innerHTML = ""; // clear loading message
-
-    for (const link of links) {
-      const url = new URL(link.getAttribute("href"), "https://pluto-slider-server-production.up.railway.app/");
-      const label = decodeURIComponent(url.pathname.split("/").pop().replace(".html", ""));
-      const pretty = label.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
-
-      const item = document.createElement("li");
-      item.innerHTML = `<a href="${url.href}" target="_blank">${pretty}</a>`;
-      list.appendChild(item);
-    }
-  })
-  .catch(err => {
-    document.getElementById("pluto-notebooks").innerHTML = "<li>Failed to load notebooks.</li>";
-    console.error(err);
-  });
-</script> -->

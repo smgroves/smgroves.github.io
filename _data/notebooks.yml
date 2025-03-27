@@ -1,14 +1,12 @@
 interactive:
-  title: "Interactive Slope Field"
-  description: "Play with sliders to explore solutions to a linear differential equation."
-  tags: ["visualization", "differential equations"]
-
-notebook:
   title: "Notebook Demo"
   description: "Basic Pluto notebook with input-output cells and interactivity."
   tags: ["intro", "tutorial"]
+  type: "interactive"
 
-test:
-  title: "Test Notebook"
-  description: "Used to experiment with Pluto features like @bind and plotting."
-  tags: ["sandbox"]
+cahn_hilliard_with_alpha:
+  title: "Cahn-Hilliard Equation with Alpha"
+  description: "Explaining the Cahn-Hilliard equation with an alpha parameter"
+  tags: ["pde", "cahn-hilliard"]
+  type: "static"
+
