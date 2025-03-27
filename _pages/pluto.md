@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Interactive Notebooks
-permalink: /pluto/
+permalink: /notebooks/
 ---
 
 <p>Below are live, interactive Pluto notebooks hosted on Railway:</p>
