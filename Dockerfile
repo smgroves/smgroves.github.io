@@ -12,4 +12,4 @@ RUN julia --project=pluto-deployment-environment -e 'using Pkg; Pkg.instantiate(
 
 EXPOSE 8080
 
-CMD ["julia", "--project=pluto-deployment-environment", "-e", "using PlutoSliderServer; PlutoSliderServer.run_git_directory(\".\")"]
+CMD ["julia", "--project=pluto-deployment-environment", "-e", "using PlutoSliderServer; PlutoSliderServer.run_git_directory(\"julia\")"]
