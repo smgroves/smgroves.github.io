@@ -1,20 +1,3 @@
-[Export]
-baked_state = false
-baked_notebookfile = false
-offer_binder = true
-slider_server_url="https://pluto-sliders.fly.dev" # Update after deployment
-ignore_cache = [
-    "index.jl",
-]
-create_index = false
-exclude = [
-    "*/differential_equations backup 1.jl",
-]
-
 [SliderServer]
 port = 8080
 host = "0.0.0.0"
-exclude=[
-    "*/differential_equations backup 1.jl",
-
-]

@@ -62,14 +62,14 @@
             </a>
           </li>
           {%- endif %}
-          <!-- Explainers -->
+          <!-- Explainers
           <li class="nav-item {% if page.url contains '/explainers/' %}active{% endif %}">
             <a class="nav-link" href="{{ '/explainers/' | relative_url }}">explainers
               {%- if page.url contains '/explainers/' -%}
               <span class="sr-only">(current)</span>
               {%- endif -%}
             </a>
-          </li>
+          </li> -->
 
           <!-- Other pages -->
           {%- assign sorted_pages = site.pages | sort: "nav_order" -%}

@@ -133,19 +133,19 @@ pagination:
 # Explainers
 # -----------------------------------------------------------------------------
 
-explainers_name: Explainers # blog_name will be displayed in your blog page
-explainers_nav_title: explainers # your blog must have a title for it to be displayed in the nav bar
-explainers_description: Visual and written explainers on scientific concepts
-permalink: /explainers/:title/ 
+# explainers_name: Explainers # blog_name will be displayed in your blog page
+# explainers_nav_title: explainers # your blog must have a title for it to be displayed in the nav bar
+# explainers_description: Visual and written explainers on scientific concepts
+# permalink: /explainers/:title/ 
 
 # -----------------------------------------------------------------------------
 # Collections
 # -----------------------------------------------------------------------------
 
 collections:
-  blog:
-    output: true
-    permalink: /blog/:path/  
+  # blog:
+  #   output: true
+  #   permalink: /blog/:path/  
   news:
     defaults:
       layout: post
@@ -190,10 +190,11 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
-  - julia/ # Prevent Jekyll from modifying exported Pluto HTML
   - pluto-deployment-environment/
   - Dockerfile.pluto
   - Dockerfile.jekyll
+  - explainers/
+  - unused/
 keep_files:
   - CNAME
   - .nojekyll
