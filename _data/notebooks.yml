@@ -1,0 +1,14 @@
+interactive:
+  title: "Interactive Slope Field"
+  description: "Play with sliders to explore solutions to a linear differential equation."
+  tags: ["visualization", "differential equations"]
+
+notebook:
+  title: "Notebook Demo"
+  description: "Basic Pluto notebook with input-output cells and interactivity."
+  tags: ["intro", "tutorial"]
+
+test:
+  title: "Test Notebook"
+  description: "Used to experiment with Pluto features like @bind and plotting."
+  tags: ["sandbox"]
