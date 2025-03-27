@@ -1,3 +1,7 @@
 [SliderServer]
 port = 8080
 host = "0.0.0.0"
+exclude = ["unused"]
+
+[Export]
+disable_git_pull = true
