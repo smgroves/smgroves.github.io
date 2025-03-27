@@ -1,4 +1,4 @@
-FROM julia:1.10
+FROM julia:1.11
 
 # Install PlutoSliderServer dependencies
 RUN julia -e 'using Pkg; Pkg.add(["Pluto", "PlutoSliderServer"]); Pkg.precompile()'
