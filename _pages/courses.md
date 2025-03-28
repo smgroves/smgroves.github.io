@@ -6,7 +6,7 @@ description: Materials for courses I've taught.
 nav: true
 nav_order: 5
 horizontal: false
-display_categories: [2022, 2020, 2019, 2013]
+display_categories: [2025, 2022, 2020, 2019, 2013]
 
 ---
 <div class="projects">

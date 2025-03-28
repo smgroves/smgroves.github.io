@@ -45,7 +45,7 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 ## Module 7: ODEs
 - ODE Introduction and Nomenclature
-- Euler's Method
+- Euler's Method [download]({{ site.baseurl }}{% link assets/ppt/class0327_ODE1.pptx %})
 - Midpoint Method
 - Runge-Kutta 4th Order Method
 
@@ -53,7 +53,7 @@ Most of the course focuses on using numerical methods to approximate solutions t
 - Introduction to machine learning
     - Bias/variance tradeoff
     - Regression as a ML model
-- Supervised vs unsupervised methods
+- Supervised vs unsupervised methods 
     - Clustering
     - Classification
 - Introduction to deep learning methods
