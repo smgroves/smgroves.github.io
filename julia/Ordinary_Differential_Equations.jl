@@ -44,7 +44,7 @@ where $\phi$ is some function defined by the method and the general ODE being so
 \frac{dy}{dx}=f(x,y(x)).
 ```
 
-We'll first start with a first order method (Euler's method) and a second order method (Midpoint Method), which are two examples of possible ways to define the function $\phi$. We'll then discuss more generally the form of the parameters for Runge-Kutta methods, and end with the 4th order RK method, which is the most commonly used method for ODEs.
+We'll first start with a first order method (Euler's method) and a second order method (Midpoint Method), which are two examples of possible ways to define the function $\phi$. Later in another post, we'll discuss more generally the form of the parameters for Runge-Kutta methods, and end with the 4th order RK method, which is the most commonly used method for ODEs.
 """
 
 # ╔═╡ fed5f2d3-3170-4336-aff8-8380073b1f6e

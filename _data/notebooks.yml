@@ -1,6 +1,6 @@
 Ordinary_Differential_Equations:
-  title: "Solving ODEs with Numerical Methods"
-  description: "Using Euler's method, midpoint method, and RK4 to solve ordinary differential equations."
+  title: "Solving ODEs with Numerical Methods: Part 1"
+  description: "Using Euler's method and midpoint method to solve ordinary differential equations."
   tags: ["ode"]
   type: "interactive"
 
