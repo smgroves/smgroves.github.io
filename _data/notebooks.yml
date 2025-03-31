@@ -9,4 +9,3 @@ cahn_hilliard_with_alpha:
   description: "Constraining parameters in the Cahn Hilliard equation to model biological condensates in mitosis."
   tags: ["pde", "cahn-hilliard", "phase-separation"]
   type: "static"
-

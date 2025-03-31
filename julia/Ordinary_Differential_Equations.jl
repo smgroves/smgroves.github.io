@@ -56,7 +56,11 @@ The general form for this method is to use
 \phi = f(x_i, y(x_i)).
 ```
 
-In other words, we use the differential equation *itself*, evaluated at $x_i$ (i.e. the point we are starting with).
+In other words, we use the differential equation *itself*, evaluated at $x_i$ (i.e. the point we are starting with):
+
+```math
+y_{i+1} = y_i +f(x_i, y(x_i))h
+```
 
 A visual of this for a relatively simple differential equation is shown below.
 """
@@ -145,12 +149,81 @@ where $R_1$ is on the order of $h^2$. In other words, as $h$ decreases, the erro
 
 # ╔═╡ 2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
 md"""
-### Multiple-step Euler Method
+#### Multiple-step Euler Method
 
 If we want to approximate $y(x)$ for an $x$ that's far from our original guess, we may take multiple steps to get there. Let's see what happens when we approximate $x = 4$ from $x = 1$ using different step sizes $h$.
 
 
 """
+
+# ╔═╡ d12ad6d5-fc71-4155-afcb-49428cf4c9fb
+begin
+	function plot_euler_approximation(h, xi, x_final, y0, df; true_f=nothing, title = nothing)
+		# Initialize arrays
+		x_vals = [Float64(xi)]
+		y_vals = [Float64(y0)]
+	
+		# Euler loop
+		while x_vals[end] + h <= x_final + h/2
+			xn, yn = x_vals[end], y_vals[end]
+			push!(x_vals, xn + h)
+			push!(y_vals, yn + h * df(xn, yn))
+		end
+	
+		# True values if provided
+		true_ys = true_f === nothing ? nothing : [true_f(x) for x in x_vals]
+		global_errors = true_ys === nothing ? nothing : abs.(y_vals .- true_ys)
+	
+		# Plot
+		
+		x_plot = minimum(x_vals) - 1 : 0.01 : maximum(x_vals) + 1
+		x_max = maximum(x_plot)
+		x_buffer = (maximum(x_plot) - minimum(x_plot)) * 0.35  # 35% of width
+	
+		xlims = (minimum(x_plot), x_max + x_buffer)
+		# Evaluate over the full x_plot range
+		true_ys_plot = true_f === nothing ? Float64[] : [true_f(x) for x in x_plot]
+		# Combine all y values: Euler estimates + true function (if present)
+		all_y_vals = vcat(y_vals, true_ys_plot)
+		
+		# Compute min and max for ylims
+		y_min = minimum(all_y_vals)
+		y_max = maximum(all_y_vals)
+		
+		plot(x_plot, true_f, label = "True f(x)", linewidth = 2, legend = :outerbottom,
+		     xlims = xlims, ylims = (y_min, y_max),size=(700, 600))
+		xlabel!("x")
+		ylabel!("y(x)")
+		if title == nothing
+			title!("Euler's Method for dy/dx = f(x, y)")
+		else
+			title!(title)
+		end
+		plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
+		scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker = :star5)
+	
+		# Annotate final values
+		final_x, final_y = x_vals[end], y_vals[end]
+	
+		annotations = [(final_x, final_y*1.1, text("Final est", :left, 10))]
+	
+		if true_ys !== nothing
+	
+			final_true = true_ys[end]
+			final_error = global_errors[end]
+	
+			scatter!(x_vals, true_ys, label = "True y(x)", color = :blue, marker = :circle)
+			push!(annotations, (final_x, final_true*1.1 , text("True value", :left, 10)))
+			push!(annotations, (x_max + x_buffer * 0.1, 0.85*(y_max), text("Euler Estimates:\n"*
+				"x = $(round(xi, sigdigits=3)) to $(round(final_x, sigdigits=3))\n" *
+				"Final Euler: $(round(final_y, sigdigits=3))\n" *
+				"True value: $(round(final_true, sigdigits=3))\n" *
+				"Global error: $(round(final_error, sigdigits=3))", :left, 10)))
+		end
+	
+		annotate!(annotations)
+	end
+end
 
 # ╔═╡ b94ee589-4bef-45f5-999d-133b73286053
 md"""
@@ -161,85 +234,17 @@ Slider for $h$
 @bind h_2 Slider([0.01, 0.1, 0.2, 0.5, 1, 3], show_value=true, default = 1)
 # h_2 = 1
 
-# ╔═╡ d12ad6d5-fc71-4155-afcb-49428cf4c9fb
-function plot_euler_approximation(h, xi, x_final, y0, df; true_f=nothing, title = nothing)
-	# Initialize arrays
-	x_vals = [Float64(xi)]
-	y_vals = [Float64(y0)]
-
-	# Euler loop
-	while x_vals[end] + h <= x_final + h/2
-		xn, yn = x_vals[end], y_vals[end]
-		push!(x_vals, xn + h)
-		push!(y_vals, yn + h * df(xn, yn))
-	end
-
-	# True values if provided
-	true_ys = true_f === nothing ? nothing : [true_f(x) for x in x_vals]
-	global_errors = true_ys === nothing ? nothing : abs.(y_vals .- true_ys)
-
-	# Plot
-	
-	x_plot = minimum(x_vals) - 1 : 0.01 : maximum(x_vals) + 1
-	x_max = maximum(x_plot)
-	x_buffer = (maximum(x_plot) - minimum(x_plot)) * 0.25  # 20% of width
-
-	xlims = (minimum(x_plot), x_max + x_buffer)
-	# Evaluate over the full x_plot range
-	true_ys_plot = true_f === nothing ? Float64[] : [true_f(x) for x in x_plot]
-	# Combine all y values: Euler estimates + true function (if present)
-	all_y_vals = vcat(y_vals, true_ys_plot)
-	
-	# Compute min and max for ylims
-	y_min = minimum(all_y_vals)
-	y_max = maximum(all_y_vals)
-	
-	plot(x_plot, true_f, label = "True f(x)", linewidth = 2, legend = :outerbottom,
-	     xlims = xlims, ylims = (y_min, y_max),size=(900, 700))
-	xlabel!("x")
-	ylabel!("y(x)")
-	if title == nothing
-		title!("Euler's Method for dy/dx = f(x, y)")
-	else
-		title!(title)
-	end
-	plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
-	scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker = :star5)
-
-	# Annotate final values
-	final_x, final_y = x_vals[end], y_vals[end]
-
-	annotations = [(final_x, final_y*1.1, text("Final est", :left, 10))]
-
-	if true_ys !== nothing
-
-		final_true = true_ys[end]
-		final_error = global_errors[end]
-
-		scatter!(x_vals, true_ys, label = "True y(x)", color = :blue, marker = :circle)
-		push!(annotations, (final_x, final_true*1.1 , text("True value", :left, 10)))
-		push!(annotations, (x_max + x_buffer * 0.1, 0.85*(y_max), text("Euler Estimates:\n"*
-			"x = $(round(xi, sigdigits=3)) to $(round(final_x, sigdigits=3))\n" *
-			"Final Euler: $(round(final_y, sigdigits=3))\n" *
-			"True value: $(round(final_true, sigdigits=3))\n" *
-			"Global error: $(round(final_error, sigdigits=3))", :left, 10)))
-	end
-
-	annotate!(annotations)
-end
-
-
 # ╔═╡ 17b65150-1137-4e75-9244-0ec0ea3fede4
 begin
 	f_2(x) = x^3 - 2x^2 + x + 2
 	df_2(x,y) = 3x^2 - 4x + 1
-	plot_euler_approximation(h_2, 1.0, 4.0, f_2(1.0), df_2; true_f = f_2)
+	plot_euler_approximation(h_2, 1.0, 4.0, f_2(1.0), df_2; true_f = f_2,title = L"ODE: $dy/dx= 3x^2 - 4x + 1$")
 	
 end
 
 # ╔═╡ 532e90c8-192a-438b-922b-e8a2c694ffdc
 md"""
-!!! caution
+!!! warning "Caution"
 	Note that at each $x_{i+1}$ approximation from $x_i$, we are using the slope (i.e. derivative) evaluated at $x_i$ and $y(x_i)$: $f(x_i,y(x_i))$). Our simple function doesn't include $y$ on the right-hand side, so we don't need to use it to evaluate $f(x)$, but it is important to note that in more complex differential equations, the derivative is evaluated at $y_{i}$. 
 
 	For example, in the below example, $\frac{dy}{dx} = -y.$ If you set $h = 1$, you'll notice that because $y(x = 2)$ is estimated at $0$, this $y$ values is plugged into $f(x,y(x)) = y = 0,$ and the approximations at $x = 3$ and $x = 4$ evaluate to $0$ as well.
@@ -282,10 +287,163 @@ md"""
 md"""
 ## Midpoint Method (Second Order Runge-Kutta)
 When thinking about Taylor series, we can improve an estimate by taking higher order approximations (i.e. more terms in the series). However, incorporation of higher-order terms to solve an ODE is not trivial, particularly if the ODE is not a polynomial. Alternative methods have been developed, once again following the Runge-Kutta scheme (generally defined in the next section). Let's consider one second-order method called the Midpoint (or improved polygon) method. 
+
+The general form of $\phi$ for this method is 
+
+```math
+\phi = f(x_{i+1/2},y_{i+1/2})
+```
+
+So to approximate $y_{i+1}$, we use two steps:
+```math
+y_{i+1/2} = y_i+f(x_i,y_i)\frac{h}{2}
+```
+```math
+y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+```
+
+In other words, we first predict the value of $y$ at the midpoint of the interval, and then we use this value to calculate a slope at the midpoint, which is assumed to approximate the average slope for the entire interval. Then we use this slope to extrapolate linearly from $x_i$ to $x_{i+1}$.
+"""
+
+# ╔═╡ 5883b04a-f1fe-49ee-a496-784782aeba3c
+md"""
+#### Example
+"""
+
+# ╔═╡ 1e874526-d785-4b55-91eb-1b47fa73b9ba
+md"""
+Let's go back to the first problem we solved with Euler's method: $\frac{dy}{dx}= 3x^2 - 4x + 1$. We'll use $x_i = 2$ and $h = 1$ to predict $x_{i+1}=3$. First we'll find $y_{i+1/2}$:
 """
 
 # ╔═╡ f592863a-e40b-4b4b-935b-a0617ba0a9df
+begin
+	xi_mp = 2
+	h_mp = 1
+	xiphalf_mp = xi_mp + h_mp/2
+	xip1_mp = xi_mp + h_mp
 
+	# Euler estimate at x_{i+1}
+	yiphalf = f(xi_mp) + h_mp * df(xi_mp)/2
+	true_value_mp = f(xip1_mp)
+	error_mp = round(abs(true_value_mp - yiphalf), sigdigits=4)
+
+	# Tangent line segment
+	tangent_segment_mp(x) = f(xi_mp) + df(xi_mp)*(x - xi_mp)
+	tangent_x_mp = xi_mp : 0.01 : xiphalf_mp
+	x_range_mp = 1.5 : 0.01 : 3.5
+
+	# Plot
+	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
+	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
+	xlabel!("x")
+	ylabel!("y(x)")
+	title!(L"dy/dx= 3x^2 - 4x + 1")
+	plot!(tangent_x_mp, tangent_segment_mp, label = "f(xᵢ,y(xᵢ))", linestyle = :dash, color = :blue)
+	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"x_i")
+	scatter!([xiphalf_mp], [f(xiphalf_mp)],  color = :red,label = L"f(x_{i+1/2})")
+	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"y_{i+1/2}")
+
+	# Annotate points
+	annotate!([
+		(xi_mp, f(xi_mp) -.6, text("xᵢ", :left, 10)),
+		(xiphalf_mp, f(xiphalf_mp) + 1.0, text(L"$y(x_{i+1/2})$ (true)", :right, 10)),
+		(xiphalf_mp, yiphalf - 1.0, text(L"$y_{i+1/2}$ (estimate)", :left, 10))
+	])
+
+
+end
+
+# ╔═╡ 15ebe0b4-c753-4ec7-9e65-3aecd789cb61
+md"""
+Now that we have $y_{i+1/2}$, we evaluate the slope at this point (i.e. $f(x_{i+1/2},y_{i+1/2})$):
+"""
+
+# ╔═╡ 6391c6e0-41de-489d-85b5-4cfe029560fd
+function plot_tangent(x0, delX, slope, y0, label; color = :grey)	
+	x_segment = [x0 - delX, x0 + delX]
+	y_segment = [y0 - delX * slope, y0 + delX * slope]
+	plot!(x_segment, y_segment, label = label, color = color, linewidth = 2)
+end
+
+# ╔═╡ 2b718aeb-2dea-42a9-8817-0371a9a099f6
+begin
+	
+	# Plot
+	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
+	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
+	plot_tangent(2.5, 0.1, df(2.5), yiphalf, L"f(x_{i+1/2},y_{i+1/2})",color = :green)
+	xlabel!("x")
+	ylabel!("y(x)")
+	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"y_i")
+	scatter!([xiphalf_mp], [f(xiphalf_mp)],  color = :red,label = L"$y(x_{i+1/2})$ (true)")
+	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"$y_{i+1/2}$ (estimate)")
+
+	# Annotate points
+	annotate!([
+		(xi_mp, 1, text(L"x_i", :center, 10)),
+		(xiphalf_mp, 1, text(L"x_{i+1/2}", :center, 10)),
+		(xiphalf_mp, yiphalf-1, text(L"Slope at $(x_{i+1/2},y_{i+1/2})$", :left, 10)),
+
+
+	])
+
+
+end
+
+# ╔═╡ e7fe494a-31b4-4e37-802b-9df111f2c5ec
+md"""
+And then use that slope to find $y_{i+1}$ with
+```math
+y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+```
+"""
+
+# ╔═╡ be611aa1-3d4f-44a6-979e-f8ca9e22bacd
+# y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+begin
+	
+	# Plot
+	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
+	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
+
+	# Tangent line segment
+	tangent_segment_2(x) = f(xi_mp) + df(xiphalf_mp)*(x - xi_mp)
+	tangent_xip1 = xi_mp : 0.01 : xip1_mp
+	# x_range = 1.5 : 0.01 : 3.5
+	ypred = tangent_segment_2(xip1_mp)
+
+	# Plot
+	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
+	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
+	xlabel!("x")
+	ylabel!("y(x)")
+	plot!(tangent_xip1, tangent_segment_2, label = L"f(x_{i+1/2},y_{i+1/2})", linestyle = :dash, color = :green)
+	plot_tangent(2.5, 0.1, df(2.5), yiphalf, L"f(x_{i+1/2},y_{i+1/2})",color = :green)
+	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"y_i")
+	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"$y_{i+1/2}$ (estimate)")
+	scatter!([xip1_mp], [ypred],  color = :orange, markershape=:star5,label = L"$y_{i+1}$ (Final est)")
+	error_mp2 = abs(ypred - f(xip1_mp))
+	# Annotate points
+	annotate!([
+		(xi_mp, 1, text(L"x_i", :center, 10)),
+		(xiphalf_mp, 1, text(L"x_{i+1/2}", :center, 10)),
+		(xip1_mp+0.1, ypred, text("Final est", :left, 10)),
+
+
+	])
+
+		annotate!([
+			(1.6, 18, text("Estimate at xᵢ₊₁ = $(round(ypred, sigdigits=4))\nTrue value at xᵢ₊₁= $(round(f(xip1_mp), sigdigits=4))\nAbsolute error= $error_mp2", :left, 10)),
+		])
+
+
+end
+
+# ╔═╡ 0fff154a-b173-4997-a129-2eea710437b2
+md"""
+!!! stop "Stop and think:"
+	You can easily see that this is a much better estimate than Euler's method-- go back and set $x_i = 2$ in the first graph, with $h = 1$. 
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1489,9 +1647,9 @@ version = "1.4.1+2"
 # ╟─7ec10320-d974-4711-b01b-48886131a36e
 # ╟─40f45b41-b735-441a-9837-3af21d3d3b13
 # ╟─2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
+# ╟─d12ad6d5-fc71-4155-afcb-49428cf4c9fb
 # ╟─b94ee589-4bef-45f5-999d-133b73286053
 # ╟─05221ed1-3195-42b7-a9f5-5a57e7da72a9
-# ╟─d12ad6d5-fc71-4155-afcb-49428cf4c9fb
 # ╟─17b65150-1137-4e75-9244-0ec0ea3fede4
 # ╟─532e90c8-192a-438b-922b-e8a2c694ffdc
 # ╟─0cff3351-afd8-4d62-82e9-db46a6483b96
@@ -1500,6 +1658,14 @@ version = "1.4.1+2"
 # ╟─3647d4a4-6ef3-49da-93b0-13f0c0b54687
 # ╟─49ef14b7-fb29-49e2-a2ad-968217e11a8f
 # ╟─2a8efde9-c0e7-45d8-82f7-a4709d221929
-# ╠═f592863a-e40b-4b4b-935b-a0617ba0a9df
+# ╟─5883b04a-f1fe-49ee-a496-784782aeba3c
+# ╟─1e874526-d785-4b55-91eb-1b47fa73b9ba
+# ╟─f592863a-e40b-4b4b-935b-a0617ba0a9df
+# ╟─15ebe0b4-c753-4ec7-9e65-3aecd789cb61
+# ╟─6391c6e0-41de-489d-85b5-4cfe029560fd
+# ╟─2b718aeb-2dea-42a9-8817-0371a9a099f6
+# ╟─e7fe494a-31b4-4e37-802b-9df111f2c5ec
+# ╟─be611aa1-3d4f-44a6-979e-f8ca9e22bacd
+# ╟─0fff154a-b173-4997-a129-2eea710437b2
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
