@@ -147,6 +147,8 @@ md"""
 ### Multiple-step Euler Method
 
 If we want to approximate $y(x)$ for an $x$ that's far from our original guess, we may take multiple steps to get there. Let's see what happens when we approximate $x = 4$ from $x = 1$ using different step sizes $h$.
+
+
 """
 
 # ╔═╡ b94ee589-4bef-45f5-999d-133b73286053
@@ -158,7 +160,78 @@ Slider for $h$
 @bind h_2 Slider([0.01, 0.1, 0.2, 0.5, 1, 3], show_value=true, default = 1)
 # h_2 = 1
 
+# ╔═╡ d12ad6d5-fc71-4155-afcb-49428cf4c9fb
+function plot_euler_approximation(h2, xi, x_final, f, df)
+	# Initialize x and y arrays
+	x_vals = [Float64(xi)]
+	y_vals = [Float64(f(xi))]
+
+	# Euler integration loop
+	while x_vals[end] + h2 <= x_final + 0.1
+		x_next = x_vals[end] + h2
+		y_next = y_vals[end] + h2 * df(x_vals[end])
+		push!(x_vals, x_next)
+		push!(y_vals, y_next)
+	end
+
+	# Compute true values and error
+	true_ys = [f(x) for x in x_vals]
+	global_errors = abs.(y_vals .- true_ys)
+
+	# Final values for annotation
+	final_x = x_vals[end]
+	final_true = true_ys[end]
+	final_euler = y_vals[end]
+	final_error = global_errors[end]
+
+	# Plot range
+	x_plot = minimum(x_vals) - 1 : 0.01 : maximum(x_vals) + 1
+
+	# Plot the true function
+	plot(x_plot, f, label = "f(x)", linewidth = 2, legend = :left,
+	     xlims = (minimum(x_plot), maximum(x_plot)), ylims = (0, 60))
+	xlabel!("x")
+	ylabel!("y(x)")
+	title!("dy/dx = $(f())")
+
+	# Euler approximation
+	plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
+
+	# Scatter points
+	scatter!(x_vals, true_ys, label = "True f(x)", color = :blue, marker = :circle)
+	scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker = :star5)
+
+	# Annotate final point
+	annotate!([
+		(final_x, final_euler - 1.0, text("Final est", :left, 10)),
+		(final_x, final_true + 1.0, text("True value", :left, 10))
+	])
+
+	# Annotate summary info
+	annotate!([
+		(minimum(x_plot)+0.1, 55, text("Euler Method from xi = $xi to x = $(round(final_x, sigdigits=3))\n" *
+		             "Final Euler estimate: $(round(final_euler, sigdigits=3))\n" *
+		             "True value: $(round(final_true, sigdigits=3))\n" *
+		             "Global error: $(round(final_error, sigdigits=3))", :left, 10))
+	])
+end
+
+
 # ╔═╡ 17b65150-1137-4e75-9244-0ec0ea3fede4
+plot_euler_approximation(h_2, 1.0, 4.0, f, df)
+
+
+# ╔═╡ 532e90c8-192a-438b-922b-e8a2c694ffdc
+md"""
+!!! caution
+	Note that at each $x_{i+1}$ approximation from $x_i$, we are using the slope (i.e. derivative) evaluated at $x_i$ and $y(x_i)$: $f(x_i,y(x_i))$). Our simple function doesn't include $y$ on the right-hand side, so we don't need to use it to evaluate $f(x)$, but it is important to note that in more complex differential equations, the derivative is evaluated at $y_{i}$.
+"""
+
+# ╔═╡ d1fef25c-5646-425b-bc67-2651994cbab0
+@bind h_3 Slider([0.01, 0.1, 0.2, 0.5, 1, 3], show_value=true, default = 1)
+
+
+# ╔═╡ eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
 begin
 	# Final x value to stop Euler's method
 	xi_2 = 1.0
@@ -187,6 +260,9 @@ begin
 	plot(x_plot, f, label = "f(x)", linewidth = 2, legend = :left,
 	     xlims = (minimum(x_plot), maximum(x_plot)),
 	     ylims = (0, 60))
+	xlabel!("x")
+	ylabel!("y(x)")
+	title!("dy/dx= 3x^2 - 4x + 1")
 
 	# Euler steps as lines
 	plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
@@ -207,8 +283,8 @@ begin
 	])
 	
 	annotate!([
-    (0, 55, text("Euler Method from xi = $xi_2 to x = $(round(final_x, 		sigdigits=3))\nFinal Euler estimate: $(round(final_euler, sigdigits=3))\nTrue value: $(round(final_true, sigdigits=3))\nGlobal error: $(round(final_error, sigdigits=3))", :left, 10)),
-])
+    (0, 55, text("Euler Method from xi = $xi_2 to x = $(round(final_x, 				       sigdigits=3))\nFinal Euler estimate: $(round(final_euler, sigdigits=3))\nTrue        value: $(round(final_true, sigdigits=3))\nGlobal error: $(round(final_error,         sigdigits=3))", :left, 10)),
+     ])
 
 
 end
@@ -233,8 +309,11 @@ md"""
 # ╔═╡ 2a8efde9-c0e7-45d8-82f7-a4709d221929
 md"""
 ## Midpoint Method (Second Order Runge-Kutta)
-When thinking about Taylor series, we can improve an estimate by taking higher order approximations (i.e. more terms in the series). However, incorporation of higher-order terms to solve an ODE is not trivial, particularly if the ODE is not a polynomial. Alternative methods have been developed, once again following the Runge-Kutta scheme, which we will generally define in the next section. For now, let's consider one second-order order called the Midpoint (or improved polygon) method. 
+When thinking about Taylor series, we can improve an estimate by taking higher order approximations (i.e. more terms in the series). However, incorporation of higher-order terms to solve an ODE is not trivial, particularly if the ODE is not a polynomial. Alternative methods have been developed, once again following the Runge-Kutta scheme (generally defined in the next section). Let's consider one second-order method called the Midpoint (or improved polygon) method. 
 """
+
+# ╔═╡ f592863a-e40b-4b4b-935b-a0617ba0a9df
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1438,9 +1517,14 @@ version = "1.4.1+2"
 # ╟─2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
 # ╟─b94ee589-4bef-45f5-999d-133b73286053
 # ╟─05221ed1-3195-42b7-a9f5-5a57e7da72a9
+# ╠═d12ad6d5-fc71-4155-afcb-49428cf4c9fb
 # ╟─17b65150-1137-4e75-9244-0ec0ea3fede4
+# ╟─532e90c8-192a-438b-922b-e8a2c694ffdc
+# ╟─d1fef25c-5646-425b-bc67-2651994cbab0
+# ╠═eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
 # ╟─3647d4a4-6ef3-49da-93b0-13f0c0b54687
 # ╟─49ef14b7-fb29-49e2-a2ad-968217e11a8f
-# ╠═2a8efde9-c0e7-45d8-82f7-a4709d221929
+# ╟─2a8efde9-c0e7-45d8-82f7-a4709d221929
+# ╠═f592863a-e40b-4b4b-935b-a0617ba0a9df
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

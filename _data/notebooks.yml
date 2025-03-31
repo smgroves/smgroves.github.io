@@ -1,7 +1,7 @@
-interactive:
-  title: "Notebook Demo"
-  description: "Basic Pluto notebook with input-output cells and interactivity."
-  tags: ["intro", "tutorial"]
+Ordinary_Differential_Equations:
+  title: "Solving ODEs with Numerical Methods"
+  description: "Using Euler's method, midpoint method, and RK4 to solve ordinary differential equations."
+  tags: ["ode"]
   type: "interactive"
 
 cahn_hilliard_with_alpha:
