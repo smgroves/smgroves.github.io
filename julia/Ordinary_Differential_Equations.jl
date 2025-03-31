@@ -17,7 +17,8 @@ macro bind(def, element)
 end
 
 # ╔═╡ c71ce95c-6b33-4c48-a16d-1030fc2f1416
-using PlutoUI, Plots
+using PlutoUI, Plots, LaTeXStrings
+
 
 # ╔═╡ 728be428-254f-4639-8d0f-a7a335bd94fa
 md"""
@@ -161,70 +162,92 @@ Slider for $h$
 # h_2 = 1
 
 # ╔═╡ d12ad6d5-fc71-4155-afcb-49428cf4c9fb
-function plot_euler_approximation(h2, xi, x_final, f, df)
-	# Initialize x and y arrays
+function plot_euler_approximation(h, xi, x_final, y0, df; true_f=nothing, title = nothing)
+	# Initialize arrays
 	x_vals = [Float64(xi)]
-	y_vals = [Float64(f(xi))]
+	y_vals = [Float64(y0)]
 
-	# Euler integration loop
-	while x_vals[end] + h2 <= x_final + 0.1
-		x_next = x_vals[end] + h2
-		y_next = y_vals[end] + h2 * df(x_vals[end])
-		push!(x_vals, x_next)
-		push!(y_vals, y_next)
+	# Euler loop
+	while x_vals[end] + h <= x_final + h/2
+		xn, yn = x_vals[end], y_vals[end]
+		push!(x_vals, xn + h)
+		push!(y_vals, yn + h * df(xn, yn))
 	end
 
-	# Compute true values and error
-	true_ys = [f(x) for x in x_vals]
-	global_errors = abs.(y_vals .- true_ys)
+	# True values if provided
+	true_ys = true_f === nothing ? nothing : [true_f(x) for x in x_vals]
+	global_errors = true_ys === nothing ? nothing : abs.(y_vals .- true_ys)
 
-	# Final values for annotation
-	final_x = x_vals[end]
-	final_true = true_ys[end]
-	final_euler = y_vals[end]
-	final_error = global_errors[end]
-
-	# Plot range
+	# Plot
+	
 	x_plot = minimum(x_vals) - 1 : 0.01 : maximum(x_vals) + 1
+	x_max = maximum(x_plot)
+	x_buffer = (maximum(x_plot) - minimum(x_plot)) * 0.25  # 20% of width
 
-	# Plot the true function
-	plot(x_plot, f, label = "f(x)", linewidth = 2, legend = :left,
-	     xlims = (minimum(x_plot), maximum(x_plot)), ylims = (0, 60))
+	xlims = (minimum(x_plot), x_max + x_buffer)
+	# Evaluate over the full x_plot range
+	true_ys_plot = true_f === nothing ? Float64[] : [true_f(x) for x in x_plot]
+	# Combine all y values: Euler estimates + true function (if present)
+	all_y_vals = vcat(y_vals, true_ys_plot)
+	
+	# Compute min and max for ylims
+	y_min = minimum(all_y_vals)
+	y_max = maximum(all_y_vals)
+	
+	plot(x_plot, true_f, label = "True f(x)", linewidth = 2, legend = :outerbottom,
+	     xlims = xlims, ylims = (y_min, y_max),size=(900, 700))
 	xlabel!("x")
 	ylabel!("y(x)")
-	title!("dy/dx = $(f())")
-
-	# Euler approximation
+	if title == nothing
+		title!("Euler's Method for dy/dx = f(x, y)")
+	else
+		title!(title)
+	end
 	plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
-
-	# Scatter points
-	scatter!(x_vals, true_ys, label = "True f(x)", color = :blue, marker = :circle)
 	scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker = :star5)
 
-	# Annotate final point
-	annotate!([
-		(final_x, final_euler - 1.0, text("Final est", :left, 10)),
-		(final_x, final_true + 1.0, text("True value", :left, 10))
-	])
+	# Annotate final values
+	final_x, final_y = x_vals[end], y_vals[end]
 
-	# Annotate summary info
-	annotate!([
-		(minimum(x_plot)+0.1, 55, text("Euler Method from xi = $xi to x = $(round(final_x, sigdigits=3))\n" *
-		             "Final Euler estimate: $(round(final_euler, sigdigits=3))\n" *
-		             "True value: $(round(final_true, sigdigits=3))\n" *
-		             "Global error: $(round(final_error, sigdigits=3))", :left, 10))
-	])
+	annotations = [(final_x, final_y*1.1, text("Final est", :left, 10))]
+
+	if true_ys !== nothing
+
+		final_true = true_ys[end]
+		final_error = global_errors[end]
+
+		scatter!(x_vals, true_ys, label = "True y(x)", color = :blue, marker = :circle)
+		push!(annotations, (final_x, final_true*1.1 , text("True value", :left, 10)))
+		push!(annotations, (x_max + x_buffer * 0.1, 0.85*(y_max), text("Euler Estimates:\n"*
+			"x = $(round(xi, sigdigits=3)) to $(round(final_x, sigdigits=3))\n" *
+			"Final Euler: $(round(final_y, sigdigits=3))\n" *
+			"True value: $(round(final_true, sigdigits=3))\n" *
+			"Global error: $(round(final_error, sigdigits=3))", :left, 10)))
+	end
+
+	annotate!(annotations)
 end
 
 
 # ╔═╡ 17b65150-1137-4e75-9244-0ec0ea3fede4
-plot_euler_approximation(h_2, 1.0, 4.0, f, df)
-
+begin
+	f_2(x) = x^3 - 2x^2 + x + 2
+	df_2(x,y) = 3x^2 - 4x + 1
+	plot_euler_approximation(h_2, 1.0, 4.0, f_2(1.0), df_2; true_f = f_2)
+	
+end
 
 # ╔═╡ 532e90c8-192a-438b-922b-e8a2c694ffdc
 md"""
 !!! caution
-	Note that at each $x_{i+1}$ approximation from $x_i$, we are using the slope (i.e. derivative) evaluated at $x_i$ and $y(x_i)$: $f(x_i,y(x_i))$). Our simple function doesn't include $y$ on the right-hand side, so we don't need to use it to evaluate $f(x)$, but it is important to note that in more complex differential equations, the derivative is evaluated at $y_{i}$.
+	Note that at each $x_{i+1}$ approximation from $x_i$, we are using the slope (i.e. derivative) evaluated at $x_i$ and $y(x_i)$: $f(x_i,y(x_i))$). Our simple function doesn't include $y$ on the right-hand side, so we don't need to use it to evaluate $f(x)$, but it is important to note that in more complex differential equations, the derivative is evaluated at $y_{i}$. 
+
+	For example, in the below example, $\frac{dy}{dx} = -y.$ If you set $h = 1$, you'll notice that because $y(x = 2)$ is estimated at $0$, this $y$ values is plugged into $f(x,y(x)) = y = 0,$ and the approximations at $x = 3$ and $x = 4$ evaluate to $0$ as well.
+"""
+
+# ╔═╡ 0cff3351-afd8-4d62-82e9-db46a6483b96
+md"""
+Slider for $h$
 """
 
 # ╔═╡ d1fef25c-5646-425b-bc67-2651994cbab0
@@ -233,62 +256,11 @@ md"""
 
 # ╔═╡ eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
 begin
-	# Final x value to stop Euler's method
-	xi_2 = 1.0
-	x_final = 4.0
-
-	# Set up Euler method
-	x_vals = [xi_2]
-	y_vals = [f(xi_2)]
-
-	while x_vals[end] + h_2 <= x_final+0.1
-		x_next = x_vals[end] + h_2
-		y_next = y_vals[end] + h_2 * df(x_vals[end])
-		push!(x_vals, x_next)
-		push!(y_vals, y_next)
-	end
-
-	# True y values for comparison
-	true_ys = [f(x) for x in x_vals]
-	global_errors = abs.(y_vals .- true_ys)
-
-	# Plot range
-	x_plot = -0.1 : 0.01 : 5
-
-
-	# Plot the function
-	plot(x_plot, f, label = "f(x)", linewidth = 2, legend = :left,
-	     xlims = (minimum(x_plot), maximum(x_plot)),
-	     ylims = (0, 60))
-	xlabel!("x")
-	ylabel!("y(x)")
-	title!("dy/dx= 3x^2 - 4x + 1")
-
-	# Euler steps as lines
-	plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
-
-	# Plot true points and Euler points
-	scatter!(x_vals, true_ys, label = "True f(x)", color = :blue, marker=:circle)
-	scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker=:star5)
-
-	# Annotate final error
-	final_x = x_vals[end]
-	final_true = true_ys[end]
-	final_euler = y_vals[end]
-	final_error = global_errors[end]
-
-	annotate!([
-		(final_x, final_euler - 1.0, text("Final est", :left, 10)),
-		(final_x, final_true + 1.0, text("True value", :left, 10))
-	])
-	
-	annotate!([
-    (0, 55, text("Euler Method from xi = $xi_2 to x = $(round(final_x, 				       sigdigits=3))\nFinal Euler estimate: $(round(final_euler, sigdigits=3))\nTrue        value: $(round(final_true, sigdigits=3))\nGlobal error: $(round(final_error,         sigdigits=3))", :left, 10)),
-     ])
-
-
+	df3(x, y) = -y
+	true_f(x) = exp(-x)
+	x0 = 1.0
+	plot_euler_approximation(h_3, x0, 4.0, true_f(x0), df3; true_f=true_f, title = L"ODE: $\frac{dy}{dx} = -y$")
 end
-
 
 # ╔═╡ 3647d4a4-6ef3-49da-93b0-13f0c0b54687
 md"""
@@ -318,10 +290,12 @@ When thinking about Taylor series, we can improve an estimate by taking higher o
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
+LaTeXStrings = "~1.4.0"
 Plots = "~1.40.10"
 PlutoUI = "~0.7.61"
 """
@@ -332,7 +306,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "dc7e17990f30ff8c41388d6cea9c9953a85ec0b3"
+project_hash = "b34efae8556a1f77de1ad2337297ec416249dd99"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -1504,8 +1478,8 @@ version = "1.4.1+2"
 # ╔═╡ Cell order:
 # ╟─728be428-254f-4639-8d0f-a7a335bd94fa
 # ╟─5e014654-f976-410d-a31e-7ad8d1db5ea7
-# ╟─fed5f2d3-3170-4336-aff8-8380073b1f6e
 # ╟─c71ce95c-6b33-4c48-a16d-1030fc2f1416
+# ╟─fed5f2d3-3170-4336-aff8-8380073b1f6e
 # ╟─70dfa107-ea6f-4396-8b87-1157745008e7
 # ╟─3f97dc6c-1aeb-4b6c-9373-c332afebee3a
 # ╟─20c0821e-0d5a-4562-84e5-6a517cc5f6e0
@@ -1517,11 +1491,12 @@ version = "1.4.1+2"
 # ╟─2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
 # ╟─b94ee589-4bef-45f5-999d-133b73286053
 # ╟─05221ed1-3195-42b7-a9f5-5a57e7da72a9
-# ╠═d12ad6d5-fc71-4155-afcb-49428cf4c9fb
+# ╟─d12ad6d5-fc71-4155-afcb-49428cf4c9fb
 # ╟─17b65150-1137-4e75-9244-0ec0ea3fede4
 # ╟─532e90c8-192a-438b-922b-e8a2c694ffdc
+# ╟─0cff3351-afd8-4d62-82e9-db46a6483b96
 # ╟─d1fef25c-5646-425b-bc67-2651994cbab0
-# ╠═eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
+# ╟─eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
 # ╟─3647d4a4-6ef3-49da-93b0-13f0c0b54687
 # ╟─49ef14b7-fb29-49e2-a2ad-968217e11a8f
 # ╟─2a8efde9-c0e7-45d8-82f7-a4709d221929
