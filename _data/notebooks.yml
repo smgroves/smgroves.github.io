@@ -2,10 +2,12 @@ Ordinary_Differential_Equations:
   title: "Solving ODEs with Numerical Methods: Part 1"
   description: "Using Euler's method and midpoint method to solve ordinary differential equations."
   tags: ["ode"]
+  date: "2025-04-01"
   type: "interactive"
 
 cahn_hilliard_with_alpha:
   title: "Cahn Hilliard Dynamics"
+  date: "2025-03-11"
   description: "Constraining parameters in the Cahn Hilliard equation to model biological condensates in mitosis."
   tags: ["pde", "cahn-hilliard", "phase-separation"]
   type: "static"
@@ -15,5 +17,6 @@ run_eulers:
   description: "Using Python to solve ordinary differential equations with Euler's method."
   tags: ["python", "ode", "jupyter"]
   type: "static"
+  date: "2025-03-30"
   static_url: "https://nbviewer.org/github/smgroves/smgroves.github.io/blob/HEAD/jupyter/run_eulers.ipynb"
   binder_url: "https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?filepath=jupyter/run_eulers.ipynb"

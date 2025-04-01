@@ -46,23 +46,27 @@ const INTERACTIVE_BASE = "https://pluto-slider-server-production.up.railway.app/
 const STATIC_BASE = "https://smgroves.github.io/julia/";
 
 let allNotebooks = [];
-
 function normalizeMeta() {
   allNotebooks = Object.entries(metadata).map(([key, data]) => {
     const type = data.type || (key.includes("interactive") ? "interactive" : "static");
+    const dateStr = data.date || "2000-01-01"; // fallback for undated entries
 
     return {
       key,
       title: data.title || key,
       description: data.description || "",
       tags: data.tags || [],
-      type: type,
+      type,
+      date: new Date(dateStr),
       url: data.url || (type === "interactive"
-        ? `${INTERACTIVE_BASE}${key}.html`
-        : data.static_url || `${STATIC_BASE}${key}.html`),
+        ? `https://pluto-slider-server-production.up.railway.app/${key}.html`
+        : data.static_url || `https://smgroves.github.io/julia/${key}.html`),
       binder_url: data.binder_url || null
     };
   });
+
+  // Sort newest to oldest
+  allNotebooks.sort((a, b) => b.date - a.date);
 }
 
 function buildTagDropdown() {
@@ -111,6 +115,8 @@ function renderList() {
         <span class="badge badge-${badgeClass} ml-2">${n.type}</span>
       </h4>
       <p>${n.description}</p>
+        ${n.date ? `<p style="font-size: 0.9em; color: #777;">Date: ${n.date.toLocaleDateString()}</p>` : ""}
+
       ${n.tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${n.tags.join(", ")}</p>` : ""}
     `;
     container.appendChild(item);
