@@ -3,31 +3,27 @@ layout: page
 title: Interactive Notebooks
 permalink: /notebooks/
 ---
+
 <style>
-/* More specific selectors and !important everywhere */
 .btn-group .btn-outline-primary.type-toggle.active {
   background-color: #007bff !important;
   color: white !important;
   border-color: #007bff !important;
 }
-
 .btn-group .btn-outline-secondary.type-toggle.active {
-  background-color:rgb(148, 100, 188) !important;
+  background-color: rgb(148, 100, 188) !important;
   color: white !important;
   border-color: rgb(148, 100, 188) !important;
 }
 </style>
 
-
-
-<p><strong>Explore Pluto notebooks</strong>, both live and static:</p>
+<p><strong>Explore Pluto and Jupyter notebooks</strong>, both live and static:</p>
 
 <!-- Type Filter Pills -->
 <div class="btn-group mb-3" role="group" aria-label="Type filter">
   <button type="button" class="btn btn-outline-primary active type-toggle" data-type="interactive">Interactive</button>
   <button type="button" class="btn btn-outline-primary active type-toggle" data-type="static">Static</button>
 </div>
-
 
 <!-- Tag Filter -->
 <label for="tag-filter">Filter by tag:</label>
@@ -54,14 +50,17 @@ let allNotebooks = [];
 function normalizeMeta() {
   allNotebooks = Object.entries(metadata).map(([key, data]) => {
     const type = data.type || (key.includes("interactive") ? "interactive" : "static");
-    const base = type === "interactive" ? INTERACTIVE_BASE : STATIC_BASE;
+
     return {
       key,
       title: data.title || key,
       description: data.description || "",
       tags: data.tags || [],
-      type,
-      url: `${base}${key}.html`
+      type: type,
+      url: data.url || (type === "interactive"
+        ? `${INTERACTIVE_BASE}${key}.html`
+        : data.static_url || `${STATIC_BASE}${key}.html`),
+      binder_url: data.binder_url || null
     };
   });
 }
@@ -99,10 +98,17 @@ function renderList() {
   filtered.forEach(n => {
     const item = document.createElement("div");
     item.className = "mb-4";
+
+    const badgeClass = n.type === "interactive" ? "primary" : "secondary";
+    const binderBtn = n.binder_url
+      ? `<a href="${n.binder_url}" class="btn btn-sm btn-outline-secondary ml-2" target="_blank">Launch in Binder</a>`
+      : "";
+
     item.innerHTML = `
       <h4>
         <a href="${n.url}" target="_blank">${n.title}</a>
-        <span class="badge badge-${n.type === 'interactive' ? 'primary' : 'primary'} ml-2">${n.type}</span>
+        ${binderBtn}
+        <span class="badge badge-${badgeClass} ml-2">${n.type}</span>
       </h4>
       <p>${n.description}</p>
       ${n.tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${n.tags.join(", ")}</p>` : ""}
