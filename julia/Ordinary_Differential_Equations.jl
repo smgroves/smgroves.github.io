@@ -312,7 +312,22 @@ md"""
 
 # ╔═╡ 1e874526-d785-4b55-91eb-1b47fa73b9ba
 md"""
-Let's go back to the first problem we solved with Euler's method: $\frac{dy}{dx}= 3x^2 - 4x + 1$. We'll use $x_i = 2$ and $h = 1$ to predict $x_{i+1}=3$. First we'll find $y_{i+1/2}$:
+Let's go back to the first problem we solved with Euler's method: $\frac{dy}{dx}= 3x^2 - 4x + 1$. We'll use $x_i = 2$ and $h = 1$ to predict $x_{i+1}=3$. 
+
+**Step 1.**
+Calculate the slope at the current point $x_i$. We might callthis $k_1$ (which will be useful later when talking about the Runge-Kutta form):
+```math
+k_1 = f(x_i,y_i)
+```
+
+**Step 2.**
+Estimate the midpoint $y_{i+1/2}$  using $k_1$ and taking a half-step towards $x_{i+1}$:
+```math
+x_{i+1/2} = x_i + \frac{h}{2}
+```
+```math
+y_{i + 1/2} = y_i + \frac{h}{2}*k_1 = \frac{h}{2}*f(x_i,y_i)
+```
 """
 
 # ╔═╡ f592863a-e40b-4b4b-935b-a0617ba0a9df
@@ -355,7 +370,11 @@ end
 
 # ╔═╡ 15ebe0b4-c753-4ec7-9e65-3aecd789cb61
 md"""
-Now that we have $y_{i+1/2}$, we evaluate the slope at this point (i.e. $f(x_{i+1/2},y_{i+1/2})$):
+**Step 3.** 
+Now that we have $y_{i+1/2}$, we evaluate the slope at this midpoint: 
+```math
+k_2 = f(x_{i+1/2},y_{i+1/2})
+```
 """
 
 # ╔═╡ 6391c6e0-41de-489d-85b5-4cfe029560fd
@@ -392,9 +411,10 @@ end
 
 # ╔═╡ e7fe494a-31b4-4e37-802b-9df111f2c5ec
 md"""
-And then use that slope to find $y_{i+1}$ with
+**Step 4.**
+And finally we use that slope to find $y_{i+1}$ with
 ```math
-y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+y_{i+1} = y_i+h*k_2 = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
 ```
 """
 
@@ -444,6 +464,108 @@ md"""
 !!! stop "Stop and think:"
 	You can easily see that this is a much better estimate than Euler's method-- go back and set $x_i = 2$ in the first graph, with $h = 1$. 
 """
+
+# ╔═╡ 7349ed43-4ab2-412a-a9af-00bbb512f200
+md"""
+#### Example of Euler vs Midpoint Method: $dy/dx = y$
+"""
+
+# ╔═╡ 7cdcf91a-bbc7-49fc-8d0b-e14ad55a197c
+md"""
+Pseudocode for the Midpoint method:
+```python
+# Define function
+f(x,y) = y
+
+# Set initial conditions
+h = 0.5
+xi = 0.0
+x_final = 2.0
+y0 = 1
+
+# initialize arrays for estimates with the initial conditions
+x_est_array = [xi]
+y_est_array = [yi]
+
+x_est = xi
+y_est = yi
+# until we reach x_final:
+while x_est <= x_final:
+	# calculate k1 and k2
+	k1 = f(x_est, y_est)
+	k2 = f(x_est+h/2, y_est + h/2 * k1)
+
+	# update x_est and y_est
+	x_est = x_est + h
+	y_est = y_est + h*k2
+
+	#add new estimates to array
+	x_est_array.append(x_est)
+	y_est_array.append(y_est)
+
+```
+"""
+
+# ╔═╡ b240ff2e-925a-4dfa-8063-77d9fe5642a5
+md"""
+Slider for stepping through iterations
+"""
+
+# ╔═╡ 26b617cc-06fe-4af1-9572-373d96e8c73e
+begin
+		# Define the ODE and true solution
+		f_true_comp(x) = exp(x)
+		df_comp(x, y) = y  # dy/dx = y
+		
+		# Parameters
+		h_comp = 0.5
+		xi_comp = 0.0
+		x_final_comp = 2.0
+		y0_comp = 1.0
+		
+		# --- Precompute Euler steps ---
+		x_euler_comp = [xi_comp]
+		y_euler_comp = [y0_comp]
+		
+		while x_euler_comp[end] + h_comp <= x_final_comp + h_comp/2
+		    x_comp, y_comp = x_euler_comp[end], y_euler_comp[end]
+		    push!(x_euler_comp, x_comp + h_comp)
+		    push!(y_euler_comp, y_comp + h_comp * df_comp(x_comp, y_comp))
+		end
+		
+		# --- Precompute Midpoint steps ---
+		x_mid_comp = [xi_comp]
+		y_mid_comp = [y0_comp]
+		
+		while x_mid_comp[end] + h_comp <= x_final_comp + h_comp/2
+		    x_comp, y_comp = x_mid_comp[end], y_mid_comp[end]
+		    k1_comp = df_comp(x_comp, y_comp)
+		    k2_comp = df_comp(x_comp + h_comp/2, y_comp + (h_comp/2) * k1_comp)
+		    push!(x_mid_comp, x_comp + h_comp)
+		    push!(y_mid_comp, y_comp + h_comp * k2_comp)
+		end
+		
+		# Use min steps in case one method goes further
+		n_steps_comp = min(length(x_euler_comp), length(x_mid_comp))
+		@bind step_comp Slider(1:n_steps_comp, show_value=true)
+
+end
+
+# ╔═╡ ad0255f9-8b1a-4090-bd42-d41ed19334a3
+begin
+
+	# --- Euler Plot ---
+	plot(f_true_comp, xi_comp, x_final_comp, label="True f(x)", legend=:topleft,
+	                ylims=(minimum(y_euler_comp)-1, 9), size=					(600, 400))
+	title!(L"ODE: $dy/dx = y$")
+	plot!(x_euler_comp[1:step_comp], y_euler_comp[1:step_comp], label="Euler", color=:orange, linewidth=2)
+	scatter!(x_euler_comp[1:step_comp], y_euler_comp[1:step_comp], label="", color=:red, marker=:star5)
+	
+	plot!(x_mid_comp[1:step_comp], y_mid_comp[1:step_comp], label="Midpoint", color=:green, linewidth=2)
+	scatter!(x_mid_comp[1:step_comp], y_mid_comp[1:step_comp], label="", color=:blue, marker=:star5)
+
+	
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1667,5 +1789,10 @@ version = "1.4.1+2"
 # ╟─e7fe494a-31b4-4e37-802b-9df111f2c5ec
 # ╟─be611aa1-3d4f-44a6-979e-f8ca9e22bacd
 # ╟─0fff154a-b173-4997-a129-2eea710437b2
+# ╟─7349ed43-4ab2-412a-a9af-00bbb512f200
+# ╟─7cdcf91a-bbc7-49fc-8d0b-e14ad55a197c
+# ╟─b240ff2e-925a-4dfa-8063-77d9fe5642a5
+# ╟─26b617cc-06fe-4af1-9572-373d96e8c73e
+# ╟─ad0255f9-8b1a-4090-bd42-d41ed19334a3
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
