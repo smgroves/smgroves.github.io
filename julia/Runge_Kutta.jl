@@ -16,555 +16,208 @@ macro bind(def, element)
     #! format: on
 end
 
-# ╔═╡ c71ce95c-6b33-4c48-a16d-1030fc2f1416
+# ╔═╡ 42174ed1-bf3a-4672-b24c-6e9b73a696b5
 using PlutoUI, Plots, LaTeXStrings
 
 
-# ╔═╡ 728be428-254f-4639-8d0f-a7a335bd94fa
+# ╔═╡ a2c1571e-0f25-11f0-36a3-e93434926045
 md"""
-# Numerical Solutions to Ordinary Differential Equations
-"""
+# Runge-Kutta Methods for Solving ODEs
 
-# ╔═╡ 5e014654-f976-410d-a31e-7ad8d1db5ea7
-md"""
-Ordinary Differential Equations (ODEs) are sometimes impossible to solve analytically, because it is not always clear how to integrate the differential equation ( $\frac{dy}{dx}=f(x,y(x))$ ) to get a solution ($y=g(x)$).
-
-In these scenarios, we need to **use numerical methods to find an approximate solution**. In other words, rather than determining the analytical solution $y=g(x)$, we'll use an initial condition at $x_i$ to predict $y(x_{i+1})$. We'll then use this new $(x_{i+1},y(x_{i+1}))$ pair to predict another point at $y(x_{i+2})$. Here, the spacing between our points is $h$. If $x_i=0$ and $h=0.1$, for example, then our second iteration will predict $y$ at $x_{i+2} = 0.2$.
-
-This notebook will walk through different Runge-Kutta methods, which is a general class of numerical solvers for differential equations. 
-
-Runge-Kutta methods have a general form:
-
+In part 1, we ended by discussing a second-order method called the Midpoint Method. This involved two main steps: using the slope at our current x ($x_i$) to predict the midpoint ($y_{i+1/2}$), and then using the slope at this midpoint ($[x_i+h/2, y_{i+1/2}]$) to approximate $y_{i+1}$. We wrote each of the slope calculations for the **Midpoint method** as $k_1$ and $k_2$:
 ```math
-y_{i+1} = y_i + ϕh
-```
-where $\phi$ is some function defined by the method and the general ODE being solved is:
-
-```math
-\frac{dy}{dx}=f(x,y(x)).
+k_1 = f(x_i, y_i)
 ```
 
-We'll first start with a first order method (Euler's method) and a second order method (Midpoint Method), which are two examples of possible ways to define the function $\phi$. Later in another post, we'll discuss more generally the form of the parameters for Runge-Kutta methods, and end with the 4th order RK method, which is the most commonly used method for ODEs.
-"""
-
-# ╔═╡ fed5f2d3-3170-4336-aff8-8380073b1f6e
-md"""
-## Euler's Method (First Order Runge-Kutta)
-
-The general form for this method is to use
 ```math
-\phi = f(x_i, y(x_i)).
-```
-
-In other words, we use the differential equation *itself*, evaluated at $x_i$ (i.e. the point we are starting with):
-
-```math
-y_{i+1} = y_i +f(x_i, y(x_i))h
-```
-
-A visual of this for a relatively simple differential equation is shown below.
-"""
-
-# ╔═╡ 70dfa107-ea6f-4396-8b87-1157745008e7
-md"Slider for $x_i$"
-
-# ╔═╡ 3f97dc6c-1aeb-4b6c-9373-c332afebee3a
-@bind xi PlutoUI.Slider(0:0.1:3, show_value=true, default = 1)
-
-# ╔═╡ 20c0821e-0d5a-4562-84e5-6a517cc5f6e0
-md"Slider for $h$"
-
-# ╔═╡ 087fd36a-dca7-40ef-80cc-80fdbe1b2c01
-@bind h Slider(0.1:0.1:1.0, show_value=true, default = 1)
-
-
-# ╔═╡ b21bbb38-a30c-48f5-a7df-ae752a566d18
-begin
-	xip1 = xi + h
-
-	# Define function and derivative
-	f(x) = x^3 - 2x^2 + x + 2
-	df(x) = 3x^2 - 4x + 1
-
-	# Euler estimate at x_{i+1}
-	euler_estimate = f(xi) + h * df(xi)
-	true_value = f(xip1)
-	error = round(abs(true_value - euler_estimate), sigdigits=4)
-
-	# Tangent line segment
-	tangent_segment(x) = f(xi) + df(xi)*(x - xi)
-	tangent_x = xi : 0.01 : xip1
-	x_range = -0.1 : 0.01 : 5
-
-	# Plot
-	plot(x_range, f, label = "f(x)", linewidth = 2, legend = :bottomright,
-	     xlims = (minimum(x_range), maximum(x_range)), ylims = (0, 40))
-	xlabel!("x")
-	ylabel!("y(x)")
-	title!("dy/dx= 3x^2 - 4x + 1")
-	plot!(tangent_x, tangent_segment, label = "f(xᵢ,y(xᵢ))", linestyle = :dash, color = :orange)
-	scatter!([xi], [f(xi)], label = "xᵢ", color = :blue)
-	scatter!([xip1], [f(xip1)], label = "xᵢ₊₁ (True)", color = :red)
-	scatter!([xip1], [euler_estimate], label = "xᵢ₊₁ (Euler)", color = :green, markershape=:star5)
-
-	# Annotate points
-	annotate!([
-		(xi, f(xi) + 1.5, text("xᵢ", :left, 10)),
-		(xip1, f(xip1) + 1.0, text("xᵢ₊₁ (true)", :right, 10)),
-		(xip1, euler_estimate - 1.0, text("xᵢ₊₁ (approx)", :left, 10))
-	])
-
-	
-	annotate!([
-			(0, 35, text("Euler estimate at xᵢ₊₁ = $(round(euler_estimate, sigdigits=3))\nTrue value at xᵢ₊₁= $(round(true_value, sigdigits=3))\nAbsolute error= $error", :left, 10)),
-		])
-end
-
-# ╔═╡ 6ce9a7e3-c53f-4855-89c9-d99af5325d27
-md"""
-!!! info "Try it out:"
-	 Play around with $x_i$ and notice how the error changes. When there is more curvature in the function (i.e. when it deviates more from the straight-line approximation given by the tangent), we will have a larger error. 
-"""
-
-# ╔═╡ 7ec10320-d974-4711-b01b-48886131a36e
-md"""
-!!! info "Try it out:"
-	Next, try changing $h$. As $h$ gets smaller, notice how the approximation improves. 
-"""
-
-# ╔═╡ 40f45b41-b735-441a-9837-3af21d3d3b13
-md"""
-This may look a little familiar to you if you've seen Taylor Series approximations before. In fact, Euler's method can be directly derived from a Taylor series about a starting value $(x_i,y_i)$:
-
-```math
-y_{i+1} = y_i + y_i' h + \frac{y_i''}{2!} h^2 + \dots + \frac{y_i^{(n)}}{n!} h^n + R_n
-```
-
-You can see that setting our $\phi$ function equal to the first derivative gives an equation equivalent to the first order approximation:
-```math
-y_{i+1} = y_i + y_i' h + R_1
-```
-where $R_1$ is on the order of $h^2$. In other words, as $h$ decreases, the error for our estimation decreases as well.
-"""
-
-# ╔═╡ 2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
-md"""
-#### Multiple-step Euler Method
-
-If we want to approximate $y(x)$ for an $x$ that's far from our original guess, we may take multiple steps to get there. Let's see what happens when we approximate $x = 4$ from $x = 1$ using different step sizes $h$.
-
-
-"""
-
-# ╔═╡ d12ad6d5-fc71-4155-afcb-49428cf4c9fb
-begin
-	function plot_euler_approximation(h, xi, x_final, y0, df; true_f=nothing, title = nothing)
-		# Initialize arrays
-		x_vals = [Float64(xi)]
-		y_vals = [Float64(y0)]
-	
-		# Euler loop
-		while x_vals[end] + h <= x_final + h/2
-			xn, yn = x_vals[end], y_vals[end]
-			push!(x_vals, xn + h)
-			push!(y_vals, yn + h * df(xn, yn))
-		end
-	
-		# True values if provided
-		true_ys = true_f === nothing ? nothing : [true_f(x) for x in x_vals]
-		global_errors = true_ys === nothing ? nothing : abs.(y_vals .- true_ys)
-	
-		# Plot
-		
-		x_plot = minimum(x_vals) - 1 : 0.01 : maximum(x_vals) + 1
-		x_max = maximum(x_plot)
-		x_buffer = (maximum(x_plot) - minimum(x_plot)) * 0.35  # 35% of width
-	
-		xlims = (minimum(x_plot), x_max + x_buffer)
-		# Evaluate over the full x_plot range
-		true_ys_plot = true_f === nothing ? Float64[] : [true_f(x) for x in x_plot]
-		# Combine all y values: Euler estimates + true function (if present)
-		all_y_vals = vcat(y_vals, true_ys_plot)
-		
-		# Compute min and max for ylims
-		y_min = minimum(all_y_vals)
-		y_max = maximum(all_y_vals)
-		
-		plot(x_plot, true_f, label = "True f(x)", linewidth = 2, legend = :outerbottom,
-		     xlims = xlims, ylims = (y_min, y_max),size=(700, 600))
-		xlabel!("x")
-		ylabel!("y(x)")
-		if title == nothing
-			title!("Euler's Method for dy/dx = f(x, y)")
-		else
-			title!(title)
-		end
-		plot!(x_vals, y_vals, label = "Euler Approximation", color = :orange, linestyle = :dash, linewidth = 2)
-		scatter!(x_vals, y_vals, label = "Euler values", color = :red, marker = :star5)
-	
-		# Annotate final values
-		final_x, final_y = x_vals[end], y_vals[end]
-	
-		annotations = [(final_x, final_y*1.1, text("Final est", :left, 10))]
-	
-		if true_ys !== nothing
-	
-			final_true = true_ys[end]
-			final_error = global_errors[end]
-	
-			scatter!(x_vals, true_ys, label = "True y(x)", color = :blue, marker = :circle)
-			push!(annotations, (final_x, final_true*1.1 , text("True value", :left, 10)))
-			push!(annotations, (x_max + x_buffer * 0.1, 0.85*(y_max), text("Euler Estimates:\n"*
-				"x = $(round(xi, sigdigits=3)) to $(round(final_x, sigdigits=3))\n" *
-				"Final Euler: $(round(final_y, sigdigits=3))\n" *
-				"True value: $(round(final_true, sigdigits=3))\n" *
-				"Global error: $(round(final_error, sigdigits=3))", :left, 10)))
-		end
-	
-		annotate!(annotations)
-	end
-end
-
-# ╔═╡ b94ee589-4bef-45f5-999d-133b73286053
-md"""
-Slider for $h$
-"""
-
-# ╔═╡ 05221ed1-3195-42b7-a9f5-5a57e7da72a9
-@bind h_2 Slider([0.01, 0.1, 0.2, 0.5, 1, 3], show_value=true, default = 1)
-# h_2 = 1
-
-# ╔═╡ 17b65150-1137-4e75-9244-0ec0ea3fede4
-begin
-	f_2(x) = x^3 - 2x^2 + x + 2
-	df_2(x,y) = 3x^2 - 4x + 1
-	plot_euler_approximation(h_2, 1.0, 4.0, f_2(1.0), df_2; true_f = f_2,title = L"ODE: $dy/dx= 3x^2 - 4x + 1$")
-	
-end
-
-# ╔═╡ 532e90c8-192a-438b-922b-e8a2c694ffdc
-md"""
-!!! warning "Caution"
-	Note that at each $x_{i+1}$ approximation from $x_i$, we are using the slope (i.e. derivative) evaluated at $x_i$ and $y(x_i)$: $f(x_i,y(x_i))$). Our simple function doesn't include $y$ on the right-hand side, so we don't need to use it to evaluate $f(x)$, but it is important to note that in more complex differential equations, the derivative is evaluated at $y_{i}$. 
-
-	For example, in the below example, $\frac{dy}{dx} = -y.$ If you set $h = 1$, you'll notice that because $y(x = 2)$ is estimated at $0$, this $y$ values is plugged into $f(x,y(x)) = y = 0,$ and the approximations at $x = 3$ and $x = 4$ evaluate to $0$ as well.
-"""
-
-# ╔═╡ 0cff3351-afd8-4d62-82e9-db46a6483b96
-md"""
-Slider for $h$
-"""
-
-# ╔═╡ d1fef25c-5646-425b-bc67-2651994cbab0
-@bind h_3 Slider([0.01, 0.1, 0.2, 0.5, 1, 3], show_value=true, default = 1)
-
-
-# ╔═╡ eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
-begin
-	df3(x, y) = -y
-	true_f(x) = exp(-x)
-	x0 = 1.0
-	plot_euler_approximation(h_3, x0, 4.0, true_f(x0), df3; true_f=true_f, title = L"ODE: $\frac{dy}{dx} = -y$")
-end
-
-# ╔═╡ 3647d4a4-6ef3-49da-93b0-13f0c0b54687
-md"""
-Note that when we use Euler method over multiple steps, the *Global error* is the summation of the local error after each approximation. In other words, if we want to know the error at fixed final $x_f$ after some number of steps to get there from $x_0$, we must consider the number of steps $s$ is:
-```math
-s = (x_f-x_0)/h
-```
-
-so the global error is on the order of $h$, by $O(h^2)*O(1/h)=O(h)$. In other words, the error of our estimate decreases as $h$ decreases. Notice, however, that when $h$ decreases, we need to take more steps to get to our $x_f$, which may become computationally expensive.
-"""
-
-# ╔═╡ 49ef14b7-fb29-49e2-a2ad-968217e11a8f
-md"""
-!!! stop "Stop and think:"
-	What's another way we could improve the estimate, rather than decreasing $h$?
-"""
-
-# ╔═╡ 2a8efde9-c0e7-45d8-82f7-a4709d221929
-md"""
-## Midpoint Method (Second Order Runge-Kutta)
-When thinking about Taylor series, we can improve an estimate by taking higher order approximations (i.e. more terms in the series). However, incorporation of higher-order terms to solve an ODE is not trivial, particularly if the ODE is not a polynomial. Alternative methods have been developed, once again following the Runge-Kutta scheme (generally defined in the next section). Let's consider one second-order method called the Midpoint (or improved polygon) method. 
-
-The general form of $\phi$ for this method is 
-
-```math
-\phi = f(x_{i+1/2},y_{i+1/2})
-```
-
-So to approximate $y_{i+1}$, we use two steps:
-```math
-y_{i+1/2} = y_i+f(x_i,y_i)\frac{h}{2}
+k_2 = f(x_{i+1/2}, y_{i+1/2}) = f(x_{i+1/2}, y_i+\frac{h}{2}*k1)
 ```
 ```math
-y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+y_{i+1} = y_i + h*k2
 ```
-
-In other words, we first predict the value of $y$ at the midpoint of the interval, and then we use this value to calculate a slope at the midpoint, which is assumed to approximate the average slope for the entire interval. Then we use this slope to extrapolate linearly from $x_i$ to $x_{i+1}$.
 """
 
-# ╔═╡ 5883b04a-f1fe-49ee-a496-784782aeba3c
+# ╔═╡ fd57d932-0b4b-4118-a369-0535cbf62a39
 md"""
-#### Example
-"""
-
-# ╔═╡ 1e874526-d785-4b55-91eb-1b47fa73b9ba
-md"""
-Let's go back to the first problem we solved with Euler's method: $\frac{dy}{dx}= 3x^2 - 4x + 1$. We'll use $x_i = 2$ and $h = 1$ to predict $x_{i+1}=3$. 
-
-**Step 1.**
-Calculate the slope at the current point $x_i$. We might callthis $k_1$ (which will be useful later when talking about the Runge-Kutta form):
+Similarly, we could have written the steps for **Euler's method** as:
 ```math
 k_1 = f(x_i,y_i)
 ```
-
-**Step 2.**
-Estimate the midpoint $y_{i+1/2}$  using $k_1$ and taking a half-step towards $x_{i+1}$:
 ```math
-x_{i+1/2} = x_i + \frac{h}{2}
-```
-```math
-y_{i + 1/2} = y_i + \frac{h}{2}*k_1 = \frac{h}{2}*f(x_i,y_i)
+y_{i+1} = y_i + h*k_1
 ```
 """
 
-# ╔═╡ f592863a-e40b-4b4b-935b-a0617ba0a9df
-begin
-	xi_mp = 2
-	h_mp = 1
-	xiphalf_mp = xi_mp + h_mp/2
-	xip1_mp = xi_mp + h_mp
-
-	# Euler estimate at x_{i+1}
-	yiphalf = f(xi_mp) + h_mp * df(xi_mp)/2
-	true_value_mp = f(xip1_mp)
-	error_mp = round(abs(true_value_mp - yiphalf), sigdigits=4)
-
-	# Tangent line segment
-	tangent_segment_mp(x) = f(xi_mp) + df(xi_mp)*(x - xi_mp)
-	tangent_x_mp = xi_mp : 0.01 : xiphalf_mp
-	x_range_mp = 1.5 : 0.01 : 3.5
-
-	# Plot
-	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
-	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
-	xlabel!("x")
-	ylabel!("y(x)")
-	title!(L"dy/dx= 3x^2 - 4x + 1")
-	plot!(tangent_x_mp, tangent_segment_mp, label = "f(xᵢ,y(xᵢ))", linestyle = :dash, color = :blue)
-	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"x_i")
-	scatter!([xiphalf_mp], [f(xiphalf_mp)],  color = :red,label = L"f(x_{i+1/2})")
-	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"y_{i+1/2}")
-
-	# Annotate points
-	annotate!([
-		(xi_mp, f(xi_mp) -.6, text("xᵢ", :left, 10)),
-		(xiphalf_mp, f(xiphalf_mp) + 1.0, text(L"$y(x_{i+1/2})$ (true)", :right, 10)),
-		(xiphalf_mp, yiphalf - 1.0, text(L"$y_{i+1/2}$ (estimate)", :left, 10))
-	])
-
-
-end
-
-# ╔═╡ 15ebe0b4-c753-4ec7-9e65-3aecd789cb61
+# ╔═╡ d00a42dc-6e01-4602-94ef-95d667642f5c
 md"""
-**Step 3.** 
-Now that we have $y_{i+1/2}$, we evaluate the slope at this midpoint: 
-```math
-k_2 = f(x_{i+1/2},y_{i+1/2})
-```
+*Why might we want to write the methods this way?*
+
+Both of the previously shown methods are examples of **Runge-Kutta (RK) Methods**. RK methods use a particular formulation for calculating slopes at different points (i.e. the $k_n$ values) and then use parameters $a_n$ to weight each slope in the calculation of $y_{i+1}$. 
+
+The most common version of Runge-Kutta is RK4, a 4th order version, that we'll discuss later. For now, let's just look at the general form of $k_1$, $k_2$, $a_1$, and $a_2$, and investigate how Euler's method and the midpoint method are examples of the RK formulation.
 """
 
-# ╔═╡ 6391c6e0-41de-489d-85b5-4cfe029560fd
-function plot_tangent(x0, delX, slope, y0, label; color = :grey)	
-	x_segment = [x0 - delX, x0 + delX]
-	y_segment = [y0 - delX * slope, y0 + delX * slope]
-	plot!(x_segment, y_segment, label = label, color = color, linewidth = 2)
-end
-
-# ╔═╡ 2b718aeb-2dea-42a9-8817-0371a9a099f6
-begin
-	
-	# Plot
-	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
-	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
-	plot_tangent(2.5, 0.1, df(2.5), yiphalf, L"f(x_{i+1/2},y_{i+1/2})",color = :green)
-	xlabel!("x")
-	ylabel!("y(x)")
-	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"y_i")
-	scatter!([xiphalf_mp], [f(xiphalf_mp)],  color = :red,label = L"$y(x_{i+1/2})$ (true)")
-	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"$y_{i+1/2}$ (estimate)")
-
-	# Annotate points
-	annotate!([
-		(xi_mp, 1, text(L"x_i", :center, 10)),
-		(xiphalf_mp, 1, text(L"x_{i+1/2}", :center, 10)),
-		(xiphalf_mp, yiphalf-1, text(L"Slope at $(x_{i+1/2},y_{i+1/2})$", :left, 10)),
-
-
-	])
-
-
-end
-
-# ╔═╡ e7fe494a-31b4-4e37-802b-9df111f2c5ec
+# ╔═╡ d76bb0f4-495e-442a-9357-d6331034fe52
 md"""
-**Step 4.**
-And finally we use that slope to find $y_{i+1}$ with
+## Runge-Kutta General Formulas
+
+The goal is to solve for $y_{i+1}$:
 ```math
-y_{i+1} = y_i+h*k_2 = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
+y_{i+1} = y_i + \phi(x_i,y_i,h)*h
 ```
-"""
+The function $\phi$ is determined by the order ($n$) and specific constants chosen, of which there are infinite options:
+```math
+\phi = a_1k_1+a_2k_2+...+a_nk_n
+```
+where the $k_n$ are of the general form:
+```math 
+k_1 = f(x_i,y_i)^{\mathbf{[note_1]}}
+```
+```math
+k_2 = f(x_i+p_1h,y_i+q_{11}k_1h)^{\mathbf{[note_2]}}
+```
+```math
+k_2 = f(x_i+p_2h,y_i+q_{21}k_1h+q_{22}k_2h)
+```
+```math
+...
+```
+```math
+k_n = f(x_i+p_{n_1}h,y_i+q_{n-1,1}k_1h+q_{n-1,2}k_2h+...+q_{n-1,n-1}k_{n-1}h)
+```
+where the $p$'s and $q$'s are constants.
 
-# ╔═╡ be611aa1-3d4f-44a6-979e-f8ca9e22bacd
-# y_{i+1} = y_i+f(x_i+\frac{h}{2},y_{i+1/2})h
-begin
-	
-	# Plot
-	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
-	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
+ $\mathbf{[note_1]}$: i.e. the derivative evaluated at [$x_i$, $y_i$];
+$\mathbf{[note_2]}$: i.e. the derivative evaluated at some middle point where $x = x_i+p_1h$ and the y-coordinate is calculated using $k_1$, like in the midpoint method
 
-	# Tangent line segment
-	tangent_segment_2(x) = f(xi_mp) + df(xiphalf_mp)*(x - xi_mp)
-	tangent_xip1 = xi_mp : 0.01 : xip1_mp
-	# x_range = 1.5 : 0.01 : 3.5
-	ypred = tangent_segment_2(xip1_mp)
-
-	# Plot
-	plot(x_range_mp, f, label = "f(x)", linewidth = 2, legend = :outerright,
-	     xlims = (minimum(x_range_mp), maximum(x_range_mp)), ylims = (0, 20))
-	xlabel!("x")
-	ylabel!("y(x)")
-	plot!(tangent_xip1, tangent_segment_2, label = L"f(x_{i+1/2},y_{i+1/2})", linestyle = :dash, color = :green)
-	plot_tangent(2.5, 0.1, df(2.5), yiphalf, L"f(x_{i+1/2},y_{i+1/2})",color = :green)
-	scatter!([xi_mp], [f(xi_mp)], color = :blue, label = L"y_i")
-	scatter!([xiphalf_mp], [yiphalf],  color = :green, markershape=:star5,label = L"$y_{i+1/2}$ (estimate)")
-	scatter!([xip1_mp], [ypred],  color = :orange, markershape=:star5,label = L"$y_{i+1}$ (Final est)")
-	error_mp2 = abs(ypred - f(xip1_mp))
-	# Annotate points
-	annotate!([
-		(xi_mp, 1, text(L"x_i", :center, 10)),
-		(xiphalf_mp, 1, text(L"x_{i+1/2}", :center, 10)),
-		(xip1_mp+0.1, ypred, text("Final est", :left, 10)),
+!!! info "Note:"
+	**Importantly, $k_n$ are recurrence relationships, meaning $k_2$ depends on $k_1$ (and $k_3$ will depend on $k_1$ and $k_2$, etc).** Notice that $k_n$ is the evaluation of the derivative $f$ at a relatively simple $x$ value ($x_i+p_{n-1}h$), but the $y$ coordinate is a complicated function potentially based on all previous $k_{n-1}$ functions. 
 
 
-	])
-
-		annotate!([
-			(1.6, 18, text("Estimate at xᵢ₊₁ = $(round(ypred, sigdigits=4))\nTrue value at xᵢ₊₁= $(round(f(xip1_mp), sigdigits=4))\nAbsolute error= $error_mp2", :left, 10)),
-		])
-
-
-end
-
-# ╔═╡ 0fff154a-b173-4997-a129-2eea710437b2
-md"""
 !!! stop "Stop and think:"
-	You can easily see that this is a much better estimate than Euler's method-- go back and set $x_i = 2$ in the first graph, with $h = 1$. 
+	Note that these equations for $k_n$ are created by considering the Taylor series approximation:
+	```math
+	y_{i+1} = y_i + y_i'h+\frac{y_i''}{2!}h^2+...
+	```
+	and choosing constants that will minimize the resulting error by essentially allowing the error from different terms to cancel out as much as possible.
+	
 """
 
-# ╔═╡ 7349ed43-4ab2-412a-a9af-00bbb512f200
+# ╔═╡ 53fb2a31-5b30-4eaf-b2f4-241e3c417b77
 md"""
-#### Example of Euler vs Midpoint Method: $dy/dx = y$
-"""
-
-# ╔═╡ 7cdcf91a-bbc7-49fc-8d0b-e14ad55a197c
-md"""
-Pseudocode for the Midpoint method:
-```python
-# Define function
-f(x,y) = y
-
-# Set initial conditions
-h = 0.5
-xi = 0.0
-x_final = 2.0
-y0 = 1
-
-# initialize arrays for estimates with the initial conditions
-x_est_array = [xi]
-y_est_array = [yi]
-
-x_est = xi
-y_est = yi
-# until we reach x_final:
-while x_est <= x_final:
-	# calculate k1 and k2
-	k1 = f(x_est, y_est)
-	k2 = f(x_est+h/2, y_est + h/2 * k1)
-
-	# update x_est and y_est
-	x_est = x_est + h
-	y_est = y_est + h*k2
-
-	#add new estimates to array
-	x_est_array.append(x_est)
-	y_est_array.append(y_est)
-
+### Euler's method as a Runge-Kutta formulation
+Euler's method is equivalent to the $n=1$ case with $a_1 = 1$:
+```math
+k_1 = f(x_i,y_i)
+```
+```math
+y_{i+1} = y_i + k_1*h
 ```
 """
 
-# ╔═╡ b240ff2e-925a-4dfa-8063-77d9fe5642a5
+# ╔═╡ ce013d5a-29ab-420d-a990-a4a5cab19a3a
 md"""
-Slider for stepping through iterations
+### Midpoint method as a Runge-Kutta formulation
+The midpoint method is equivalent to the $n=2$ case with $a_1 = 0$ and $a_2 = 1$:
+```math
+y_{i+1} = y_i + k_2*h
+```
+where:
+```math
+k_1 = f(x_i,y_i)
+```
+```math
+k_2 = f(x_i+\frac{h}{2},y_i+\frac{h}{2}*k_1)
+```
+You can recall these formulas from the previous section.
+
+### Other second-order formulations
+We could derive other second order RK methods by setting our constants to different values. To do so, let's think about the general second order version, and what unknowns we have:
+```math
+y_{i+1} = y_i + (a_1k_1+a_2k_2)h
+```
+where
+```math 
+k_1 = f(x_i,y_i)
+```
+```math
+k_2 = f(x_i+p_1hy_i+q_{11}k_1h)
+```
+
+Generally, **the values for $a_1$, $a_2$, $p_1$, and $q_{11}$ are determined by setting the equation equal to a Taylor series expansion to the second-order term**. This will give us three equations to evaluate the four unknowns, so we have one degree of freedom:
+```math
+a_1+a_2 = 1
+```
+```math
+a_2p_1 = 1/2
+```
+```math
+a_2q_{11} = 1/2
+```
 """
 
-# ╔═╡ 26b617cc-06fe-4af1-9572-373d96e8c73e
+# ╔═╡ 8c0472d4-f7db-4c4a-a079-6ba0f426b96b
 begin
-		# Define the ODE and true solution
-		f_true_comp(x) = exp(x)
-		df_comp(x, y) = y  # dy/dx = y
-		
-		# Parameters
-		h_comp = 0.5
-		xi_comp = 0.0
-		x_final_comp = 2.0
-		y0_comp = 1.0
-		
-		# --- Precompute Euler steps ---
-		x_euler_comp = [xi_comp]
-		y_euler_comp = [y0_comp]
-		
-		while x_euler_comp[end] + h_comp <= x_final_comp + h_comp/2
-		    x_comp, y_comp = x_euler_comp[end], y_euler_comp[end]
-		    push!(x_euler_comp, x_comp + h_comp)
-		    push!(y_euler_comp, y_comp + h_comp * df_comp(x_comp, y_comp))
-		end
-		
-		# --- Precompute Midpoint steps ---
-		x_mid_comp = [xi_comp]
-		y_mid_comp = [y0_comp]
-		
-		while x_mid_comp[end] + h_comp <= x_final_comp + h_comp/2
-		    x_comp, y_comp = x_mid_comp[end], y_mid_comp[end]
-		    k1_comp = df_comp(x_comp, y_comp)
-		    k2_comp = df_comp(x_comp + h_comp/2, y_comp + (h_comp/2) * k1_comp)
-		    push!(x_mid_comp, x_comp + h_comp)
-		    push!(y_mid_comp, y_comp + h_comp * k2_comp)
-		end
-		
-		# Use min steps in case one method goes further
-		n_steps_comp = min(length(x_euler_comp), length(x_mid_comp))
-		@bind step_comp Slider(1:n_steps_comp, show_value=true)
-
+	@bind a2 Slider(0.5:0.1:1, show_value=true, default = 1)
 end
 
-# ╔═╡ ad0255f9-8b1a-4090-bd42-d41ed19334a3
+# ╔═╡ 2496f28c-e3dc-410c-8962-f931c772da5a
 begin
+	function plot_tangent(x0, delX, slope, y0, label; color = :grey)	
+		x_segment = [x0 - delX, x0 + delX]
+		y_segment = [y0 - delX * slope, y0 + delX * slope]
+		plot!(x_segment, y_segment, label = label, color = color, linewidth = 2)
+	end
+		# Define the ODE and true solution
+		f_true(x) = x^3-2x^2+x+2
+		df(x, y) = 3x^2 -4x+1
+		# Parameters
+		h = 1
+		xi = 1.5
+		yi = f_true(xi)
 
-	# --- Euler Plot ---
-	plot(f_true_comp, xi_comp, x_final_comp, label="True f(x)", legend=:topleft,
-	                ylims=(minimum(y_euler_comp)-1, 9), size=					(600, 400))
-	title!(L"ODE: $dy/dx = y$")
-	plot!(x_euler_comp[1:step_comp], y_euler_comp[1:step_comp], label="Euler", color=:orange, linewidth=2)
-	scatter!(x_euler_comp[1:step_comp], y_euler_comp[1:step_comp], label="", color=:red, marker=:star5)
+		#Constants
+		a1 = 1-a2
 	
-	plot!(x_mid_comp[1:step_comp], y_mid_comp[1:step_comp], label="Midpoint", color=:green, linewidth=2)
-	scatter!(x_mid_comp[1:step_comp], y_mid_comp[1:step_comp], label="", color=:blue, marker=:star5)
+		p1 = 1/(2*a2)
+		q11 = 1/(2*a2)
+
+		k1 = df(xi, yi)
+		x_mid = xi + p1*h
+		y_mid =yi + q11*h*k1
+		k2 = df(x_mid, y_mid)
+		x_ip1 = xi + h
+		y_ip1 = yi + (a1*k1+a2*k2)h
+		error = (f_true(x_ip1)-y_ip1)
+		plot(f_true, -0.5, x_ip1+0.5, label="True f(x)", 
+			 			legend=:outerright,
+		                ylims=(0, 20), 
+			 			xlims = (xi-0.5, x_ip1+0.5),
+			 			size=	(600, 400))
+
+		# first tangent
+		tangent_segment(x) = yi + df(xi, yi)*(x - xi)
+		tangent_x = xi : 0.01 : x_mid
+		plot!(tangent_x, tangent_segment, label = "k1", linestyle = :dash, color = :blue)
+		scatter!([xi], [yi], color = :blue, label = L"x_i")
+		scatter!([x_mid], [y_mid],  color = :green, markershape=:star5,label = L"y_{i+1/2}")
+
+		#second tangent
+		plot_tangent(x_mid, 0.1, df(x_mid,y_mid), y_mid, L"k2",color = :green)
+
+
+		# final tangent
+		tangent_segment_2(x) = yi + (a1*k1+a2*k2)*(x - xi)
+		tangent_x_2 = xi : 0.01 : x_ip1
+		plot!(tangent_x_2, tangent_segment_2, label = "k1", linestyle = :dash, color = :orange)
+		# scatter!([xi], [yi], color = :blue, label = L"x_i")
+		# scatter!([x_mid], [y_mid],  color = :green, markershape=:star5,label = L"y_{i+1/2}")
 
 	
+		scatter!([x_ip1], [y_ip1], label="Estimate", color=:orange, linewidth=2)
+		annotate!([
+			(1.1,15, text("Estimate at xᵢ₊₁ = $(round(y_ip1, sigdigits=4))\nTrue value at xᵢ₊₁= $(round(f_true(x_ip1), sigdigits=4))\nError= $(round(error,sigdigits=4))\na1 = $(round(a1, sigdigits=4))\np1= $(round(p1, sigdigits=4))\nq11= $(round(q11,sigdigits=4))\nk2= $(round(k2,sigdigits=4))", :left, 10)),
+		])
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1756,43 +1409,14 @@ version = "1.4.1+2"
 """
 
 # ╔═╡ Cell order:
-# ╟─728be428-254f-4639-8d0f-a7a335bd94fa
-# ╟─5e014654-f976-410d-a31e-7ad8d1db5ea7
-# ╟─c71ce95c-6b33-4c48-a16d-1030fc2f1416
-# ╟─fed5f2d3-3170-4336-aff8-8380073b1f6e
-# ╟─70dfa107-ea6f-4396-8b87-1157745008e7
-# ╟─3f97dc6c-1aeb-4b6c-9373-c332afebee3a
-# ╟─20c0821e-0d5a-4562-84e5-6a517cc5f6e0
-# ╟─087fd36a-dca7-40ef-80cc-80fdbe1b2c01
-# ╟─b21bbb38-a30c-48f5-a7df-ae752a566d18
-# ╠═6ce9a7e3-c53f-4855-89c9-d99af5325d27
-# ╟─7ec10320-d974-4711-b01b-48886131a36e
-# ╟─40f45b41-b735-441a-9837-3af21d3d3b13
-# ╟─2071ecfc-7388-4470-9d0f-e4bb8f68ca1a
-# ╟─d12ad6d5-fc71-4155-afcb-49428cf4c9fb
-# ╟─b94ee589-4bef-45f5-999d-133b73286053
-# ╟─05221ed1-3195-42b7-a9f5-5a57e7da72a9
-# ╟─17b65150-1137-4e75-9244-0ec0ea3fede4
-# ╟─532e90c8-192a-438b-922b-e8a2c694ffdc
-# ╟─0cff3351-afd8-4d62-82e9-db46a6483b96
-# ╠═d1fef25c-5646-425b-bc67-2651994cbab0
-# ╟─eedb9724-53d2-4e8a-9ac2-9e84e28a95ad
-# ╟─3647d4a4-6ef3-49da-93b0-13f0c0b54687
-# ╟─49ef14b7-fb29-49e2-a2ad-968217e11a8f
-# ╟─2a8efde9-c0e7-45d8-82f7-a4709d221929
-# ╟─5883b04a-f1fe-49ee-a496-784782aeba3c
-# ╟─1e874526-d785-4b55-91eb-1b47fa73b9ba
-# ╟─f592863a-e40b-4b4b-935b-a0617ba0a9df
-# ╟─15ebe0b4-c753-4ec7-9e65-3aecd789cb61
-# ╠═6391c6e0-41de-489d-85b5-4cfe029560fd
-# ╟─2b718aeb-2dea-42a9-8817-0371a9a099f6
-# ╟─e7fe494a-31b4-4e37-802b-9df111f2c5ec
-# ╠═be611aa1-3d4f-44a6-979e-f8ca9e22bacd
-# ╟─0fff154a-b173-4997-a129-2eea710437b2
-# ╟─7349ed43-4ab2-412a-a9af-00bbb512f200
-# ╟─7cdcf91a-bbc7-49fc-8d0b-e14ad55a197c
-# ╟─b240ff2e-925a-4dfa-8063-77d9fe5642a5
-# ╠═26b617cc-06fe-4af1-9572-373d96e8c73e
-# ╠═ad0255f9-8b1a-4090-bd42-d41ed19334a3
+# ╟─a2c1571e-0f25-11f0-36a3-e93434926045
+# ╟─fd57d932-0b4b-4118-a369-0535cbf62a39
+# ╟─d00a42dc-6e01-4602-94ef-95d667642f5c
+# ╟─d76bb0f4-495e-442a-9357-d6331034fe52
+# ╟─53fb2a31-5b30-4eaf-b2f4-241e3c417b77
+# ╟─ce013d5a-29ab-420d-a990-a4a5cab19a3a
+# ╟─42174ed1-bf3a-4672-b24c-6e9b73a696b5
+# ╟─8c0472d4-f7db-4c4a-a079-6ba0f426b96b
+# ╟─2496f28c-e3dc-410c-8962-f931c772da5a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

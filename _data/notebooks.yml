@@ -1,3 +1,10 @@
+Runge_Kutta:
+  title: "Solving ODEs with Numerical Methods: Part 2"
+  description: "Using RK methods to solve ordinary differential equations."
+  tags: ["ode"]
+  date: "2025-04-02"
+  type: "interactive"
+
 Ordinary_Differential_Equations:
   title: "Solving ODEs with Numerical Methods: Part 1"
   description: "Using Euler's method and midpoint method to solve ordinary differential equations."

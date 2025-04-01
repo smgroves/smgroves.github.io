@@ -14,6 +14,7 @@ permalink: /notebooks/
   background-color: rgb(148, 100, 188) !important;
   color: white !important;
   border-color: rgb(148, 100, 188) !important;
+  
 }
 </style>
 
