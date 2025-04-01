@@ -87,7 +87,6 @@ function renderList() {
   const searchTerm = document.getElementById("search-input").value.toLowerCase();
   const selectedTag = document.getElementById("tag-filter").value;
   const activeTypes = Array.from(document.querySelectorAll(".btn-group .btn.active")).map(btn => btn.dataset.type);
-
   const filtered = allNotebooks.filter(n => {
     const matchesType = activeTypes.includes(n.type);
     const matchesTag = !selectedTag || n.tags.includes(selectedTag);
@@ -107,7 +106,11 @@ function renderList() {
     const binderBtn = n.binder_url
       ? `<a href="${n.binder_url}" class="btn btn-sm btn-outline-secondary ml-2" target="_blank">Launch in Binder</a>`
       : "";
-
+    const formattedDate = n.date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+        });
     item.innerHTML = `
       <h4>
         <a href="${n.url}" target="_blank">${n.title}</a>
@@ -115,9 +118,10 @@ function renderList() {
         <span class="badge badge-${badgeClass} ml-2">${n.type}</span>
       </h4>
       <p>${n.description}</p>
-        ${n.date ? `<p style="font-size: 0.9em; color: #777;">Date: ${n.date.toLocaleDateString()}</p>` : ""}
-
-      ${n.tags.length ? `<p style="font-size: 0.9em; color: #555;">Tags: ${n.tags.join(", ")}</p>` : ""}
+      <p style="font-size: 0.9em; color: #555;">
+        ${n.tags.length ? `Tags: ${n.tags.join(", ")}` : ""}
+        ${n.date ? ` &nbsp; • &nbsp; ${formattedDate}` : ""}
+      </p>
     `;
     container.appendChild(item);
   });
