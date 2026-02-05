@@ -11,9 +11,9 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 
 ## Module 0: Introduction to Coding
-- Introduction to Python
-- Introduction to GitHub
--  [Lecture]({{ site.baseurl }}{% link assets/ppt/class0121-0123_python_basics.pptx %})
+- Introduction to Python [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to Python.pptx %}) [Code]({{ site.baseurl }}{% link assets/class_code/python_practice.py %})
+- Introduction to GitHub [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to GitHub_Day2.pptx %}) 
+- Introduction to Jupyter Notebooks [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to Jupyter Notebooks.pptx %}) [good notebook example]({{ site.baseurl }}{% link assets/class_code/high_quality_notebook.ipynb %})[bad notebook example]({{ site.baseurl }}{% link assets/class_code/low_quality_notebook.ipynb %})
 
 ## Module 2: Approximations and Errors
 - Binary Numbers: Round-off Errors
