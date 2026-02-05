@@ -11,7 +11,7 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 
 ## Module 0: Introduction to Coding
-- Introduction to Python [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Python.pptx %}) [Code]({{ site.baseurl }}{% link assets/class_code/python_practice.py %})
+- Introduction to Python [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Python.pptx %}) [[Code]]({{ site.baseurl }}{% link assets/class_code/python_practice.py %})
 - Introduction to GitHub [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to GitHub_Day2.pptx %}) 
 - Introduction to Jupyter Notebooks [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Jupyter Notebooks.pptx %}) [[good notebook example]]({{ site.baseurl }}{% link assets/class_code/high_quality_notebook.ipynb %}) [[bad notebook example]]({{ site.baseurl }}{% link assets/class_code/low_quality_notebook.ipynb %})
 
@@ -20,4 +20,4 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 
 ## Cancer Machine Learning Modeling Module
-- [Cancer Hallmarks Interactive Map]({{ site.baseurl }}{% link assets/html/Intro to Python.pptx %})
+<!-- - [Cancer Hallmarks Interactive Map]({{ site.baseurl }}{% link assets/html/Intro to Python.pptx %}) -->
