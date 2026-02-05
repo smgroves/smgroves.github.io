@@ -11,50 +11,10 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 
 ## Module 0: Introduction to Coding
-- Introduction to Python [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to Python.pptx %}) [Code]({{ site.baseurl }}{% link assets/class_code/python_practice.py %})
-- Introduction to GitHub [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to GitHub_Day2.pptx %}) 
-- Introduction to Jupyter Notebooks [Lecture]({{ site.baseurl }}{% link assets/ppt/Intro to Jupyter Notebooks.pptx %}) [good notebook example]({{ site.baseurl }}{% link assets/class_code/high_quality_notebook.ipynb %})[bad notebook example]({{ site.baseurl }}{% link assets/class_code/low_quality_notebook.ipynb %})
+- Introduction to Python [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Python.pptx %}) [Code]({{ site.baseurl }}{% link assets/class_code/python_practice.py %})
+- Introduction to GitHub [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to GitHub_Day2.pptx %}) 
+- Introduction to Jupyter Notebooks [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Jupyter Notebooks.pptx %}) [[good notebook example]]({{ site.baseurl }}{% link assets/class_code/high_quality_notebook.ipynb %}) [[bad notebook example]]({{ site.baseurl }}{% link assets/class_code/low_quality_notebook.ipynb %})
 
-## Module 2: Approximations and Errors
-- Binary Numbers: Round-off Errors
-- Taylor Series: Truncation Errors
+## Epidemic Modeling Module
 
-## Module 3: Numerical Differentiation and Integration
-- Divided Difference Approximations
-- Numerical Integration
-
-## Module 4: Linear Algebra
-- Vectors and Matrices
-- Linear Systems: Gaussian Elimination
-- Interpolation
-    - Polynomial interpolation
-    - B-spline interpolation
-
-## Module 5: Optimization
-- Single variable optimization
-    - Golden Section Search
-    - Newton's Method
-    - Steepest Ascent
-- Multivariable optimization
-    - Gradients and Hessians
-    - Gradient Methods
-
-## Module 6: Regression
-- Linear regression
-- Nonlinear regression
-
-## Module 7: ODEs
-- ODE Introduction and Nomenclature; Euler's Method [Lecture]({{ site.baseurl }}{% link assets/ppt/class0327_ODE1.pptx %})
-- Midpoint Method
-- Runge-Kutta 4th Order Method
-
-## Module 8: Machine Learning
-- Introduction to machine learning
-    - Bias/variance tradeoff
-    - Regression as a ML model
-- Supervised vs unsupervised methods 
-    - Clustering
-    - Classification
-- Introduction to deep learning methods
-
-## Module 9: MATLAB Bootcamp
+## Cancer Machine Learning Modeling Module
