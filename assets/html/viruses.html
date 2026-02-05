@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viral Disease: Transmissibility vs Severity</title>
+    <meta name="description" content="Interactive visualization of viral diseases comparing basic reproduction number (R₀) and case fatality rates">
+    <meta name="author" content="Sarah - Biomedical Engineering Course">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        #root {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="w-full max-w-6xl mx-auto p-6 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">
+                Viral Disease: Transmissibility vs. Severity
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Case fatality rate (log scale) vs. basic reproduction number (R₀)
+            </p>
+
+            <!-- Filter buttons -->
+            <div class="flex gap-3 mb-6">
+                <button id="btn-all" class="px-4 py-2 rounded font-medium transition-colors bg-gray-700 text-white">
+                    All Viruses
+                </button>
+                <button id="btn-vaccine" class="px-4 py-2 rounded font-medium transition-colors bg-red-100 text-red-700 hover:bg-red-200">
+                    Vaccine Available
+                </button>
+                <button id="btn-no-vaccine" class="px-4 py-2 rounded font-medium transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200">
+                    No Vaccine
+                </button>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                <canvas id="virusChart" width="1100" height="800"></canvas>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-6 flex gap-6 justify-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded-full bg-red-500 border-2 border-white"></div>
+                    <span class="text-sm font-medium">Vaccine Available</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
+                    <span class="text-sm font-medium">No Vaccine Currently</span>
+                </div>
+            </div>
+
+            <!-- Key Insights -->
+            <div class="mt-8 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-blue-900 mb-2">Key Teaching Points:</h3>
+                        <ul class="text-sm text-blue-800 space-y-1">
+                            <li>• <strong>High R₀ ≠ High Severity:</strong> Measles is highly transmissible but has relatively low CFR</li>
+                            <li>• <strong>Low R₀ ≠ Low Threat:</strong> MERS and Ebola spread slowly but are highly lethal</li>
+                            <li>• <strong>Vaccines target high R₀ diseases:</strong> Most vaccine-preventable diseases have R₀ > 5</li>
+                            <li>• <strong>Pandemic potential:</strong> Combines moderate-high R₀ with significant CFR (see influenza 1918, COVID-19)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sources -->
+            <div class="mt-6 p-6 bg-gray-50 rounded border border-gray-200">
+                <h4 class="font-bold text-gray-800 mb-3 text-base">Data Sources & References:</h4>
+                
+                <div class="space-y-4 text-sm text-gray-700">
+                    <div>
+                        <p class="font-semibold text-gray-800 mb-1">R₀ Estimates:</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• Guerra FM, et al. "The basic reproduction number (R₀) of measles: a systematic review." <em>Lancet Infect Dis.</em> 2017;17(12):e420-e428. <a href="https://doi.org/10.1016/S1473-3099(17)30307-9" class="text-blue-600 hover:underline" target="_blank">doi:10.1016/S1473-3099(17)30307-9</a></li>
+                            <li>• Biggerstaff M, et al. "Estimates of the reproduction number for seasonal, pandemic, and zoonotic influenza: a systematic review of the literature." <em>BMC Infect Dis.</em> 2014;14:480. <a href="https://doi.org/10.1186/1471-2334-14-480" class="text-blue-600 hover:underline" target="_blank">doi:10.1186/1471-2334-14-480</a></li>
+                            <li>• Delamater PL, et al. "Complexity of the Basic Reproduction Number (R₀)." <em>Emerg Infect Dis.</em> 2019;25(1):1-4. <a href="https://doi.org/10.3201/eid2501.171901" class="text-blue-600 hover:underline" target="_blank">doi:10.3201/eid2501.171901</a></li>
+                            <li>• Liu Y, et al. "The reproductive number of COVID-19 is higher compared to SARS coronavirus." <em>J Travel Med.</em> 2020;27(2):taaa021. <a href="https://doi.org/10.1093/jtm/taaa021" class="text-blue-600 hover:underline" target="_blank">doi:10.1093/jtm/taaa021</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-gray-800 mb-1">Case Fatality Rate (CFR) Estimates:</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• World Health Organization. Disease Outbreak News. <a href="https://www.who.int/emergencies/disease-outbreak-news" class="text-blue-600 hover:underline" target="_blank">https://www.who.int/emergencies/disease-outbreak-news</a></li>
+                            <li>• CDC. Vaccines and Preventable Diseases. <a href="https://www.cdc.gov/vaccines/vpd/index.html" class="text-blue-600 hover:underline" target="_blank">https://www.cdc.gov/vaccines/vpd/</a></li>
+                            <li>• Verity R, et al. "Estimates of the severity of coronavirus disease 2019: a model-based analysis." <em>Lancet Infect Dis.</em> 2020;20(6):669-677. <a href="https://doi.org/10.1016/S1473-3099(20)30243-7" class="text-blue-600 hover:underline" target="_blank">doi:10.1016/S1473-3099(20)30243-7</a></li>
+                            <li>• Garske T, et al. "Yellow Fever in Africa: estimating the burden of disease and impact of mass vaccination." <em>PLoS Med.</em> 2014;11(5):e1001638. <a href="https://doi.org/10.1371/journal.pmed.1001638" class="text-blue-600 hover:underline" target="_blank">doi:10.1371/journal.pmed.1001638</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-gray-800 mb-1">General Epidemiology References:</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• Fine P, Eames K, Heymann DL. "Herd immunity: a rough guide." <em>Clin Infect Dis.</em> 2011;52(7):911-916. <a href="https://doi.org/10.1093/cid/cir007" class="text-blue-600 hover:underline" target="_blank">doi:10.1093/cid/cir007</a></li>
+                            <li>• Anderson RM, May RM. <em>Infectious Diseases of Humans: Dynamics and Control.</em> Oxford University Press; 1991.</li>
+                            <li>• Vynnycky E, White R. <em>An Introduction to Infectious Disease Modelling.</em> Oxford University Press; 2010.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-gray-800 mb-1">Vaccine Information:</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• WHO Immunization Data Portal. <a href="https://immunizationdata.who.int/" class="text-blue-600 hover:underline" target="_blank">https://immunizationdata.who.int/</a></li>
+                            <li>• FDA Approved Vaccines. <a href="https://www.fda.gov/vaccines-blood-biologics/vaccines" class="text-blue-600 hover:underline" target="_blank">https://www.fda.gov/vaccines-blood-biologics/vaccines</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <p class="font-semibold text-yellow-900 mb-1">Important Notes:</p>
+                        <ul class="space-y-1 text-yellow-800">
+                            <li>• CFR values vary significantly by healthcare access, population demographics, virus strain, and treatment availability</li>
+                            <li>• R₀ estimates depend on population density, behavior, immunity levels, and environmental factors</li>
+                            <li>• Values represent typical ranges from published literature; individual outbreaks may differ</li>
+                            <li>• Some "no vaccine" diseases have experimental vaccines in development or limited-use vaccines</li>
+                            <li>• CFR ≠ Infection Fatality Rate (IFR); CFR only includes confirmed/symptomatic cases</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>Created for Biomedical Engineering Course | Last Updated: February 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Virus data
+        const virusData = [
+            // Vaccine-preventable diseases
+            { name: 'Measles', r0: 15, cfr: 0.2, category: 'vaccine', color: '#ef4444' },
+            { name: 'Pertussis', r0: 15, cfr: 0.5, category: 'vaccine', color: '#ef4444' },
+            { name: 'Mumps', r0: 10, cfr: 0.01, category: 'vaccine', color: '#ef4444' },
+            { name: 'Rubella', r0: 6.5, cfr: 0.01, category: 'vaccine', color: '#ef4444' },
+            { name: 'Chickenpox', r0: 10, cfr: 0.001, category: 'vaccine', color: '#ef4444' },
+            { name: 'Polio', r0: 5.5, cfr: 5, category: 'vaccine', color: '#ef4444' },
+            { name: 'Smallpox', r0: 5, cfr: 30, category: 'vaccine', color: '#ef4444' },
+            { name: 'Diphtheria', r0: 6, cfr: 10, category: 'vaccine', color: '#ef4444' },
+            { name: 'Hepatitis B', r0: 5, cfr: 0.7, category: 'vaccine', color: '#ef4444' },
+            { name: 'Hepatitis A', r0: 3.5, cfr: 0.3, category: 'vaccine', color: '#ef4444' },
+            { name: 'Influenza (seasonal)', r0: 1.3, cfr: 0.1, category: 'vaccine', color: '#ef4444' },
+            { name: 'Influenza (1918)', r0: 2, cfr: 2.5, category: 'vaccine', color: '#ef4444' },
+            { name: 'Influenza (H1N1 2009)', r0: 1.5, cfr: 0.02, category: 'vaccine', color: '#ef4444' },
+            { name: 'Rabies', r0: 1.5, cfr: 99.9, category: 'vaccine', color: '#ef4444' },
+            { name: 'Yellow Fever', r0: 4, cfr: 15, category: 'vaccine', color: '#ef4444' },
+            { name: 'Japanese Encephalitis', r0: 3, cfr: 20, category: 'vaccine', color: '#ef4444' },
+            { name: 'Tick-borne Encephalitis', r0: 2, cfr: 1.5, category: 'vaccine', color: '#ef4444' },
+            { name: 'Rotavirus', r0: 8, cfr: 0.05, category: 'vaccine', color: '#ef4444' },
+            { name: 'HPV', r0: 4, cfr: 0.1, category: 'vaccine', color: '#ef4444' },
+            { name: 'Meningococcal', r0: 3, cfr: 10, category: 'vaccine', color: '#ef4444' },
+            { name: 'Pneumococcal', r0: 4, cfr: 5, category: 'vaccine', color: '#ef4444' },
+            { name: 'Haemophilus influenzae b', r0: 5, cfr: 3, category: 'vaccine', color: '#ef4444' },
+            { name: 'COVID-19 (Original)', r0: 3, cfr: 1.0, category: 'vaccine', color: '#ef4444' },
+            { name: 'COVID-19 (Omicron)', r0: 9, cfr: 0.1, category: 'vaccine', color: '#ef4444' },
+            { name: 'Ebola', r0: 2, cfr: 60, category: 'vaccine', color: '#ef4444' },
+            { name: 'Mpox', r0: 2, cfr: 3, category: 'vaccine', color: '#ef4444' },
+            
+            // No vaccine available
+            { name: 'SARS-CoV-1', r0: 3, cfr: 10, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'MERS-CoV', r0: 0.7, cfr: 35, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'HIV/AIDS', r0: 4, cfr: 95, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'RSV', r0: 6, cfr: 0.5, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Norovirus', r0: 5, cfr: 0.001, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Dengue', r0: 3.5, cfr: 2.5, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Rhinovirus', r0: 1.5, cfr: 0.0001, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Marburg', r0: 1.5, cfr: 50, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Hantavirus', r0: 0.5, cfr: 36, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'West Nile Virus', r0: 2.5, cfr: 10, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Zika', r0: 3, cfr: 0.02, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Chikungunya', r0: 4, cfr: 0.1, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Lassa Fever', r0: 1.5, cfr: 15, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Nipah', r0: 0.5, cfr: 70, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Hendra', r0: 0.5, cfr: 60, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'EV-D68', r0: 2, cfr: 0.01, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Adenovirus', r0: 3, cfr: 0.5, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Parainfluenza', r0: 4, cfr: 0.1, category: 'no-vaccine', color: '#3b82f6' },
+            { name: 'Human Metapneumovirus', r0: 3.5, cfr: 0.5, category: 'no-vaccine', color: '#3b82f6' }
+        ];
+
+        let currentFilter = 'all';
+        let chart;
+
+        function getFilteredData() {
+            if (currentFilter === 'all') return virusData;
+            return virusData.filter(v => v.category === currentFilter);
+        }
+
+        function createChart() {
+            const ctx = document.getElementById('virusChart').getContext('2d');
+            const data = getFilteredData();
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Vaccine Available',
+                        data: data.filter(v => v.category === 'vaccine').map(v => ({
+                            x: v.r0,
+                            y: v.cfr === 0 ? 0.0001 : v.cfr,
+                            label: v.name
+                        })),
+                        backgroundColor: '#ef4444',
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        pointRadius: 6
+                    }, {
+                        label: 'No Vaccine',
+                        data: data.filter(v => v.category === 'no-vaccine').map(v => ({
+                            x: v.r0,
+                            y: v.cfr === 0 ? 0.0001 : v.cfr,
+                            label: v.name
+                        })),
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Basic Reproduction Number (R₀)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 18,
+                            ticks: { stepSize: 2 }
+                        },
+                        y: {
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Case Fatality Rate (log scale)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0.0001,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1) return value + '%';
+                                    if (value >= 0.01) return value + '%';
+                                    if (value >= 0.001) return (value * 100).toFixed(2) + '%';
+                                    return '<0.001%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].raw.label;
+                                },
+                                label: function(context) {
+                                    return [
+                                        'R₀: ' + context.raw.x,
+                                        'CFR: ' + context.raw.y + '%'
+                                    ];
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Button event listeners
+        document.getElementById('btn-all').addEventListener('click', function() {
+            currentFilter = 'all';
+            updateButtonStyles();
+            createChart();
+        });
+
+        document.getElementById('btn-vaccine').addEventListener('click', function() {
+            currentFilter = 'vaccine';
+            updateButtonStyles();
+            createChart();
+        });
+
+        document.getElementById('btn-no-vaccine').addEventListener('click', function() {
+            currentFilter = 'no-vaccine';
+            updateButtonStyles();
+            createChart();
+        });
+
+        function updateButtonStyles() {
+            document.getElementById('btn-all').className = currentFilter === 'all' 
+                ? 'px-4 py-2 rounded font-medium transition-colors bg-gray-700 text-white'
+                : 'px-4 py-2 rounded font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300';
+            
+            document.getElementById('btn-vaccine').className = currentFilter === 'vaccine'
+                ? 'px-4 py-2 rounded font-medium transition-colors bg-red-500 text-white'
+                : 'px-4 py-2 rounded font-medium transition-colors bg-red-100 text-red-700 hover:bg-red-200';
+            
+            document.getElementById('btn-no-vaccine').className = currentFilter === 'no-vaccine'
+                ? 'px-4 py-2 rounded font-medium transition-colors bg-blue-500 text-white'
+                : 'px-4 py-2 rounded font-medium transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200';
+        }
+
+        // Initialize chart
+        createChart();
+    </script>
+</body>
+</html>

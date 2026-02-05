@@ -16,5 +16,8 @@ Most of the course focuses on using numerical methods to approximate solutions t
 - Introduction to Jupyter Notebooks [[Lecture]]({{ site.baseurl }}{% link assets/ppt/Intro to Jupyter Notebooks.pptx %}) [[good notebook example]]({{ site.baseurl }}{% link assets/class_code/high_quality_notebook.ipynb %}) [[bad notebook example]]({{ site.baseurl }}{% link assets/class_code/low_quality_notebook.ipynb %})
 
 ## Epidemic Modeling Module
+- [Viruses Plot]({{ site.baseurl }}{% link assets/html/viruses.html %})
+
 
 ## Cancer Machine Learning Modeling Module
+- [Cancer Hallmarks Interactive Map]({{ site.baseurl }}{% link assets/html/Intro to Python.pptx %})
