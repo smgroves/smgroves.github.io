@@ -20,4 +20,3 @@ Most of the course focuses on using numerical methods to approximate solutions t
 
 
 ## Cancer Machine Learning Modeling Module
-<!-- - [Cancer Hallmarks Interactive Map]({{ site.baseurl }}{% link assets/html/Intro to Python.pptx %}) -->
