@@ -623,6 +623,76 @@ permalink: /teaching-wiki
       border-top: 1px solid var(--border);
       display: block;
     }
+
+    /* GLOSSARY (definition pop-under) */
+    #wiki-root .w-gloss {
+      border-bottom: 1px dotted var(--accent2);
+      color: var(--accent2);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    #wiki-root .w-gloss:hover {
+      background: rgba(26, 122, 106, 0.1);
+    }
+
+    #wiki-root .w-gloss-panel {
+      display: none;
+      position: relative;
+      margin: 10px 0 18px;
+      padding: 12px 36px 12px 16px;
+      background: var(--surface2);
+      border-left: 3px solid var(--accent2);
+      border-radius: 4px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    #wiki-root .w-gloss-panel.w-open {
+      display: block;
+      animation: wikiIn 0.15s ease;
+    }
+
+    #wiki-root .w-gloss-panel-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent2);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    #wiki-root .w-gloss-panel-close {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 13px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    #wiki-root .w-gloss-panel-close:hover {
+      color: var(--text);
+    }
+
+    /* CROSS-PAGE LINKS */
+    #wiki-root .w-xref {
+      color: var(--accent);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    #wiki-root .w-xref:hover {
+      color: var(--accent2);
+    }
   </style>
 </head>
 
@@ -774,7 +844,7 @@ permalink: /teaching-wiki
           <div class="w-page-header">
             <div class="w-page-tag">wiki / foundations</div>
             <h2>What Predicts Teaching Effectiveness</h2>
-            <p>From Hattie's Visible Learning meta-analysis and primary studies. Each finding below includes the exact
+            <p>From Hattie's Visible Learning <span class="w-gloss" onclick="wikiGloss(this, 'metaAnalysis')">meta-analysis</span> and primary studies. Each finding below includes the exact
               protocol used — not just the label.</p>
           </div>
 
@@ -809,8 +879,8 @@ permalink: /teaching-wiki
               <tr>
                 <td><strong>Teacher clarity</strong></td>
                 <td class="w-effect-high">0.75</td>
-                <td>Hattie's aggregated effect size. The claim that clarity means explaining "why" rather than just
-                  demonstrating a procedure is supported by research on pedagogical content knowledge (Shulman, 1986 —
+                <td>Hattie's aggregated <span class="w-gloss" onclick="wikiGloss(this, 'effectSize')">effect size</span>. The claim that clarity means explaining "why" rather than just
+                  demonstrating a procedure is supported by research on <span class="w-gloss" onclick="wikiGloss(this, 'pck')">pedagogical content knowledge</span> (Shulman, 1986 —
                   teachers with deeper subject knowledge produce better student transfer) but the specific Rowan et al.
                   (2004) attribution used previously is imprecise — their work covers instructional quality broadly.
                   <strong>Provenance note:</strong> treat as Hattie aggregate + Shulman's PCK framework rather than a
@@ -830,7 +900,7 @@ permalink: /teaching-wiki
                 <td><strong>Teacher-student relationship</strong></td>
                 <td class="w-effect-med">0.52</td>
                 <td>Cornelius-White (2007) meta-analysis of 119 studies. Operationalized as student-reported perceived
-                  support AND perceived high expectations simultaneously — not warmth alone. The "warm demander" concept
+                  support AND perceived high expectations simultaneously — not warmth alone. The "<span class="w-gloss" onclick="wikiGloss(this, 'warmDemander')">warm demander</span>" concept
                   appears in education literature from at least Kleinfeld (1975) and Irvine & Fraser (1998) — not solely
                   Ware (2006) as cited previously. Ware's work is relevant but the concept has an earlier lineage.</td>
               </tr>
@@ -871,7 +941,7 @@ permalink: /teaching-wiki
 
           <h3>On Modeling Expert Uncertainty</h3>
           <p>Chi's research on tutoring (multiple papers 1989–1996) documents that expert tutors elicit more
-            self-explanation from students and are more responsive to student errors than novice tutors. The specific
+            <span class="w-gloss" onclick="wikiGloss(this, 'selfExplanation')">self-explanation</span> from students and are more responsive to student errors than novice tutors. The specific
             claim that expert tutors explicitly model uncertainty and reason aloud is an inference from this body of
             work rather than a direct measured finding of a single study. The more precise claim supported by Chi's work
             is that tutors who respond to student errors with probing questions rather than direct correction produce
@@ -903,14 +973,14 @@ permalink: /teaching-wiki
           </div>
 
           <h3>Storage Strength vs Retrieval Strength — The Bjork Framework</h3>
-          <p>Bjork & Bjork (1992) distinguish between <strong>storage strength</strong> (depth of encoding in long-term
-            memory) and <strong>retrieval strength</strong> (ease of access right now). These are dissociable and during
+          <p>Bjork & Bjork (1992) distinguish between <strong><span class="w-gloss" onclick="wikiGloss(this, 'storageStrength')">storage strength</span></strong> (depth of encoding in long-term
+            memory) and <strong><span class="w-gloss" onclick="wikiGloss(this, 'retrievalStrength')">retrieval strength</span></strong> (ease of access right now). These are dissociable and during
             learning they are inversely correlated. Conditions that make retrieval feel easy during practice boost
             retrieval strength without building storage strength. The implication: <em>feeling like you know it</em> and
             <em>having durably encoded it</em> are independent, and easy conditions maximize the former at the cost of
             the latter.</p>
 
-          <h4>DD-01 — Generation Effect</h4>
+          <h4>DD-01 — <span class="w-gloss" onclick="wikiGloss(this, 'generationEffect')">Generation Effect</span></h4>
           <div class="w-card">
             <div class="w-card-title">Exact Protocol (Slamecka & Graf, 1978 — the founding study)</div>
             <p>Participants saw word pairs like "hot — ?" and either read the complete pair ("hot — cold") or generated
@@ -926,7 +996,7 @@ permalink: /teaching-wiki
               retrieval of partial knowledge.</p>
           </div>
 
-          <h4>DD-02 — Spacing Effect</h4>
+          <h4>DD-02 — <span class="w-gloss" onclick="wikiGloss(this, 'spacingEffect')">Spacing Effect</span></h4>
           <div class="w-card">
             <div class="w-card-title">Exact Protocol (Cepeda et al., 2006 — large-scale review)</div>
             <p>Cepeda et al. reviewed 254 studies with 14,000+ participants. The specific finding: for a retention
@@ -943,7 +1013,7 @@ permalink: /teaching-wiki
               Re-explaining is not spacing. Requiring application after a gap is.</p>
           </div>
 
-          <h4>DD-03 — Interleaving</h4>
+          <h4>DD-03 — <span class="w-gloss" onclick="wikiGloss(this, 'interleaving')">Interleaving</span></h4>
           <div class="w-card">
             <div class="w-card-title">Exact Protocol (Rohrer & Taylor, 2007)</div>
             <p>Students practiced mathematics problems in either blocked order (all problems of type A, then all of type
@@ -961,7 +1031,7 @@ permalink: /teaching-wiki
               being practiced.</p>
           </div>
 
-          <h4>DD-04 — Testing Effect (Retrieval Practice)</h4>
+          <h4>DD-04 — <span class="w-gloss" onclick="wikiGloss(this, 'testingEffect')">Testing Effect</span> (Retrieval Practice)</h4>
           <div class="w-card">
             <div class="w-card-title">Exact Protocol (Roediger & Karpicke, 2006 — the key study)</div>
             <p>Students read a prose passage about a scientific topic. Group 1: read it once. Group 2: read it four
@@ -983,7 +1053,7 @@ permalink: /teaching-wiki
             <div class="w-callout-label">Exact Protocol (Deslauriers et al., 2019, PNAS)</div>
             <p>Two sections of the same introductory physics course at a large university. One section received
               traditional lecture from an experienced, highly-rated instructor. The other received "active learning" —
-              specifically: students were given pre-class reading, class time was spent on peer instruction (students
+              specifically: students were given pre-class reading, class time was spent on <span class="w-gloss" onclick="wikiGloss(this, 'peerInstruction')">peer instruction</span> (students
               answered clicker questions, discussed with neighbors, re-answered). Same content, same assessments. Active
               learning section scored significantly higher on a post-class test. Crucially: students in the active
               learning section rated their experience as less effective and reported feeling they learned less. The
@@ -1015,8 +1085,8 @@ permalink: /teaching-wiki
           <h3>The Core Finding on Validity</h3>
           <div class="w-callout w-red">
             <div class="w-callout-label">Exact Finding (Uttl et al., 2017)</div>
-            <p>Uttl, White & Gonzalez conducted a meta-analysis of 97 studies examining the correlation between student
-              evaluation of teaching (SET) scores and objective learning outcomes (exam performance, blind-graded
+            <p>Uttl, White & Gonzalez conducted a <span class="w-gloss" onclick="wikiGloss(this, 'metaAnalysis')">meta-analysis</span> of 97 studies examining the correlation between <span class="w-gloss" onclick="wikiGloss(this, 'set')">student
+              evaluation of teaching (SET)</span> scores and objective learning outcomes (exam performance, blind-graded
               assessments). The mean correlation was r = 0.00 to 0.10 — effectively zero — after correcting for the
               small sample sizes that inflated earlier estimates. Earlier studies showing moderate correlations (r~0.4)
               used small samples where the correlation was noise. The large-sample studies consistently show near-zero
@@ -1041,7 +1111,7 @@ permalink: /teaching-wiki
             <div class="w-technique">
               <span class="w-technique-num">CONF-02</span>
               <div class="w-technique-content">
-                <h5>Selection Bias in Optional Surveys</h5>
+                <h5><span class="w-gloss" onclick="wikiGloss(this, 'selectionBias')">Selection Bias</span> in Optional Surveys</h5>
                 <p>Porter et al. (2004) compared voluntary versus mandatory response conditions for course evaluations.
                   Voluntary response rates under 50% produced mean scores 0.3–0.5 points higher (on a 5-point scale)
                   than mandatory response conditions for the same courses. The students most likely to respond
@@ -1055,7 +1125,7 @@ permalink: /teaching-wiki
                 <h5>Contrast Effects — Exact Mechanism</h5>
                 <p>Students do not evaluate in absolute terms — they evaluate relative to their most recent comparison
                   point. A rigorous module following an easier one will receive lower ratings than the same module
-                  taught in isolation or following an equally rigorous one. This is a well-documented anchoring effect
+                  taught in isolation or following an equally rigorous one. This is a well-documented <span class="w-gloss" onclick="wikiGloss(this, 'anchoringEffect')">anchoring effect</span>
                   in judgment research (Kahneman & Miller, 1986 norm theory) applied to course evaluation. The
                   implication: your evaluation scores are partially a function of what your co-instructor teaches, not
                   only what you teach.</p>
@@ -1115,15 +1185,15 @@ permalink: /teaching-wiki
           </div>
 
           <h3>Near Transfer vs Far Transfer — Why the Distinction Matters</h3>
-          <p>Barnett & Ceci (2002) reviewed the transfer literature and found that near transfer (same surface features,
-            same underlying structure) and far transfer (different surface features, same underlying structure) are
+          <p>Barnett & Ceci (2002) reviewed the transfer literature and found that <span class="w-gloss" onclick="wikiGloss(this, 'transferTypes')">near transfer</span> (same surface features,
+            same underlying structure) and <span class="w-gloss" onclick="wikiGloss(this, 'transferTypes')">far transfer</span> (different surface features, same underlying structure) are
             empirically separable — a student can show near transfer without far transfer. Most in-class checks and many
             project rubrics measure near transfer only. Genuine mental models support far transfer. Surface
             pattern-matching does not. The practical implication: if your project prompts use the same data structure
             and the same problem framing as your module examples, you are measuring near transfer and will overestimate
             how much students have actually learned.</p>
 
-          <h3>The Illusion of Explanatory Depth — Exact Finding</h3>
+          <h3>The <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">Illusion of Explanatory Depth</span> — Exact Finding</h3>
           <div class="w-callout w-blue">
             <div class="w-callout-label">Rozenblit & Keil (2002) — Exact Protocol</div>
             <p>Participants rated their understanding of how everyday devices work (toilets, zippers, cylinder locks) on
@@ -1144,7 +1214,7 @@ permalink: /teaching-wiki
               <div class="w-technique-content">
                 <h5>Two-Stage Retrieval Check — Protocol</h5>
                 <p>Immediately after explaining a concept, students write a one-sentence explanation in their own words,
-                  no notes, not graded. The theoretical basis is the generation effect (Slamecka & Graf, 1978) —
+                  no notes, not graded. The theoretical basis is the <span class="w-gloss" onclick="wikiGloss(this, 'generationEffect')">generation effect</span> (Slamecka & Graf, 1978) —
                   producing an output requires constructing a representation rather than recognizing one — combined with
                   the write-to-learn literature showing that writing-to-explain (as distinct from expressive or
                   reflective writing) engages elaborative processing. <strong>Provenance note:</strong> Klein (1999)
@@ -1171,7 +1241,7 @@ permalink: /teaching-wiki
               <span class="w-technique-num">MM-03</span>
               <div class="w-technique-content">
                 <h5>Targeted Wrong Answer Probing — Protocol</h5>
-                <p>Based on Mazur's peer instruction method (Mazur, 1997): present a conceptual question with multiple
+                <p>Based on Mazur's <span class="w-gloss" onclick="wikiGloss(this, 'peerInstruction')">peer instruction</span> method (Mazur, 1997): present a conceptual question with multiple
                   choice answers where distractors correspond to specific known misconceptions. Students vote
                   individually (anonymously via clicker or raised hands with eyes closed). If 30–70% choose the wrong
                   answer, students discuss with a neighbor for 2 minutes, then re-vote. This range is the target — below
@@ -1184,7 +1254,7 @@ permalink: /teaching-wiki
               <span class="w-technique-num">MM-04</span>
               <div class="w-technique-content">
                 <h5>Muddiest Point — Protocol</h5>
-                <p>Angelo & Cross (1993) classroom assessment technique. Exact implementation: in the last two minutes
+                <p>Angelo & Cross (1993) <span class="w-gloss" onclick="wikiGloss(this, 'classroomAssessmentTechnique')">classroom assessment technique</span>. Exact implementation: in the last two minutes
                   of a session, students write anonymously on a card: "What was the muddiest point in today's session?"
                   Instructor reads before next session and opens by addressing the most common muddiest point. The key
                   distinction: muddiest point reveals confusion about framing and explanation (instructor problem)
@@ -1227,7 +1297,7 @@ permalink: /teaching-wiki
           <div class="w-page-header">
             <div class="w-page-tag">wiki / assessment</div>
             <h2>Concept Inventories for Computational Courses</h2>
-            <p>Diagnostic instruments that reveal whether students hold accurate mental models or surface-level
+            <p>Diagnostic instruments that reveal whether students hold accurate <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental models</a> or surface-level
               familiarity — designed specifically for coding and data science contexts.</p>
           </div>
 
@@ -1240,7 +1310,7 @@ permalink: /teaching-wiki
 
           <div class="w-callout w-red">
             <div class="w-callout-label">Provenance Note — Read First</div>
-            <p>The misconception clusters below are a <strong>synthesis</strong>, not a single citable taxonomy. The
+            <p>The <span class="w-gloss" onclick="wikiGloss(this, 'misconceptionCluster')">misconception clusters</span> below are a <strong>synthesis</strong>, not a single citable taxonomy. The
               MC-01 through MC-06 labels are organizational — they do not refer to a named framework in the literature.
               Each cluster has different levels of empirical support, noted inline. Where source literature exists it is
               cited; where it does not, that absence is flagged explicitly. Do not cite these clusters as if they
@@ -1249,7 +1319,7 @@ permalink: /teaching-wiki
 
           <h3>How They Work</h3>
           <p>A concept inventory item presents a scenario — typically a short piece of code or a problem setup — and
-            offers multiple choice answers where <strong>the distractors correspond to known, documented
+            offers multiple choice answers where <strong>the <span class="w-gloss" onclick="wikiGloss(this, 'distractor')">distractors</span> correspond to known, documented
               misconceptions</strong>, not random wrong answers. The diagnostic power is entirely in distractor design.
             A student who answers incorrectly reveals which wrong mental model they hold, not just that they are wrong.
           </p>
@@ -1264,7 +1334,7 @@ permalink: /teaching-wiki
             <p class="w-misconception-body">Students hold a "container model" — variables as named boxes holding values
               — that breaks under mutability, scope, and pass-by-reference. <strong>Empirical support: strong.</strong>
               This is one of the most studied misconceptions in CS education. Juha Sorva's doctoral work (2012, Aalto
-              University) on "notional machines" documents this extensively. Also appears in the broader "programming
+              University) on "<span class="w-gloss" onclick="wikiGloss(this, 'notionalMachine')">notional machines</span>" documents this extensively. Also appears in the broader "programming
               misconceptions" literature at SIGCSE and ICER conferences. The specific framing of container vs reference
               model is well established.</p>
             <div class="w-probe-example">x = [1, 2, 3]
@@ -1320,7 +1390,7 @@ permalink: /teaching-wiki
               <span class="w-mc-tag">MC-04</span>
               <h5>Probability and Randomness</h5>
             </div>
-            <p class="w-misconception-body">Gambler's fallacy, representativeness heuristic, frequency vs probability
+            <p class="w-misconception-body">Gambler's fallacy, <span class="w-gloss" onclick="wikiGloss(this, 'representativenessHeuristic')">representativeness heuristic</span>, frequency vs probability
               confusion. <strong>Empirical support: strongest of all six clusters.</strong> These misconceptions
               originate in Kahneman & Tversky's heuristics and biases program (1970s–1980s) and have been replicated
               extensively in general populations and students. The specific application to data science interpretation
@@ -1428,7 +1498,7 @@ permalink: /teaching-wiki
             <div class="w-page-tag">wiki / assessment</div>
             <h2>Probe Sequencing Within a Module</h2>
             <p>How to order diagnostic probes within a module to activate prior knowledge, surface misconceptions, and
-              build durable mental models — with worked examples for unsupervised learning and Euler's method.</p>
+              build durable <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental models</a> — with worked examples for unsupervised learning and Euler's method.</p>
           </div>
 
           <div class="w-callout w-red">
@@ -1449,7 +1519,7 @@ permalink: /teaching-wiki
                 <p>Targets the mental model students bring in, not the one you want them to leave with. Should be
                   answerable from intuition alone. Goal: get students to commit to a model — ideally a confident wrong
                   answer — so instruction creates genuine conflict rather than just adding information. Empirical basis:
-                  the pretesting effect (Kornell et al., 2009) — students learn more from instruction when they have
+                  the <span class="w-gloss" onclick="wikiGloss(this, 'pretestingEffect')">pretesting effect</span> (Kornell et al., 2009) — students learn more from instruction when they have
                   attempted the problem first, even when the attempt is wrong.</p>
               </div>
             </div>
@@ -1459,8 +1529,8 @@ permalink: /teaching-wiki
                 <h5>Phase 2 — Instruction with Named Conflict</h5>
                 <p>Not "here is the correct model" but "here is where the model you probably have predicts X and the
                   actual result is Y." The conflict must be named explicitly. Students who are not told their prior
-                  model is wrong often assimilate new information into it rather than replacing it. This is conceptual
-                  change teaching (Posner et al., 1982).</p>
+                  model is wrong often assimilate new information into it rather than replacing it. This is <span class="w-gloss" onclick="wikiGloss(this, 'conceptualChangeTeaching')">conceptual
+                  change teaching</span> (Posner et al., 1982).</p>
               </div>
             </div>
             <div class="w-technique">
@@ -1478,14 +1548,14 @@ permalink: /teaching-wiki
                 <h5>Phase 4 — Spaced Retrieval Probe (next session)</h5>
                 <p>One probe question at the start of the next module, explicitly returning to prior material. Slightly
                   harder than the original transfer probe — a case where the misconception produces a plausible-looking
-                  wrong answer rather than an obviously wrong one. The testing effect (Roediger & Karpicke, 2006) is
+                  wrong answer rather than an obviously wrong one. The <span class="w-gloss" onclick="wikiGloss(this, 'testingEffect')">testing effect</span> (Roediger & Karpicke, 2006) is
                   strongest with spaced retrieval. Most instructors skip this phase entirely.</p>
               </div>
             </div>
           </div>
 
           <div class="w-callout w-blue">
-            <div class="w-callout-label">On Interleaving Across Concepts</div>
+            <div class="w-callout-label">On <span class="w-gloss" onclick="wikiGloss(this, 'interleaving')">Interleaving</span> Across Concepts</div>
             <p>If a module addresses multiple misconception clusters, do not exhaust one completely before moving to the
               next. Interleaved probes (A, B, A, B) outperform blocked probes (A, A, B, B) on transfer assessments
               because interleaving forces students to identify which concept applies rather than applying the most
@@ -1678,7 +1748,7 @@ permalink: /teaching-wiki
                 <h5>Behavioral Survey Questions</h5>
                 <p>"Describe a moment where you felt lost and what you did next." Produces behavioral data rather than
                   sentiment. The response "I used ChatGPT" is more useful than "this was too hard" — it tells you where
-                  the scaffolding broke down.</p>
+                  the <span class="w-gloss" onclick="wikiGloss(this, 'scaffolding')">scaffolding</span> broke down.</p>
               </div>
             </div>
             <div class="w-technique">
@@ -1686,8 +1756,8 @@ permalink: /teaching-wiki
               <div class="w-technique-content">
                 <h5>Own-Words Paraphrase Check</h5>
                 <p>Ask students to explain a concept in one sentence without notes, immediately after instruction. Not
-                  graded. Students who cannot paraphrase it did not build a usable mental model. This surfaces the
-                  illusion of explanatory depth before it becomes a problem on assessments.</p>
+                  graded. Students who cannot paraphrase it did not build a usable <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental model</a>. This surfaces the
+                  <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">illusion of explanatory depth</span> before it becomes a problem on assessments.</p>
               </div>
             </div>
             <div class="w-technique">
@@ -1712,7 +1782,7 @@ permalink: /teaching-wiki
 
           <h3>Making Pedagogy Visible to Students</h3>
           <p>Students who understand <em>why</em> a difficulty is structured the way it is tolerate it differently than
-            students who experience it as arbitrary. Research on metacognitive awareness shows that explaining the
+            students who experience it as arbitrary. Research on <span class="w-gloss" onclick="wikiGloss(this, 'metacognition')">metacognitive awareness</span> shows that explaining the
             pedagogical rationale — before the hard thing, not after — increases engagement and reduces shortcuts.</p>
 
           <div class="w-callout w-blue">
@@ -1738,7 +1808,7 @@ permalink: /teaching-wiki
           <div class="w-callout w-red">
             <div class="w-callout-label">Why It Fails</div>
             <p>Wiliam (2011, <em>Embedded Formative Assessment</em>) argues that open-ended comprehension checks are
-              structurally inferior to hinge questions — questions where different wrong answers reveal different
+              structurally inferior to <span class="w-gloss" onclick="wikiGloss(this, 'hingeQuestion')">hinge questions</span> — questions where different wrong answers reveal different
               misconceptions — because they require students to commit to a specific position rather than rate their
               confidence. A student who does not understand cannot accurately rate their own non-understanding. A
               student who picks the wrong distractor has revealed exactly which model gap they have.</p>
@@ -2088,18 +2158,18 @@ permalink: /teaching-wiki
           <h3>Designing for Learning Even When AI Is Used</h3>
           <p>This is a different design goal from AI-proofing. It accepts that students will use AI and asks:
             <strong>what assessment structures ensure something is learned in the process regardless?</strong> The
-            answer comes from three overlapping bodies of research — the FACT framework for data science specifically,
-            the metacognitive scaffolding literature, and structured reflection research.</p>
+            answer comes from three overlapping bodies of research — the <span class="w-gloss" onclick="wikiGloss(this, 'factFramework')">FACT framework</span> for data science specifically,
+            the <span class="w-gloss" onclick="wikiGloss(this, 'metacognition')">metacognitive scaffolding</span> literature, and structured reflection research.</p>
 
           <h4>The FACT Framework — Built for Data Science With AI</h4>
           <div class="w-card">
             <div class="w-card-title">Source: Frontiers in Education (2025) — environmental data science course</div>
             <p>The FACT framework (Fundamental, Applied, Conceptual, critical Thinking) was developed and evaluated
               specifically for upper-level data science education to balance AI-assisted learning with genuine skill
-              development. Each component maps to Bloom's Taxonomy levels and has a different AI policy:</p>
+              development. Each component maps to <span class="w-gloss" onclick="wikiGloss(this, 'bloomsTaxonomy')">Bloom's Taxonomy</span> levels and has a different AI policy:</p>
             <p><strong>F — Fundamental skills (no AI):</strong> Low-stakes in-class quizzes or exercises testing core
               syntax, statistical reasoning, and procedural knowledge without AI access. The rationale is
-              "ventriloquizing" prevention — Jain & Samuel (2025) coined this term for students who replicate AI outputs
+              "<span class="w-gloss" onclick="wikiGloss(this, 'ventriloquizing')">ventriloquizing</span>" prevention — Jain & Samuel (2025) coined this term for students who replicate AI outputs
               without genuine internalization. F assessments verify that students have independent foundational
               capability that higher-order work depends on. If a student cannot answer basic questions about their own
               model without AI, the applied work is hollow.</p>
@@ -2161,8 +2231,8 @@ permalink: /teaching-wiki
             <p>A 2025 conference study (ICAIR) compared two student clusters based on how they interacted with AI during
               problem-solving. Cluster 1 used exploratory, divergent prompting with low-level cognitive engagement early
               on — broad questions, accepting outputs, moving quickly. Cluster 2 used structured regulation behaviors —
-              initiating with deep-level questions, making deliberate modifications, completing full self-regulated
-              learning cycles (planning, monitoring, reflecting). <strong>Cluster 2 showed significantly higher gains in
+              initiating with deep-level questions, making deliberate modifications, completing full <span class="w-gloss" onclick="wikiGloss(this, 'selfRegulatedLearning')">self-regulated
+              learning</span> cycles (planning, monitoring, reflecting). <strong>Cluster 2 showed significantly higher gains in
                 problem-solving skills, AI literacy, and metacognitive strategy use.</strong> The finding: it is not
               whether students use AI but how they use it that determines learning outcomes.</p>
             <p>The implication for assessment design: rather than banning AI or permitting it without structure, design
@@ -2190,7 +2260,7 @@ permalink: /teaching-wiki
               suggestions. The scaffolding requirement — not the AI restriction — was the active ingredient.</p>
             <p>The study also found that co-designing the assessment structure with students increased buy-in
               substantially. Students who understood why the reflection requirement existed were more likely to engage
-              with it honestly. This maps directly onto SYS-01 (pedagogical contract) — explaining the mechanism upfront
+              with it honestly. This maps directly onto <a class="w-xref" href="javascript:void(0)" onclick="show('course-systems')">SYS-01 (pedagogical contract)</a> — explaining the mechanism upfront
               changes how students approach the task.</p>
           </div>
 
@@ -2258,14 +2328,14 @@ permalink: /teaching-wiki
           <p>There are two distinct mechanisms, and they require different responses:</p>
 
           <div class="w-card">
-            <div class="w-card-title">Mechanism 1: Dunning-Kruger at Low Competence</div>
+            <div class="w-card-title">Mechanism 1: <span class="w-gloss" onclick="wikiGloss(this, 'dunningKruger')">Dunning-Kruger</span> at Low Competence</div>
             <p>Students who are most confused are often least able to articulate what they don't understand. Confusion
-              and metacognitive awareness are inversely correlated at low competence levels. They don't ask because they
+              and <span class="w-gloss" onclick="wikiGloss(this, 'metacognition')">metacognitive awareness</span> are inversely correlated at low competence levels. They don't ask because they
               don't yet know what to ask.</p>
           </div>
 
           <div class="w-card">
-            <div class="w-card-title">Mechanism 2: Illusion of Explanatory Depth</div>
+            <div class="w-card-title">Mechanism 2: <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">Illusion of Explanatory Depth</span></div>
             <p>Students hear a clear explanation, it feels coherent in the moment, and they genuinely believe they
               understood it. The gap surfaces only when they try to reproduce or apply the concept. Silence is not
               withholding — it is genuine (false) confidence.</p>
@@ -2302,7 +2372,7 @@ permalink: /teaching-wiki
             <div class="w-technique">
               <span class="w-technique-num">SG-03</span>
               <div class="w-technique-content">
-                <h5>Think-Pair-Share Before Whole-Class Discussion</h5>
+                <h5><span class="w-gloss" onclick="wikiGloss(this, 'thinkPairShare')">Think-Pair-Share</span> Before Whole-Class Discussion</h5>
                 <p>Asking students to discuss with a neighbor before sharing with the class reduces the social cost of
                   being wrong publicly, because the answer becomes the pair's answer rather than the individual's.
                   Confusion surfaces more readily.</p>
@@ -2355,14 +2425,14 @@ permalink: /teaching-wiki
 
           <div class="w-card">
             <div class="w-card-title">Mechanisms Exploited</div>
-            <p><strong>Generation effect:</strong> Both students must produce an explanation rather than recognize one.
+            <p><strong><span class="w-gloss" onclick="wikiGloss(this, 'generationEffect')">Generation effect</span>:</strong> Both students must produce an explanation rather than recognize one.
               The act of constructing the explanation in their own words requires building a representation, not
               retrieving a memorized phrase.</p>
             <p><strong>Spaced retrieval:</strong> The 10–20 minute gap between Step 2 and Step 4 is enough to reduce
-              retrieval strength slightly, which means Step 4 is a genuine retrieval attempt rather than a repetition.
-              This is the key difference from standard think-pair-share, where the pair discusses immediately and the
+              <span class="w-gloss" onclick="wikiGloss(this, 'retrievalStrength')">retrieval strength</span> slightly, which means Step 4 is a genuine retrieval attempt rather than a repetition.
+              This is the key difference from standard <span class="w-gloss" onclick="wikiGloss(this, 'thinkPairShare')">think-pair-share</span>, where the pair discusses immediately and the
               gap is zero.</p>
-            <p><strong>Peer instruction correction:</strong> Student A correcting Student B in Step 4 provides immediate
+            <p><strong><span class="w-gloss" onclick="wikiGloss(this, 'peerInstruction')">Peer instruction</span> correction:</strong> Student A correcting Student B in Step 4 provides immediate
               feedback from a peer. Fantuzzo et al.'s Reciprocal Peer Tutoring work (1989, Journal of Educational
               Psychology) showed peer tutoring with structured role rotation produced learning gains comparable to
               teacher-delivered instruction. <strong>Provenance note:</strong> Fantuzzo's RPT protocol involves more
@@ -2393,7 +2463,7 @@ permalink: /teaching-wiki
             <div class="w-card-title">Adaptation for Computational Courses</div>
             <p>In a coding context, Step 2 can be: Student A explains what a function does and why, not how. Student B
               then writes (not explains) a one-line docstring from memory 15 minutes later. The docstring is a
-              behavioral output that cannot be faked with vague paraphrase — it requires a precise mental model.</p>
+              behavioral output that cannot be faked with vague paraphrase — it requires a precise <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental model</a>.</p>
           </div>
 
           <p style="font-size: 12px; color: var(--text-dim); margin-top: 8px;">Mechanism sources: Fantuzzo et al. (1989)
@@ -2520,7 +2590,7 @@ permalink: /teaching-wiki
               today's session prospectively. Students who know this happens every class encode more carefully during
               instruction because they know retrieval will be required next session.</p>
             <p><strong>Explicit connection:</strong> Asking "why does that matter for today" forces the student to
-              construct a link between prior and new knowledge — this is the mechanism behind advance organizers
+              construct a link between prior and new knowledge — this is the mechanism behind <span class="w-gloss" onclick="wikiGloss(this, 'advanceOrganizer')">advance organizers</span>
               (Ausubel, 1960) but generated by the student rather than provided by the instructor.</p>
           </div>
 
@@ -2566,7 +2636,7 @@ permalink: /teaching-wiki
             <div class="w-card-title">Mechanisms Exploited</div>
             <p><strong>Conceptual conflict generation:</strong> Students who predicted incorrectly have self-generated
               the cognitive conflict — it cannot be attributed to the instructor being confusing or the example being
-              contrived. This is the strongest form of conflict for driving conceptual change (Posner et al., 1982).</p>
+              contrived. This is the strongest form of conflict for driving <span class="w-gloss" onclick="wikiGloss(this, 'conceptualChangeTeaching')">conceptual change</span> (Posner et al., 1982).</p>
             <p><strong>Model externalization:</strong> Requiring a written justification forces the mental model into an
               explicit form where it can be examined. Vague intuitions that produce wrong predictions become visible as
               specific wrong beliefs that can be corrected.</p>
@@ -2659,14 +2729,14 @@ permalink: /teaching-wiki
 
           <div class="w-card">
             <div class="w-card-title">What the Research Says About Upfront Framing</div>
-            <p>There is empirical support for upfront difficulty framing from utility value research — Hulleman &
+            <p>There is empirical support for upfront difficulty framing from <span class="w-gloss" onclick="wikiGloss(this, 'utilityValue')">utility value</span> research — Hulleman &
               Harackiewicz (2009, Journal of Educational Psychology) showed that helping students connect coursework to
               personal relevance reduced performance gaps and increased interest, particularly for students with low
               initial confidence. Explaining why difficulty is pedagogically intentional is a related but distinct
               intervention. <strong>Provenance note:</strong> "Canning et al. (2019) PNAS" cited in earlier drafts could
               not be verified with confidence as matching the specific protocol described. The general principle — that
-              framing difficulty as expected and meaningful reduces anxiety — is consistent with the self-determination
-              theory literature (Deci & Ryan) and Dweck's mindset work, but cite those instead of Canning et al. until
+              framing difficulty as expected and meaningful reduces anxiety — is consistent with the <span class="w-gloss" onclick="wikiGloss(this, 'selfDeterminationTheory')">self-determination
+              theory</span> literature (Deci & Ryan) and Dweck's mindset work, but cite those instead of Canning et al. until
               the specific paper is verified.</p>
             <p>Separately, Dweck's mindset research operationalizes this as teaching students that struggle signals
               learning rather than inability. The specific intervention that produced outcomes was not a one-time
@@ -2690,7 +2760,7 @@ permalink: /teaching-wiki
               used every session. No account required for submission. Responses are aggregated automatically and
               searchable. The limitation is it requires devices and a moment of friction to navigate to.</p>
             <p><strong>Option C — Poll Everywhere or Mentimeter:</strong> Best for in-the-moment multiple choice probes
-              (TECH-02 peer instruction). Less suited for open-ended muddiest point because text responses are visible
+              (<a class="w-xref" href="javascript:void(0)" onclick="show('collab-techniques')">TECH-02 peer instruction</a>). Less suited for open-ended muddiest point because text responses are visible
               to the class in real time, which undermines anonymity.</p>
             <p><strong>Recommendation for computational courses:</strong> Google Form for muddiest point and gap cards
               (open-ended, private); Poll Everywhere or iClicker for peer instruction polls (multiple choice,
@@ -2756,7 +2826,7 @@ permalink: /teaching-wiki
             </p>
             <p><strong>Checkpoint design principles from the literature:</strong></p>
             <p><strong>1. Announce checkpoints on day one with their exact purpose.</strong> Students should know from
-              week one that at the end of each module there is a graded assessment that requires far transfer — applying
+              week one that at the end of each module there is a graded assessment that requires <span class="w-gloss" onclick="wikiGloss(this, 'transferTypes')">far transfer</span> — applying
               concepts in a context they have not seen before. This is not a surprise; it is the stated standard.
               Ambiguity about assessment standards produces anxiety; clarity about standards produces preparation.</p>
             <p><strong>2. Design for far transfer, not near transfer.</strong> Barnett & Ceci (2002) — if the checkpoint
@@ -2764,15 +2834,15 @@ permalink: /teaching-wiki
               artifact should require the same underlying concept in a structurally novel context. This is harder to
               design but is the only checkpoint that tells you whether the in-class techniques worked.</p>
             <p><strong>3. Allow re-submission with correction memo.</strong> Requiring students to write what their
-              model was, what was wrong with it, and what the correct model is forces the conceptual change process
+              model was, what was wrong with it, and what the correct model is forces the <span class="w-gloss" onclick="wikiGloss(this, 'conceptualChangeTeaching')">conceptual change</span> process
               explicitly. This is consistent with the conceptual change literature (Posner et al., 1982) and with error
               correction research showing that retrieving and correcting wrong information produces stronger memory
               traces than ignoring errors. <strong>Provenance note:</strong> "Butler & Roediger (2007)" cited in earlier
               drafts for this claim could not be verified — cite Posner et al. and the general error-correction
               literature instead. This is not about leniency; it is about using the checkpoint as a learning event.</p>
             <p><strong>4. Time checkpoints after spacing, not immediately after instruction.</strong> A checkpoint
-              administered immediately after a module measures retrieval strength. A checkpoint administered one week
-              after a module measures storage strength — which is what you actually want to know. If your course
+              administered immediately after a module measures <span class="w-gloss" onclick="wikiGloss(this, 'retrievalStrength')">retrieval strength</span>. A checkpoint administered one week
+              after a module measures <span class="w-gloss" onclick="wikiGloss(this, 'storageStrength')">storage strength</span> — which is what you actually want to know. If your course
               structure allows, build a one-week gap between module completion and checkpoint submission.</p>
           </div>
 
@@ -2862,7 +2932,7 @@ permalink: /teaching-wiki
               <div class="w-technique-content">
                 <h5>Missing Accountability Structure — Task Substitution</h5>
                 <p>Students replace the assigned activity with a more comfortable or immediately useful one. This is
-                  called <strong>task substitution</strong> and is rational behavior when non-compliance has no
+                  called <strong><span class="w-gloss" onclick="wikiGloss(this, 'taskSubstitution')">task substitution</span></strong> and is rational behavior when non-compliance has no
                   consequence. An activity that is optional in practice will be substituted whenever deadline pressure
                   is present, regardless of what the instructor says. The diagnostic question: <em>what happens to a
                     student who does not do this activity?</em> If the answer is nothing, the activity is structurally
@@ -2892,7 +2962,7 @@ permalink: /teaching-wiki
                   where competence is salient. Students who are most uncertain about their model will avoid cross-group
                   explanation most strongly — which means the students who would benefit most are precisely those most
                   likely to opt out. The activity self-selects for students who least need it.</p>
-                <p><strong>Source:</strong> Cooperative vs collaborative task distinction — Laal & Ghodsi (2012)
+                <p><strong>Source:</strong> <span class="w-gloss" onclick="wikiGloss(this, 'cooperativeVsCollaborative')">Cooperative vs collaborative task distinction</span> — Laal & Ghodsi (2012)
                   International Conference on Education and Educational Psychology. Cooperative tasks allow pooling;
                   collaborative tasks require individual demonstration. Activities that are collaborative in intent but
                   cooperative in execution will default to pooling without structural enforcement.</p>
@@ -2928,8 +2998,8 @@ permalink: /teaching-wiki
               the absent person. When one person leaves, the group physically cannot substitute project time for the
               activity — the activity and the project work are spatially separated.</p>
             <p><strong>The information gap constraint:</strong> Design the activity so each group has information the
-              other group needs to complete a task. Neither group can produce the output alone. This is the jigsaw
-              method (Aronson, 1978) — interdependence is structural rather than requested.</p>
+              other group needs to complete a task. Neither group can produce the output alone. This is the <span class="w-gloss" onclick="wikiGloss(this, 'jigsawMethod')">jigsaw
+              method</span> (Aronson, 1978) — interdependence is structural rather than requested.</p>
           </div>
 
           <div class="w-card">
@@ -2941,7 +3011,7 @@ permalink: /teaching-wiki
               explainer as being assessed. "Act as a consultant to another group and identify their main risk" positions
               the student as the expert rather than the subject. The task is structurally identical but the social
               dynamic is inverted.</p>
-            <p><strong>Source:</strong> Reframing effects on task engagement are documented in self-determination theory
+            <p><strong>Source:</strong> Reframing effects on task engagement are documented in <span class="w-gloss" onclick="wikiGloss(this, 'selfDeterminationTheory')">self-determination theory</span>
               research (Deci & Ryan, 2000) — autonomy-supportive framing ("you are here to help them") produces higher
               engagement than evaluative framing ("show what you know"), particularly for students with lower
               confidence.</p>
@@ -3085,7 +3155,7 @@ permalink: /teaching-wiki
               instructor-guided prompts progressively — starting with structured questions and shifting toward free
               writing — produced the strongest metacognitive development.</p>
             <p>The mechanism is dual: for students, the exit ticket is a forced retrieval attempt that surfaces the
-              illusion of explanatory depth before they leave the room. For you, it is a real-time diagnostic that tells
+              <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">illusion of explanatory depth</span> before they leave the room. For you, it is a real-time diagnostic that tells
               you what to address at the start of next session rather than guessing.</p>
           </div>
 
@@ -3130,7 +3200,7 @@ permalink: /teaching-wiki
           <div class="w-card">
             <div class="w-card-title">What It Is and What the Research Shows</div>
             <p>From Team-Based Learning (Michaelsen, Knight & Fink, 2004): students complete pre-class preparation, then
-              take a brief individual Readiness Assurance Test (iRAT) at the start of class — typically 5–8 multiple
+              take a brief individual <span class="w-gloss" onclick="wikiGloss(this, 'readinessAssuranceTest')">Readiness Assurance Test (iRAT)</span> at the start of class — typically 5–8 multiple
               choice questions on the assigned material. The same test is then taken again as a team (tRAT). Class time
               is spent entirely on application problems that require the pre-class material.</p>
             <p>The key research finding: <strong>ungraded iRATs in highly motivated students produce comparable learning
@@ -3185,7 +3255,7 @@ permalink: /teaching-wiki
             <div class="w-card-title">What It Is and What the Research Shows</div>
             <p>A short quiz (3–5 questions) administered at a fixed point each week — either start of first session or
               end of last session. Low stakes: worth a small and fixed percentage of the grade, or completion-only
-              credit. The mechanism is the testing effect (Roediger & Karpicke, 2006) applied at weekly intervals to
+              credit. The mechanism is the <span class="w-gloss" onclick="wikiGloss(this, 'testingEffect')">testing effect</span> (Roediger & Karpicke, 2006) applied at weekly intervals to
               force spaced retrieval across the course.</p>
             <p>The specific finding from medical education scoping review (Heeneman et al., 2025, PMC): detailed
               asynchronous feedback on low-stakes quizzes significantly improves exam performance — more than the quiz
@@ -3237,7 +3307,7 @@ permalink: /teaching-wiki
             <div class="w-card-title">The Problem With Purely Active Sessions</div>
             <p>A session that is active from start to finish produces cognitive overload for students who do not yet
               have the schema to process new information while simultaneously producing output. The research on
-              cognitive load (Sweller, 1988) is clear: worked examples and direct instruction are more efficient than
+              <span class="w-gloss" onclick="wikiGloss(this, 'cognitiveLoad')">cognitive load</span> (Sweller, 1988) is clear: worked examples and direct instruction are more efficient than
               discovery learning for students with low prior knowledge. Active processing produces its benefits at the
               <em>edge</em> of student competence — not before competence exists.</p>
             <p>The practical implication: a session should have an explicit passive phase and an explicit active phase,
@@ -3248,7 +3318,7 @@ permalink: /teaching-wiki
 
           <div class="w-card">
             <div class="w-card-title">Recommended Session Architecture for Computational Courses</div>
-            <p><strong>Minutes 0–3:</strong> Cold retrieval opener (TECH-03) — no slides, spaced retrieval from prior
+            <p><strong>Minutes 0–3:</strong> Cold retrieval opener (<a class="w-xref" href="javascript:void(0)" onclick="show('collab-techniques')">TECH-03</a>) — no slides, spaced retrieval from prior
               session.</p>
             <p><strong>Minutes 3–20:</strong> Direct instruction or live coding demonstration. Instructor talks.
               Students observe and take notes. This is the schema-building phase — do not interrupt it with activities.
@@ -3295,7 +3365,7 @@ permalink: /teaching-wiki
             <div class="w-callout-label">Honest Assessment of the Evidence Base</div>
             <p>Meta-analyses of PBL report aggregate effect sizes of d = 0.65–0.85, which look impressive. The problem
               is that these aggregate over implementations ranging from highly scaffolded, milestone-driven projects to
-              loosely structured open-ended discovery. <strong>The quality of scaffolding is the primary moderating
+              loosely structured open-ended discovery. <strong>The quality of <span class="w-gloss" onclick="wikiGloss(this, 'scaffolding')">scaffolding</span> is the primary moderating
                 variable</strong> — not the fact of using projects. A poorly scaffolded PBL course produces weaker
               outcomes than well-structured direct instruction. A well-scaffolded PBL course produces better transfer,
               higher-order thinking, and retention of applied skills than either.</p>
@@ -3329,8 +3399,8 @@ permalink: /teaching-wiki
               <span class="w-technique-num">PBL+</span>
               <div class="w-technique-content">
                 <h5>Where PBL Outperforms Direct Instruction</h5>
-                <p>Transfer to novel problems, higher-order thinking (analysis, synthesis, evaluation on Bloom's
-                  taxonomy), motivation and sustained engagement, retention of applied skills over time, and
+                <p>Transfer to novel problems, higher-order thinking (analysis, synthesis, evaluation on <span class="w-gloss" onclick="wikiGloss(this, 'bloomsTaxonomy')">Bloom's
+                  taxonomy</span>), motivation and sustained engagement, retention of applied skills over time, and
                   collaborative problem-solving ability. A 2025 meta-analysis in biology higher education (42 studies,
                   5,247 students) found d = 0.847 specifically for higher-order thinking skills — the effect was larger
                   for conceptual understanding than for factual recall.</p>
@@ -3342,7 +3412,7 @@ permalink: /teaching-wiki
                 <h5>Where PBL Underperforms Without Scaffolding</h5>
                 <p>Initial acquisition of foundational knowledge and procedural skills — especially for novice learners.
                   A MDPI 2025 systematic review found that surface-level PBL implementations lacking scaffolding,
-                  structured reflection, and formative assessment produced weak and inconsistent outcomes. The failure
+                  structured reflection, and <span class="w-gloss" onclick="wikiGloss(this, 'formativeAssessment')">formative assessment</span> produced weak and inconsistent outcomes. The failure
                   modes: vague instructional guidance, lack of alignment between project work and core concepts, and
                   insufficient structured check-ins allowing students to drift without detecting it.</p>
               </div>
@@ -3369,7 +3439,7 @@ permalink: /teaching-wiki
             <div class="w-card-title">Condition 2 — Scaffolding That Decreases Over Time</div>
             <p>Early project phases require high instructor guidance — specific prompts, constrained choices, worked
               examples of process (not solution). Later phases progressively reduce scaffolding as competence builds.
-              This is the zone of proximal development (Vygotsky) applied at project scale. The failure mode in most PBL
+              This is the <span class="w-gloss" onclick="wikiGloss(this, 'zpd')">zone of proximal development</span> (Vygotsky) applied at project scale. The failure mode in most PBL
               implementations is holding scaffolding constant — either too high throughout (which prevents the
               development of independence) or too low throughout (which produces the cognitive overload problem).</p>
             <p><strong>Practical structure:</strong> Module 1 project phase: constrained scope, specific deliverable
@@ -3419,9 +3489,9 @@ permalink: /teaching-wiki
 
           <h3>How PBL Fits With the Rest of This Wiki</h3>
           <p>PBL is not a replacement for the session-level techniques documented elsewhere here — it is the container
-            that gives those techniques their applied context. The probe sequencing section describes how to build
-            conceptual understanding before students apply it. The engagement systems section describes how to structure
-            sessions within a project phase. The activity compliance section describes how to prevent project work from
+            that gives those techniques their applied context. <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">The probe sequencing section</a> describes how to build
+            conceptual understanding before students apply it. <a class="w-xref" href="javascript:void(0)" onclick="show('engagement-systems')">The engagement systems section</a> describes how to structure
+            sessions within a project phase. <a class="w-xref" href="javascript:void(0)" onclick="show('activity-compliance')">The activity compliance section</a> describes how to prevent project work from
             substituting for other learning activities. PBL works best when those session-level systems are running
             inside it, not when it is treated as a standalone pedagogy that replaces them.</p>
 
@@ -3454,7 +3524,7 @@ permalink: /teaching-wiki
               responding. Weekly quizzes require writing and returning feedback. Muddiest point requires reading before
               next session. Peer instruction requires pre-written questions. If you implement all of these
               simultaneously from week one, you will produce two things: student cognitive and compliance fatigue, and
-              instructor burnout from the feedback volume. The research on implementation science is clear — partial
+              instructor burnout from the feedback volume. The research on <span class="w-gloss" onclick="wikiGloss(this, 'implementationScience')">implementation science</span> is clear — partial
               implementation of fewer systems produces better outcomes than surface-level implementation of many.</p>
           </div>
 
@@ -3464,14 +3534,14 @@ permalink: /teaching-wiki
             <div class="w-card-title">Variable 1 — What Is Your Highest-Value Diagnostic Need?</div>
             <p>Every system in this wiki produces a different kind of signal. Before choosing a system, identify what
               you most need to know that you currently cannot find out:</p>
-            <p><strong>If you need to know whether students built accurate mental models during instruction</strong> →
+            <p><strong>If you need to know whether students built accurate <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental models</a> during instruction</strong> →
               Exit ticket or muddiest point. Low setup cost, immediate signal, works every session.</p>
             <p><strong>If you need to know whether students are doing preparation before class</strong> → Readiness
-              assurance (SYS-08). Requires pre-class material design but produces immediate in-class signal.</p>
+              assurance (<a class="w-xref" href="javascript:void(0)" onclick="show('engagement-systems')">SYS-08</a>). Requires pre-class material design but produces immediate in-class signal.</p>
             <p><strong>If you need to know whether concepts are accumulating across weeks</strong> → Weekly quiz
               (SYS-09). Requires quiz infrastructure and 24-hour feedback commitment.</p>
             <p><strong>If you need to know which specific misconception is most prevalent right now</strong> → Peer
-              instruction poll (TECH-02). Requires pre-written questions with good distractors — time-intensive to
+              instruction poll (<a class="w-xref" href="javascript:void(0)" onclick="show('collab-techniques')">TECH-02</a>). Requires pre-written questions with good distractors — time-intensive to
               design, fast to run.</p>
             <p>Start with the signal you most need. Add other systems only after the first one is running reliably.</p>
           </div>
@@ -3498,7 +3568,7 @@ permalink: /teaching-wiki
             <p>Systems have different optimal introduction points. Introducing too many systems simultaneously at the
               start of semester produces student compliance anxiety rather than engagement. Introducing systems
               mid-semester without prior framing reads as arbitrary or punitive.</p>
-            <p><strong>Week 1:</strong> Establish the pedagogical contract (SYS-01). Name every system you plan to use.
+            <p><strong>Week 1:</strong> Establish the pedagogical contract (<a class="w-xref" href="javascript:void(0)" onclick="show('course-systems')">SYS-01</a>). Name every system you plan to use.
               Set up the anonymous response infrastructure (SYS-02). Assign pairs (SYS-06). Start cold call retrieval
               opener (TECH-03) — it requires zero setup and establishes the retrieval norm from day one.</p>
             <p><strong>Weeks 1–3:</strong> Run exit tickets or muddiest point every session while you are building the
@@ -3522,7 +3592,7 @@ permalink: /teaching-wiki
             <p><strong>2. Exit ticket (SYS-07)</strong> — 4 minutes per session to collect, 10 minutes to read and
               prepare next-session response. Closes the diagnostic loop that the cold call opener opens. Run every
               concept-heavy session.</p>
-            <p><strong>3. Milestone reflection prompts (PBL Condition 3)</strong> — if running a project-based course,
+            <p><strong>3. Milestone reflection prompts (<a class="w-xref" href="javascript:void(0)" onclick="show('pbl')">PBL Condition 3</a>)</strong> — if running a project-based course,
               the structured reflection at each milestone is the single highest-leverage intervention for connecting
               project work to course concepts. No additional session time required — built into existing checkpoint
               structure.</p>
@@ -3588,13 +3658,13 @@ permalink: /teaching-wiki
               industry experience or strong CS backgrounds can be 5–10x faster than students encountering the concept
               for the first time. If you design for the median, you lose both ends simultaneously. The fast students
               disengage within minutes. The slow students feel surveilled and anxious, which is precisely the
-              psychological condition that impairs working memory and further slows performance (Beilock et al., 2004 —
+              psychological condition that impairs <span class="w-gloss" onclick="wikiGloss(this, 'workingMemory')">working memory</span> and further slows performance (Beilock et al., 2004 —
               math anxiety and working memory interference).</p>
           </div>
 
           <h3>The Core Design Principle — Layered Tasks</h3>
-          <p>The most well-supported structural solution is what the CS education literature calls <strong>task
-              layering</strong> or <strong>scaffolded extension</strong> — designing every in-class coding exercise as
+          <p>The most well-supported structural solution is what the CS education literature calls <strong><span class="w-gloss" onclick="wikiGloss(this, 'taskLayering')">task
+              layering</span></strong> or <strong>scaffolded extension</strong> — designing every in-class coding exercise as
             three sequential tasks rather than one, where each layer requires genuine additional understanding rather
             than just more of the same work.</p>
 
@@ -3632,7 +3702,7 @@ permalink: /teaching-wiki
               you change?" (Requires reasoning about computational complexity without having been taught it explicitly)
             </p>
             <p>— "A colleague shows you this solution to Layer 1 [show a subtly wrong solution]. It passes all the tests
-              you wrote. What is wrong with it and how would you catch it?" (Requires mental model depth to detect a
+              you wrote. What is wrong with it and how would you catch it?" (Requires <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">mental model</a> depth to detect a
               non-obvious bug)</p>
           </div>
 
@@ -3708,7 +3778,7 @@ permalink: /teaching-wiki
                 Social Psychology</em> — anxiety and working memory interference, directly relevant to slow coders under
               time pressure. · Beilock & Carr (2005) <em>Psychological Science</em> — expressive writing before
               performance tasks reduces anxiety-driven working memory interference. · The layered task design draws on
-              differentiated instruction research (Tomlinson, 2001) and the zone of proximal development (Vygotsky,
+              <span class="w-gloss" onclick="wikiGloss(this, 'differentiatedInstruction')">differentiated instruction</span> research (Tomlinson, 2001) and the <span class="w-gloss" onclick="wikiGloss(this, 'zpd')">zone of proximal development</span> (Vygotsky,
               1978) — each student works at the edge of their current competence rather than at a single class-level
               target. · CS education research on pace variance is sparse — this section draws more heavily on general
               educational psychology than domain-specific studies. Flag as practitioner-derived synthesis where specific
@@ -3735,11 +3805,11 @@ permalink: /teaching-wiki
                 to Cognitive Processes.</em> Erlbaum. — Storage strength vs retrieval strength. The theoretical
               foundation of desirable difficulties.</li>
             <li><span class="w-ref-author">Hestenes, D., Wells, M., & Swackhamer, G. (1992).</span> Force concept
-              inventory. <em>The Physics Teacher, 30</em>(3), 141–158. — Model for concept inventory design. The FCI
+              inventory. <em>The Physics Teacher, 30</em>(3), 141–158. — Model for <a class="w-xref" href="javascript:void(0)" onclick="show('concept-inventories')">concept inventory</a> design. The FCI
               revealed that procedural fluency and conceptual understanding are dissociable.</li>
           </ul>
 
-          <h3>On Teaching Effectiveness</h3>
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('effectiveness')">Teaching Effectiveness</a></h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Hattie, J., & Timperley, H. (2007).</span> The power of feedback. <em>Review
                 of Educational Research, 77</em>(1), 81–112. — 196-study review. Task-level and process-level feedback
@@ -3766,7 +3836,7 @@ permalink: /teaching-wiki
               causal designs on the SET-learning relationship.</li>
           </ul>
 
-          <h3>On Desirable Difficulties</h3>
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('desirable-difficulty')">Desirable Difficulties</a></h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Slamecka, N.J., & Graf, P. (1978).</span> The generation effect: Delineation
               of a phenomenon. <em>Journal of Experimental Psychology: Human Learning and Memory, 4</em>(6), 592–604. —
@@ -3785,7 +3855,7 @@ permalink: /teaching-wiki
               discussion) outperformed expert lecture; students rated lecture as more effective.</li>
           </ul>
 
-          <h3>On Student Evaluations</h3>
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('evaluations')">Student Evaluations</a></h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Uttl, B., White, C.A., & Gonzalez, D.W. (2017).</span> Meta-analysis of
               faculty's teaching effectiveness. <em>Studies in Educational Evaluation, 54</em>, 22–42. — Corrected
@@ -3798,7 +3868,7 @@ permalink: /teaching-wiki
               response rates inflate mean scores by 0.3–0.5 points on 5-point scale.</li>
           </ul>
 
-          <h3>On Mental Models and Assessment</h3>
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">Mental Models</a> and Assessment</h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Rozenblit, L., & Keil, F. (2002).</span> The misunderstood limits of folk
               science. <em>Cognitive Science, 26</em>(5), 521–562. — Illusion of explanatory depth: ratings drop after
@@ -3822,7 +3892,7 @@ permalink: /teaching-wiki
               accuracy are inversely correlated at low ability.</li>
           </ul>
 
-          <h3>On Probe Sequencing</h3>
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">Probe Sequencing</a></h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Kornell, N., Hays, M.J., & Bjork, R.A. (2009).</span> Unsuccessful retrieval
               attempts enhance subsequent learning. <em>Journal of Experimental Psychology: LMC, 35</em>(4), 989–998. —
@@ -3862,6 +3932,74 @@ permalink: /teaching-wiki
   </div><!-- #wiki-root -->
 
   <script>
+    // Glossary: first-mention jargon gets a .w-gloss span; clicking it opens a
+    // definition panel directly beneath the enclosing block (never an overlay).
+    const WIKI_GLOSSARY = {
+      metaAnalysis: { term: 'Meta-Analysis', body: 'A study that statistically combines the results of many separate studies on the same question to estimate an overall effect. It gives more statistical power than any single study, but it also averages over differences in how those studies were designed — so the summary number can hide a lot of variation in method quality and context.' },
+      effectSize: { term: 'Effect Size (d)', body: 'A standardized number describing how large a difference an intervention makes, independent of sample size. Common rough guidelines: around 0.2 is a small effect, 0.5 medium, 0.8 or above large. Unlike a p-value, it tells you the magnitude of an effect, not just whether one exists.' },
+      pck: { term: 'Pedagogical Content Knowledge', body: 'Shulman\'s (1986) term for the specific knowledge of how to teach a subject — not just knowing the subject, and not just knowing generic teaching methods, but knowing which explanations, examples, and framings make a particular concept learnable. Teachers with strong pedagogical content knowledge anticipate where students get confused and why.' },
+      warmDemander: { term: 'Warm Demander', body: 'A teaching stance that combines high, explicit expectations with visible personal support and belief in the student\'s ability. It is distinct from being simply warm (friendly, encouraging) or simply demanding (strict, high-standards) — the combination of both, delivered together, is what the research associates with better outcomes.' },
+      selfExplanation: { term: 'Self-Explanation', body: 'The act of a learner generating their own explanation of how or why something works, rather than being told or reading it. Producing a self-explanation forces active construction of a mental model, which tends to produce deeper understanding than passively receiving the same explanation from an instructor.' },
+      storageStrength: { term: 'Storage Strength', body: 'In Bjork & Bjork\'s theory of memory, how durably and deeply a piece of information is encoded in long-term memory. It is largely permanent once built and does not decay the way accessibility does — it is about how well-learned something is, not how easily it comes to mind right now.' },
+      retrievalStrength: { term: 'Retrieval Strength', body: 'In Bjork & Bjork\'s theory of memory, how easily a piece of information can be accessed right now. It fluctuates quickly, rises with recent practice, and fades with disuse — independent of storage strength. Something can have high retrieval strength (feels easy to recall) without high storage strength (won\'t last), and vice versa.' },
+      generationEffect: { term: 'Generation Effect', body: 'The finding that information you produce yourself (e.g., completing "hot — c___") is remembered better than the same information simply read or given to you (e.g., reading "hot — cold"). The act of generating an answer, even a simple one, builds a stronger memory trace than recognizing a presented answer.' },
+      spacingEffect: { term: 'Spacing Effect', body: 'The finding that learning is more durable when practice or study sessions are spread out over time rather than massed together (e.g., one long cram session). A gap between exposures forces some forgetting and re-retrieval, which strengthens long-term retention more than repeating the same material back-to-back.' },
+      interleaving: { term: 'Interleaving', body: 'Mixing different types of problems or topics together during practice (A, B, C, A, B, C) instead of grouping all of one type together (A, A, A, B, B, B — "blocked" practice). Interleaving feels harder and produces more errors during practice, but it improves students\' ability to tell which method or concept applies to a given problem, which is what most real-world transfer requires.' },
+      testingEffect: { term: 'Testing Effect (Retrieval Practice)', body: 'The finding that actively trying to recall information (testing yourself) produces stronger, more durable learning than the equivalent time spent re-reading or reviewing the same material. The act of retrieval itself — not just checking whether you got the right answer — is what strengthens the memory.' },
+      peerInstruction: { term: 'Peer Instruction', body: 'Mazur\'s technique for conceptual multiple-choice questioning: students vote individually and anonymously on a conceptual question, then discuss with a neighbor before re-voting. It works best when 30–70% of the class initially answers incorrectly — enough disagreement to make discussion productive, but enough correct answers present in the room for peers to learn from.' },
+      transferTypes: { term: 'Near Transfer vs Far Transfer', body: 'Near transfer means applying a concept to a new problem that looks very similar to the ones already practiced (same surface features). Far transfer means applying the same underlying concept in a problem that looks quite different on the surface. The two are empirically separable — students can master near transfer while still failing far transfer, which is why testing only near-transfer problems can overestimate genuine understanding.' },
+      illusionExplanatoryDepth: { term: 'Illusion of Explanatory Depth', body: 'The well-documented tendency for people to believe they understand how something works in much more mechanistic detail than they actually do — a belief that only breaks down when they are asked to explain or apply it. In teaching, this means students who nod along and feel they understood a clear explanation are not being dishonest when they later fail to reproduce it; they genuinely didn\'t know they didn\'t know.' },
+      classroomAssessmentTechnique: { term: 'Classroom Assessment Technique (CAT)', body: 'Angelo & Cross\'s (1993) term for a family of quick, low-stakes, often anonymous in-class activities (like the "muddiest point" card) designed to give an instructor real-time feedback on student understanding without the overhead of formal grading.' },
+      notionalMachine: { term: 'Notional Machine', body: 'A simplified mental model of how a computer executes a program that a learner uses to reason about code, even though it is not literally how the hardware or interpreter works underneath. Novice programmers build (often flawed) notional machines — for example, believing a variable is a labeled box holding a value rather than a reference — and those flawed models predictably produce specific bugs and misunderstandings.' },
+      misconceptionCluster: { term: 'Misconception Cluster', body: 'A group of related, documented wrong mental models that students commonly hold about a topic, used to design multiple-choice distractors that are diagnostic rather than arbitrary. Grouping misconceptions this way lets an instructor identify not just that a student is wrong, but which specific wrong model they are reasoning from.' },
+      distractor: { term: 'Distractor', body: 'In a multiple-choice question, any answer option other than the correct one. A well-designed distractor corresponds to a specific, known misconception rather than being an arbitrary wrong answer — so a student who picks it reveals something diagnostic about their thinking, not just that they got it wrong.' },
+      representativenessHeuristic: { term: 'Representativeness Heuristic', body: 'A mental shortcut, documented by Kahneman & Tversky, where people judge probability by how much something resembles a typical case rather than by the actual statistical base rates. It underlies common errors like assuming a small sample "should" closely match a population\'s true proportion.' },
+      pretestingEffect: { term: 'Pretesting Effect', body: 'The finding that attempting to answer a question before being taught the material — even when the attempt is wrong — improves subsequent learning from instruction, compared to going straight into instruction without an attempt. The failed attempt seems to prime the learner to notice and encode the correct information more effectively.' },
+      conceptualChangeTeaching: { term: 'Conceptual Change Teaching', body: 'An instructional approach, grounded in Posner et al. (1982), that explicitly names the conflict between a student\'s existing (often wrong) model and the correct one, rather than simply presenting the correct model and hoping it replaces the old one. Students often assimilate new information into an unchanged prior model unless the contradiction is made explicit and unavoidable.' },
+      metacognition: { term: 'Metacognition / Metacognitive Awareness', body: 'Awareness and understanding of one\'s own thinking and learning — knowing what you do and don\'t understand, and being able to monitor and regulate your own learning process. Metacognitive accuracy is often poor precisely when it matters most: people who understand least are often least able to accurately judge their own understanding.' },
+      hingeQuestion: { term: 'Hinge Question', body: 'Dylan Wiliam\'s term for a multiple-choice question specifically designed so that each wrong answer maps to a different, identifiable misconception. The instructor\'s next move ("hinges" on) the distribution of answers — it is meant to be answerable and diagnostic within a couple of minutes, not a graded test.' },
+      scaffolding: { term: 'Scaffolding', body: 'Temporary structure and support — worked examples, constrained choices, guided prompts — provided to a learner attempting a task beyond what they could do fully independently, which is progressively removed as competence builds. Without adequate scaffolding, difficult tasks (like unguided projects) tend to produce cognitive overload rather than learning.' },
+      dunningKruger: { term: 'Dunning-Kruger Effect', body: 'The finding that people with low competence in a domain tend to be least able to accurately judge their own incompetence — their metacognitive skill for evaluating performance is itself impaired by the same lack of knowledge. In teaching, this explains why the most confused students are often the ones least able to articulate what they don\'t understand.' },
+      thinkPairShare: { term: 'Think-Pair-Share', body: 'A simple collaborative structure where students first think individually about a question, then discuss it with a partner, and only then share with the whole class. Discussing with a partner before speaking publicly lowers the social cost of being wrong and surfaces more honest engagement than going straight to whole-class discussion.' },
+      ventriloquizing: { term: 'Ventriloquizing', body: 'Jain & Samuel\'s (2025) term for students who reproduce AI-generated output as their own without genuinely internalizing or understanding it — they are "voicing" the AI\'s words rather than their own reasoning. The concern is not that AI was used, but that no real cognitive processing of its output occurred.' },
+      factFramework: { term: 'FACT Framework', body: 'An assessment design framework for data science education (Fundamental, Applied, Conceptual, critical Thinking) that assigns each component a different AI policy — no AI for fundamentals and conceptual checks, AI permitted with documentation for applied work — so that genuine understanding is verified even when AI is used elsewhere in a course.' },
+      selfRegulatedLearning: { term: 'Self-Regulated Learning', body: 'A learning process where the student actively plans their approach, monitors their own progress, and reflects on what worked, rather than passively receiving instruction or completing tasks. Research on AI-assisted work finds that students who engage in full self-regulated learning cycles around AI use — planning, monitoring, reflecting — learn more than students who use AI in an exploratory, low-engagement way.' },
+      bloomsTaxonomy: { term: 'Bloom\'s Taxonomy', body: 'A widely used framework ranking cognitive tasks by complexity, from lower-order skills like remembering and understanding facts up to higher-order skills like analyzing, evaluating, and creating. It is often used in assessment design to check whether a course is only testing recall or genuinely reaching higher-order thinking.' },
+      utilityValue: { term: 'Utility Value', body: 'In motivation research, the perceived usefulness or personal relevance of a task or piece of course content to a student\'s own goals. Interventions that help students explicitly connect coursework to something they personally value have been shown to reduce performance gaps and increase engagement, particularly for less-confident students.' },
+      selfDeterminationTheory: { term: 'Self-Determination Theory', body: 'A motivation theory (Deci & Ryan) proposing that people are more intrinsically motivated when a context supports their sense of autonomy (choice), competence (feeling capable), and relatedness (connection to others). It is often used to explain why "autonomy-supportive" framing of a task produces more engagement than framing the same task as an evaluation.' },
+      taskSubstitution: { term: 'Task Substitution', body: 'The rational tendency for students to replace an assigned activity with a more comfortable or immediately useful one when there is no real consequence for skipping it. It is not a motivation failure on the student\'s part — it is a predictable response to an activity that is structurally optional in practice, whatever the instructor intended.' },
+      jigsawMethod: { term: 'Jigsaw Method', body: 'Aronson\'s (1978) cooperative learning structure in which each group holds a piece of information the others need, so that no single group can complete the task alone. Because the interdependence is built into the task structure itself, students cannot simply avoid the intended collaboration.' },
+      cooperativeVsCollaborative: { term: 'Cooperative vs Collaborative Tasks', body: 'A distinction in group-work design: cooperative tasks allow the workload to be split up and pooled (any member could produce the final answer alone), while collaborative tasks require genuine joint or individual demonstration of understanding from each member. Activities intended to be collaborative often default to merely cooperative behavior — and to pooling and free-riding — unless the task structure actively prevents it.' },
+      readinessAssuranceTest: { term: 'Readiness Assurance Test (iRAT/tRAT)', body: 'From Team-Based Learning: a short multiple-choice test on assigned pre-class material, taken first individually (iRAT) and then again immediately as a team (tRAT). It verifies — and creates social accountability for — pre-class preparation, so that class time can be spent on application rather than first exposure to material.' },
+      cognitiveLoad: { term: 'Cognitive Load', body: 'Sweller\'s theory describing the finite mental effort available for processing new information at once. When a task demands more simultaneous processing than a learner\'s working memory can handle — as unguided discovery often does for novices — instruction becomes less effective, because effort goes into searching for a solution rather than encoding the underlying concept.' },
+      implementationScience: { term: 'Implementation Science', body: 'The study of how and why interventions succeed or fail once introduced into real-world practice, as distinct from whether the intervention works in principle. A key finding is that most educational interventions fail not because they are ineffective, but because they are only partially and inconsistently implemented — one system run reliably tends to outperform several run halfheartedly.' },
+      zpd: { term: 'Zone of Proximal Development', body: 'Vygotsky\'s concept for the range of tasks a learner cannot yet do independently but can do with appropriate support or guidance. Effective scaffolding targets this zone — pitched at the edge of a student\'s current competence — and is progressively withdrawn as the student becomes able to perform the task alone.' },
+      taskLayering: { term: 'Task Layering (Scaffolded Extension)', body: 'A design pattern for in-class exercises that splits a task into sequential layers of increasing difficulty — a core task everyone should complete, an extension for those who finish early, and a genuinely harder challenge — so that students at different paces are always working on an appropriately difficult problem rather than waiting or disengaging.' },
+      differentiatedInstruction: { term: 'Differentiated Instruction', body: 'An instructional approach that deliberately varies the task, pacing, or support offered to different students based on their current readiness, rather than delivering identical instruction to the whole class regardless of where individual students are. Layered coding exercises are a specific application of this general principle.' },
+      workingMemory: { term: 'Working Memory', body: 'The limited-capacity mental workspace used to hold and manipulate information during active thinking, as distinct from long-term memory. Anxiety and stress consume part of this limited capacity, which is one reason students who feel anxious or watched tend to perform worse on tasks that would otherwise be within their ability.' },
+      set: { term: 'Student Evaluation of Teaching (SET)', body: 'The standard end-of-course survey students fill out rating an instructor and course. Large-sample research finds SET scores correlate close to zero with objective measures of how much students actually learned — they reliably measure satisfaction, not learning, and are influenced by factors like expected grade and survey response bias.' },
+      selectionBias: { term: 'Selection Bias', body: 'A distortion that occurs when the people who respond to something (like an optional survey) are not representative of the full population being studied. In course evaluations, low voluntary response rates tend to overrepresent students with the strongest opinions — very satisfied or very dissatisfied — and underrepresent the more moderate majority.' },
+      anchoringEffect: { term: 'Anchoring Effect', body: 'The tendency to judge something relative to a recent reference point rather than in absolute terms. In course evaluations, this means a rigorous module taught right after an easy one will tend to be rated lower than the same module taught in isolation, simply because of the contrast with what students experienced immediately before.' },
+      advanceOrganizer: { term: 'Advance Organizer', body: 'Ausubel\'s (1960) concept for introductory material presented before new content that helps learners connect it to what they already know. It works best when the learner is prompted to construct the link themselves (e.g., "why does that matter for today?") rather than simply being told the connection.' },
+      formativeAssessment: { term: 'Formative Assessment', body: 'Low-stakes or ungraded assessment used during the learning process to give the instructor and student real-time information about understanding, so instruction can be adjusted before it is too late — as opposed to summative assessment, which measures achievement after the fact for a grade.' }
+    };
+
+    function wikiGloss(el, key) {
+      const entry = WIKI_GLOSSARY[key];
+      if (!entry) return;
+      const container = el.closest('p, li, td, h3, h4, div.w-card, div.w-callout, div.w-technique-content') || el.parentElement;
+      let panel = container.nextElementSibling;
+      if (!panel || !panel.classList || !panel.classList.contains('w-gloss-panel') || panel.dataset.gloss !== key) {
+        panel = document.createElement('div');
+        panel.className = 'w-gloss-panel';
+        panel.dataset.gloss = key;
+        panel.innerHTML = '<button class="w-gloss-panel-close" onclick="event.stopPropagation(); this.parentElement.classList.remove(\'w-open\')">✕</button>' +
+          '<span class="w-gloss-panel-title">' + entry.term + '</span><span>' + entry.body + '</span>';
+        container.insertAdjacentElement('afterend', panel);
+      }
+      panel.classList.toggle('w-open');
+    }
+
     function show(id) {
       const root = document.getElementById('wiki-root');
       root.querySelectorAll('.w-page').forEach(p => p.classList.remove('w-active'));
