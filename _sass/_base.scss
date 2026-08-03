@@ -155,7 +155,7 @@ blockquote {
 }
 
 .post-description {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   font-size: 0.875rem;
 
   a {
@@ -516,6 +516,19 @@ footer.sticky-bottom {
     }
   }
 
+  .card-body {
+    padding: 0.875rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-text {
+    margin-bottom: 0.5rem;
+  }
+
   .card-item {
     width: auto;
     margin-bottom: 10px;
@@ -539,8 +552,8 @@ footer.sticky-bottom {
     letter-spacing: 0.04rem;
     border-bottom: 1px solid var(--global-divider-color);
     padding-top: 0.5rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
     text-align: left;
   }
 }
@@ -556,11 +569,11 @@ footer.sticky-bottom {
     column-gap: 1rem;
     border-bottom: 1px solid var(--global-divider-color);
     padding-top: 0.5rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
 
     &:first-of-type {
-      margin-top: 1rem;
+      margin-top: 0.25rem;
     }
 
     .institution {
@@ -585,12 +598,17 @@ footer.sticky-bottom {
     letter-spacing: 0.05rem;
     font-size: 0.9rem;
     text-align: left;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
   }
 
   .card-title {
     font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-text {
+    margin-bottom: 0.5rem;
   }
 
   .grid-sizer,
