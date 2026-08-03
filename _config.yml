@@ -154,9 +154,9 @@ collections:
   projects:
     output: true
     permalink: /projects/:path/
-  courses:
+  teaching:
     output: true 
-    permalink: /courses/:path/
+    permalink: /teaching/:path/
   # explainers:
   #   output: true
   #   permalink: /explainers/:path/
