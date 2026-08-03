@@ -110,8 +110,8 @@ bing_site_verification:  # out your bing-site-verification ID (Bing Webmaster)
 # -----------------------------------------------------------------------------
 
 blog_name: Science Communication # blog_name will be displayed in your blog page
-blog_nav_title: scicomm # your blog must have a title for it to be displayed in the nav bar
-blog_description: Blog posts and multimedia science communication 
+blog_nav_title: blog # your blog must have a title for it to be displayed in the nav bar
+blog_description: Blog posts, multimedia science communication, and news
 permalink: /blog/:year/:title/
 
 # Pagination
@@ -145,12 +145,9 @@ pagination:
 collections:
   # blog:
   #   output: true
-  #   permalink: /blog/:path/  
-  news:
-    defaults:
-      layout: post
-    output: true
-    permalink: /news/:path/
+  #   permalink: /blog/:path/
+  # news items now live in _posts (merged into the blog feed); see homepage
+  # widget in _includes/news.html, which pulls inline: true posts.
   projects:
     output: true
     permalink: /projects/:path/

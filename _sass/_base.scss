@@ -110,6 +110,13 @@ blockquote {
   color: var(--global-theme-color);
 }
 
+// About
+
+.desc {
+  font-family: "Roboto Slab", serif;
+  font-weight: 700;
+}
+
 // Profile
 
 .profile {
@@ -425,6 +432,15 @@ footer.sticky-bottom {
     padding-top: 2rem;
     padding-bottom: 2rem;
 
+    &.post-inline {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+
+      p:not(.post-meta) {
+        margin-bottom: 0;
+      }
+    }
+
     .post-meta {
       color: var(--global-text-color-light);
       font-size: 0.875rem;
@@ -529,25 +545,39 @@ footer.sticky-bottom {
 // Teaching
 
 .teaching {
-  h2.institution {
-    color: var(--global-text-color);
-    font-weight: 700;
-    text-align: left;
-    margin-top: 3rem;
-    margin-bottom: 0;
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    border-bottom: 1px solid var(--global-divider-color);
+    padding-top: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 
     &:first-of-type {
       margin-top: 1rem;
     }
-  }
 
-  h2.category {
-    margin-top: 0.5rem;
+    .institution {
+      color: var(--global-text-color);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+      font-size: 1.1rem;
+    }
+
+    .category {
+      color: var(--global-theme-color);
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
   }
 
   h3.semester {
-    color: var(--global-text-color-light);
-    font-weight: 600;
+    color: #{$pink-color};
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05rem;
     font-size: 0.9rem;

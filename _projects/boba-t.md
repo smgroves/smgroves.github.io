@@ -2,7 +2,7 @@
 layout: page
 title: BoBa-T
 description: GRN inference for scRNA-seq
-img: assets/img/msapplication_tileimage.png
+img: assets/img/bobat_logo.png
 redirect: https://pypi.org/project/bobat/
 importance: 1
 category: packages
