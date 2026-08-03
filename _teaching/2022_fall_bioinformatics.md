@@ -5,6 +5,7 @@ description: I was a Guest Lecturer for this course at Vanderbilt University. Cl
 img: assets/img/teaching/bioinformatics_2022.png
 importance: 3
 category: 2022
+institution: Vanderbilt University
 ---
 
 ## Lecture 1: Introduction to RNA Sequencing: Quantifying Gene Expression

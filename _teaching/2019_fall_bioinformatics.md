@@ -6,5 +6,6 @@ img: assets/img/teaching/bioinformatics.png
 importance: 3
 category: 2019
 redirect: https://smgroves.github.io/assets/pdf/BMIF_6310_2019.pdf
+institution: Vanderbilt University
 ---
 

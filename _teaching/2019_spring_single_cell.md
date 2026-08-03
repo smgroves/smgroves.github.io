@@ -5,6 +5,7 @@ description: I was a Guest Lecturer for this course at Vanderbilt University. Cl
 img: assets/img/teaching/velocity.png
 importance: 3
 category: 2019
+institution: Vanderbilt University
 ---
 For my guest lecture, I taught the students how to use an RNA velocity package called `velocyto`, based on <a href="https://pubmed.ncbi.nlm.nih.gov/30089906/">La Manno et al. (2018)</a>. I was asked to give the same lecture the following year. The notebook I used for the presentation and gave to the students is shown below, which provides an overview of RNA velocity analysis on a tumor dataset.
 

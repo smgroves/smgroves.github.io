@@ -526,6 +526,46 @@ footer.sticky-bottom {
   }
 }
 
+// Teaching
+
+.teaching {
+  h2.institution {
+    color: var(--global-text-color);
+    font-weight: 700;
+    text-align: left;
+    margin-top: 3rem;
+    margin-bottom: 0;
+
+    &:first-of-type {
+      margin-top: 1rem;
+    }
+  }
+
+  h2.category {
+    margin-top: 0.5rem;
+  }
+
+  h3.semester {
+    color: var(--global-text-color-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    font-size: 0.9rem;
+    text-align: left;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+  }
+
+  .grid-sizer,
+  .grid-item {
+    width: 260px;
+  }
+}
+
 
 // Publications
 

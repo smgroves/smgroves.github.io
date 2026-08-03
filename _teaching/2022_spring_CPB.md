@@ -6,4 +6,5 @@ img: assets/img/teaching/cpb_retreat.jpg
 importance: 3
 category: 2022
 redirect: https://medschool.vanderbilt.edu/cpb/
+institution: Vanderbilt University
 ---

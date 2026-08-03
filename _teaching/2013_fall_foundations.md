@@ -6,6 +6,7 @@ img: assets/img/teaching/foundations.png
 redirect: https://catalog.wm.edu/preview_course_nopop.php?catoid=5&coid=9300
 importance: 3
 category: 2013
+institution: College of William & Mary
 ---
 
 For this course, I graded weekly assignments and held office hours for support outside of class time.

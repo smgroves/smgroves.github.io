@@ -1,10 +1,11 @@
 ---
 layout: page
-title: Computational Biomedical Engineering
+title: "BME2315: Computational Biomedical Engineering"
 description: I was a Co-instructor for this course at UVA. 
 img: assets/img/teaching/bme2315_2025/slope_field.png
 importance: 3
 category: 2025
+institution: University of Virginia
 ---
 
 Most of the course focuses on using numerical methods to approximate solutions to problems that cannot be solved analytically. Because these methods can be tedious, the computational power we have these days makes implementing the methods drastically easier. Therefore, the learning objectives for the course include understanding the mathematical basis for numerical methods across an array of problem types and implementing these methods computationally in Python.
