@@ -721,6 +721,8 @@ permalink: /teaching-wiki
 
       <div class="w-nav-section">
         <div class="w-nav-section-label">Assessment</div>
+        <a class="w-nav-link" onclick="show('formative-assessment')">Formative Assessment</a>
+        <a class="w-nav-link" onclick="show('diagnostic-assessment')">Diagnostic Assessment</a>
         <a class="w-nav-link" onclick="show('mental-models')">Measuring Mental Models</a>
         <a class="w-nav-link" onclick="show('concept-inventories')">Concept Inventories</a>
         <a class="w-nav-link" onclick="show('probe-sequencing')">Probe Sequencing</a>
@@ -784,6 +786,16 @@ permalink: /teaching-wiki
               <h4>Desirable Difficulties</h4>
               <p>Why harder conditions produce better retention despite worse evaluations.</p>
             </div>
+            <div class="w-home-w-card" onclick="show('formative-assessment')">
+              <div class="w-home-w-card-icon">🎯</div>
+              <h4>Formative Assessment</h4>
+              <p>What actually makes a probe formative — and why most implementations fail.</p>
+            </div>
+            <div class="w-home-w-card" onclick="show('diagnostic-assessment')">
+              <div class="w-home-w-card-icon">📋</div>
+              <h4>Diagnostic Assessment</h4>
+              <p>Pre-unit and post-unit survey item banks, with the decision each item drives.</p>
+            </div>
             <div class="w-home-w-card" onclick="show('concept-inventories')">
               <div class="w-home-w-card-icon">🔬</div>
               <h4>Concept Inventories</h4>
@@ -836,7 +848,7 @@ permalink: /teaching-wiki
             </div>
           </div>
 
-          <div class="w-updated">Last updated: April 2026 · Add entries by describing what you've learned</div>
+          <div class="w-updated">Last updated: August 2026 · Add entries by describing what you've learned</div>
         </div>
 
         <!-- EFFECTIVENESS -->
@@ -1173,6 +1185,914 @@ permalink: /teaching-wiki
             Clayson (2009) Journal of Marketing Education · Carrell & West (2010) Journal of Political Economy · Porter
             et al. (2004) Research in Higher Education · Wilson & Ross (2001) Personality and Social Psychology Bulletin
           </p>
+        </div>
+
+        <!-- FORMATIVE ASSESSMENT -->
+        <div id="formative-assessment" class="w-page">
+          <div class="w-page-header">
+            <div class="w-page-tag">wiki / assessment</div>
+            <h2>Formative Assessment</h2>
+            <p>What the evidence actually supports about assessment during instruction — including the substantially
+              weaker effect sizes that replaced the famous ones, and the specific design rules that separate formative
+              assessment that works from formative assessment that is just extra quizzing.</p>
+          </div>
+
+          <div class="w-callout w-red">
+            <div class="w-callout-label">Provenance Warning — Read Before Citing Any Number</div>
+            <p>The most-cited claim in this field is that <span class="w-gloss" onclick="wikiGloss(this, 'formativeAssessment')">formative assessment</span> produces effect sizes of
+              <strong>0.4–0.7</strong> (Black & Wiliam, 1998). That range is <em>not</em> a meta-analytic effect size for
+              formative assessment as an intervention. Black & Wiliam's 1998 paper was a narrative review of roughly 250
+              heterogeneous studies, and the 0.4–0.7 figure was an informal characterization of the range they observed
+              across studies that measured very different things. Wiliam has since said publicly and in print that the
+              number should not be used the way it is routinely used. When formative assessment was later subjected to
+              actual meta-analysis with inclusion criteria, the pooled effect was <strong>about 0.20</strong> (Kingston &
+              Nash, 2011) — and near zero in science specifically. Cite 0.20, not 0.7, and cite the mechanism rather than
+              the label.</p>
+          </div>
+
+          <h3>The Definition Problem — Why "Formative Assessment" Is Not One Thing</h3>
+          <p>Bennett (2011) makes the argument that should shape everything on this page: <strong>formative assessment is
+              not an instrument, it is a use of an instrument.</strong> The same three-question quiz is formative if the
+            answers change what you do in the next ten minutes and summative if they go into a gradebook. This is why the
+            meta-analytic literature is so noisy — studies labeled "formative assessment" include commercial benchmark
+            testing systems, teacher professional development programs, peer feedback protocols, and two-minute exit
+            cards, which share a label and almost nothing else.</p>
+          <p>The operational consequence: <strong>if you cannot name the instructional decision an answer will change,
+              you are not doing formative assessment.</strong> You are collecting data. This is the same criterion
+            Wiliam uses to define a <span class="w-gloss" onclick="wikiGloss(this, 'hingeQuestion')">hinge question</span> — a question whose answer determines what the instructor does next
+            — generalized to every probe you run.</p>
+
+          <div class="w-callout w-blue">
+            <div class="w-callout-label">The One-Sentence Test</div>
+            <p>Before running any probe, finish this sentence: "If most students answer <em>X</em>, I will do <em>Y</em>;
+              if most answer <em>Z</em>, I will do <em>W</em> instead." If you cannot finish it, either redesign the
+              probe or cut it. A probe with only one possible follow-up action is a ritual, not an assessment.</p>
+          </div>
+
+          <h3>What the Effect Sizes Actually Are — With Study Protocols</h3>
+
+          <table class="w-evidence-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th><span class="w-gloss" onclick="wikiGloss(this, 'effectSize')">Effect (d)</span></th>
+                <th>What was actually measured, and how much weight it carries</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Black &amp; Wiliam (1998)</strong></td>
+                <td class="w-effect-med">0.4–0.7 <em>(do not cite)</em></td>
+                <td>Narrative review, ~250 studies, no formal pooling and no inclusion criteria reported in
+                  meta-analytic form. The range is a characterization of observed study outcomes, not a computed pooled
+                  estimate. Enormously influential and largely correct in its <em>qualitative</em> conclusions about
+                  feedback and student involvement; unusable as a quantitative claim. Treat as a source of design
+                  principles, not effect sizes.</td>
+              </tr>
+              <tr>
+                <td><strong>Kingston &amp; Nash (2011)</strong></td>
+                <td class="w-effect-low">0.20</td>
+                <td>The actual meta-analysis. Screened several hundred studies, found only 13 that met basic
+                  methodological criteria, yielding 42 effect sizes. Weighted mean <strong>0.20</strong>. Subject
+                  breakdown is the interesting part: English/language arts <strong>0.32</strong>, mathematics
+                  <strong>0.17</strong>, science <strong>0.09</strong>. Their explicit conclusion was a call for
+                  research — the evidence base for formative assessment is far thinner than its adoption rate suggests.
+                  <strong>Implication for computational courses:</strong> the subjects most like yours show the smallest
+                  effects, so generic formative assessment should be expected to do very little. What follows below is an
+                  argument for specific mechanisms, not for the category.</td>
+              </tr>
+              <tr>
+                <td><strong>Kluger &amp; DeNisi (1996)</strong></td>
+                <td class="w-effect-med">0.41 mean — <strong>but 38% negative</strong></td>
+                <td>Meta-analysis of 607 effect sizes from 131 studies on feedback interventions. Mean effect 0.41, but
+                  <strong>roughly one third of feedback interventions made performance worse</strong>. The moderator was
+                  where feedback directed attention: feedback about the <em>task</em> improved performance; feedback that
+                  directed attention to the <em>self</em> (ability, comparison to others, ego) degraded it, because
+                  attention moved from the task to self-assessment. This is the single most important finding for
+                  practice on this page and the most frequently ignored one — "more feedback" is not a safe default.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Butler (1988)</strong></td>
+                <td class="w-effect-high">comments &gt; grades</td>
+                <td>Students received either written comments, numerical grades, or praise on divergent- and
+                  convergent-thinking tasks, then attempted further tasks. The <strong>comments-only</strong> group
+                  performed best on subsequent work and reported higher interest. Grades and praise groups performed
+                  comparably poorly. Butler's mechanism: grades induce <span class="w-gloss" onclick="wikiGloss(this, 'egoInvolvement')">ego-involvement</span> (how am I doing relative to
+                  others) while comments induce task-involvement (what does this work need). The practical corollary,
+                  replicated informally many times since: <strong>when a grade and a comment appear together, the grade
+                  wins and the comment is not read.</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Nyquist (2003)</strong></td>
+                <td class="w-effect-med">0.16 → 0.56 by feedback type</td>
+                <td>Meta-analysis of 185 studies producing the widely reproduced "feedback ladder": weakest is knowledge
+                  of score alone (~0.16), then knowledge of correct response, then elaborated feedback explaining
+                  <em>why</em>, strongest is elaborated feedback plus specific guidance on what to do next (~0.5+).
+                  <strong>Provenance: this is an unpublished master's thesis</strong> (Vanderbilt), known almost entirely
+                  through Wiliam's citation of it. The ordering is consistent with Hattie &amp; Timperley and with
+                  Shute (2008), so the qualitative ranking is safe; the specific numbers should not be quoted as if
+                  peer-reviewed.</td>
+              </tr>
+              <tr>
+                <td><strong>Shute (2008)</strong></td>
+                <td>review</td>
+                <td>Review of formative feedback in <em>Review of Educational Research</em>, and the most practically
+                  usable synthesis. Core guidelines: specific and focused rather than comprehensive; describe the
+                  <em>what/how/why</em> of the gap; avoid grades in the same channel; keep feedback manageable in volume
+                  (comprehensive feedback on everything produces cognitive overload and is ignored); and time it
+                  differently by difficulty — immediate feedback for difficult material and struggling learners, delayed
+                  feedback for easy material and high performers, where delay preserves the <a class="w-xref" href="javascript:void(0)" onclick="show('desirable-difficulty')">desirable difficulty</a>.</td>
+              </tr>
+              <tr>
+                <td><strong>Roediger &amp; Karpicke (2006)</strong></td>
+                <td class="w-effect-high">large, robust</td>
+                <td>Not usually filed under formative assessment, but it should be: the act of retrieval itself improves
+                  retention independent of any feedback or instructional adjustment. This means a well-designed probe
+                  has <em>two</em> separate payoffs — the diagnostic signal you get, and the learning the retrieval
+                  produces in the student. The <span class="w-gloss" onclick="wikiGloss(this, 'testingEffect')">testing effect</span> evidence base is far stronger than the formative
+                  assessment evidence base. If you only adopt one thing, adopt frequent low-stakes retrieval.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="w-callout">
+            <div class="w-callout-label">How to Read That Table Together</div>
+            <p>The category "formative assessment" has a weak and contested effect (0.20, near zero in science). Two
+              specific mechanisms inside it have strong and replicated effects: <strong>retrieval practice</strong> and
+              <strong>task-level feedback that the student has time to act on</strong>. The rational strategy is to build
+              your system out of those two mechanisms explicitly rather than out of the category — and to expect nothing
+              from probes that generate neither retrieval nor actionable feedback.</p>
+          </div>
+
+          <h3>Wiliam &amp; Thompson's Five Strategies</h3>
+          <p>The most useful organizing framework, from Wiliam &amp; Thompson (2007). It crosses three questions — where
+            the learner is going, where they are now, how to close the gap — with three agents: teacher, peer, self. The
+            five strategies below are the surviving cells. Its value is as an audit: most courses implement FA-02 heavily
+            and FA-01, FA-04, and FA-05 barely at all.</p>
+
+          <div class="w-technique-grid">
+            <div class="w-technique">
+              <span class="w-technique-num">FA-01</span>
+              <div class="w-technique-content">
+                <h5>Clarifying and sharing learning intentions and success criteria</h5>
+                <p>Students cannot self-correct toward a target they cannot see. In computational courses this fails in
+                  a specific way: "write a function that clusters this data" states a deliverable, not a success
+                  criterion. The criterion is something like "a reader can tell from your code and comments which
+                  choices were analyst decisions and which were forced by the data." Concrete implementation: show two
+                  anonymized prior submissions, one strong and one weak, and have students generate the criteria that
+                  distinguish them before they start their own work. Generating the criteria is more effective than
+                  receiving the rubric, for the same <span class="w-gloss" onclick="wikiGloss(this, 'generationEffect')">generation effect</span> reasons that make self-explanation work.</p>
+              </div>
+            </div>
+            <div class="w-technique">
+              <span class="w-technique-num">FA-02</span>
+              <div class="w-technique-content">
+                <h5>Engineering effective discussion, tasks, and activities that elicit evidence</h5>
+                <p>The strategy every course already attempts, usually badly. The failure mode is eliciting evidence
+                  from volunteers rather than from the class — a show of hands samples the confident, not the cohort.
+                  Effective elicitation is <strong>all-student response</strong>: every student commits to a specific
+                  answer, simultaneously, before any discussion. See <a class="w-xref" href="javascript:void(0)" onclick="show('feedback-techniques')">hinge questions and the finger confidence scale</a>
+                  for protocols, and <a class="w-xref" href="javascript:void(0)" onclick="show('concept-inventories')">concept inventories</a> for how to build the distractors that make responses
+                  diagnostic rather than merely right/wrong.</p>
+              </div>
+            </div>
+            <div class="w-technique">
+              <span class="w-technique-num">FA-03</span>
+              <div class="w-technique-content">
+                <h5>Providing feedback that moves learners forward</h5>
+                <p>Constrained hard by Kluger &amp; DeNisi: feedback directed at the task helps, feedback directed at
+                  the self hurts. "Your accumulator is not reset between calls" is task-level. "You're clearly strong at
+                  this" and "you're struggling with loops" are both self-level, and the second is not made safe by being
+                  true. The operational rule from Nyquist and Shute: feedback must contain <em>what the gap is</em> and
+                  <em>what specific action closes it</em>. Feedback that names the gap without an action is criticism
+                  with extra steps.</p>
+              </div>
+            </div>
+            <div class="w-technique">
+              <span class="w-technique-num">FA-04</span>
+              <div class="w-technique-content">
+                <h5>Activating students as learning resources for one another</h5>
+                <p>Peer feedback works when it is structured and specified and fails when it is open-ended — the same
+                  finding as <a class="w-xref" href="javascript:void(0)" onclick="show('feedback-techniques')">targeted peer observation</a>. "Review your partner's code" produces "looks good."
+                  "Find the one place where your partner's code would break on an empty dataframe, and say what it would
+                  do" produces signal. The additional benefit is that the reviewer learns more than the reviewee, which
+                  makes peer review defensible even when the feedback quality is mediocre.</p>
+              </div>
+            </div>
+            <div class="w-technique">
+              <span class="w-technique-num">FA-05</span>
+              <div class="w-technique-content">
+                <h5>Activating students as owners of their own learning</h5>
+                <p>The strategy with the weakest implementation rate and a real hazard: student self-assessment is
+                  unreliable precisely where it matters most (<span class="w-gloss" onclick="wikiGloss(this, 'dunningKruger')">Dunning-Kruger</span>; <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">illusion of explanatory depth</span>). Asking
+                  "how well do you understand this?" collects noise. What works is <strong>calibration training</strong>:
+                  have students predict their score on a task, then compare prediction to outcome, repeatedly. The
+                  target is not confidence, it is accuracy of confidence. Students who learn that they systematically
+                  overestimate gain a genuinely transferable skill.</p>
+              </div>
+            </div>
+          </div>
+
+          <h3>Best Practice — The Rules That Determine Whether It Works</h3>
+          <p>Ordered by how much they matter, not by convenience. The first three are the ones that flip the sign of the
+            effect.</p>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-01 · Attach a decision to every probe, in advance</div>
+            <p>Restating the definition because it is the whole thing: a probe whose result does not change your next
+              move is not formative. Write the branch before you write the question. This also disciplines probe design
+              — questions with genuinely informative answer distributions are harder to write than questions with
+              correct answers, and you will only invest in the harder version if you know what you plan to do with the
+              distribution.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-02 · Do not grade it, and do not put a grade next to a comment</div>
+            <p>From Butler (1988) and Kluger &amp; DeNisi. A grade attached to a formative probe converts it into a
+              summative one in the student's mind, moves attention from task to self, and — the specific finding —
+              causes the accompanying comment to go unread. If institutional constraints require credit, grade
+              <em>completion</em> rather than correctness and say so explicitly. Completion credit preserves honest
+              wrong answers, which are the entire diagnostic payload. A probe that students feel graded on will produce
+              their best guess at what you want to hear, and its diagnostic value drops to roughly zero.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-03 · Keep feedback at task and process level; never at self level</div>
+            <p>Hattie &amp; Timperley's four levels — task, process, self-regulation, self — are not equally useful.
+              Task ("this line mutates the input") and process ("you're debugging forward from the error rather than
+              backward from the cause") carry the effect. Self-regulation ("you stopped before checking the edge case")
+              is moderate. Self ("you're good at this," "you clearly didn't prepare") is where the negative third of
+              Kluger &amp; DeNisi's effects live. Praise is not exempt: it is self-level feedback and behaves like it.
+            </p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-04 · Budget time for students to act on the feedback, in class</div>
+            <p>The most common structural failure. Feedback delivered with no scheduled opportunity to use it is
+              functionally grading, whatever its content — the student reads it, feels something about it, and moves on
+              to the next deliverable. If you return feedback on Tuesday, five minutes of Tuesday must be spent acting
+              on it. Concretely: hand back the annotated code and require one specific revision before the session ends.
+              This is also the cheapest available improvement to most existing courses, because the feedback is already
+              being written; only the loop is missing.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-05 · Require production, not self-report</div>
+            <p>"Does that make sense?" and "rate your understanding 1–5" both ask students to introspect on something
+              they are systematically bad at introspecting on. Predict, generate, explain, or identify a failure mode
+              instead — see <a class="w-xref" href="javascript:void(0)" onclick="show('feedback-techniques')">replacing "does that make sense?"</a> for eight specific replacements. Self-report
+              belongs in a formative system only in the calibration form described in FA-05, where the point is the gap
+              between the report and the performance.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-06 · Sample the whole class, not the volunteers</div>
+            <p>Any protocol where responding is optional selects for students who are already tracking, which produces
+              systematic overestimation of class understanding — the same <span class="w-gloss" onclick="wikiGloss(this, 'selectionBias')">selection bias</span> that inflates course
+              evaluations. Simultaneous commitment (all fingers up on a count, all clickers in, all cards written)
+              costs the same time and gives you a distribution instead of an anecdote. The distribution is what tells
+              you whether you have a general confusion problem or a bimodal class, which need opposite responses.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-07 · Make it cheap enough to run every session</div>
+            <p>The <span class="w-gloss" onclick="wikiGloss(this, 'implementationScience')">implementation science</span> finding applies directly: interventions usually fail through partial and
+              inconsistent implementation rather than through being wrong. A two-minute exit card run every session
+              beats an elaborate diagnostic run three times a semester, because the elaborate one will be cut the first
+              week you fall behind. Design for the week you are behind, not the week you are prepared.</p>
+          </div>
+
+          <div class="w-card">
+            <div class="w-card-title">BP-08 · Tell students what the probe is for</div>
+            <p>Resistance to ungraded probes, retrieval openers, and confidence scales drops substantially when the
+              pedagogical rationale is stated before the first one rather than after the third. Say plainly: this is not
+              graded, wrong answers here are more useful to me than right ones, and I will change what we do next based
+              on what I see. Students who understand that the probe is instrumentation rather than judgment answer it
+              honestly, and honesty is the only property that makes it work.</p>
+          </div>
+
+          <h3>The ESRU Cycle — Where Formative Assessment Actually Breaks</h3>
+          <p>Ruiz-Primo &amp; Furtak (2006, 2007) observed science classrooms and coded informal formative assessment
+            into a four-step cycle: <strong>E</strong>licit a response, <strong>S</strong>tudent responds,
+            <strong>R</strong>ecognize what the response reveals, <strong>U</strong>se it to adjust instruction. They
+            found that teachers routinely completed E–S–R and stopped. The cycles that reached <strong>U</strong> were
+            the ones associated with higher student learning; the truncated ESR cycles were not.</p>
+
+          <div class="w-callout w-red">
+            <div class="w-callout-label">The Truncation Pattern</div>
+            <p>The characteristic failure is not that instructors ignore student responses — they usually notice and
+              correctly interpret them. It is that noticing feels like completion. The probe runs, the confusion is
+              visible, the instructor says "right, that's a common confusion, let me clarify" — and then delivers the
+              same explanation again, slightly slower, and moves on. That is an ESR cycle wearing a U costume.
+              Re-explaining is not adjusting. See <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">when a probe reveals widespread misconception</a>: the
+              evidence-supported response is more <em>conflict</em>, not more explanation.</p>
+          </div>
+
+          <h3>A Minimum Viable System</h3>
+          <p>Three cadences, each cheap enough to survive a bad week. This is a starting configuration, not a
+            prescription — see <a class="w-xref" href="javascript:void(0)" onclick="show('system-selection')">picking your systems</a> for how to sequence adoption without overloading yourself.</p>
+
+          <table class="w-evidence-table">
+            <thead>
+              <tr>
+                <th>Cadence</th>
+                <th>Instrument</th>
+                <th>Cost</th>
+                <th>The decision it drives</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Every session, opening</strong></td>
+                <td>One retrieval question on last session's material, written, ungraded</td>
+                <td>3 min</td>
+                <td>Whether to proceed or spend ten minutes re-anchoring. Doubles as spaced retrieval practice, which
+                  is the payoff that justifies it even on days when the answer is "proceed."</td>
+              </tr>
+              <tr>
+                <td><strong>Every session, mid-point</strong></td>
+                <td>One hinge question with misconception distractors, all-student simultaneous response</td>
+                <td>4 min</td>
+                <td>Which of the two prepared paths to take for the second half. Requires writing two second halves,
+                  which is the real cost of this row and the reason most instructors skip it.</td>
+              </tr>
+              <tr>
+                <td><strong>Every session, close</strong></td>
+                <td><span class="w-gloss" onclick="wikiGloss(this, 'exitTicket')">Exit ticket</span>: one-sentence own-words explanation + muddiest point, anonymous</td>
+                <td>2 min in class, 10 min to read</td>
+                <td>What the next session opens with. The own-words half detects the illusion of explanatory depth; the
+                  muddiest-point half distinguishes framing confusion from concept confusion.</td>
+              </tr>
+              <tr>
+                <td><strong>Weekly</strong></td>
+                <td>Task-level written feedback on one small artifact, no grade, with in-class revision time</td>
+                <td>varies</td>
+                <td>Nothing about your teaching — this row exists for the student, not for you. Its function is BP-04:
+                  a scheduled loop where feedback gets acted on rather than filed.</td>
+              </tr>
+              <tr>
+                <td><strong>Per module</strong></td>
+                <td>Pre-unit and post-unit diagnostic survey</td>
+                <td>10 min each</td>
+                <td>What to teach at all, and what to change next term. Covered in detail on the <a class="w-xref" href="javascript:void(0)" onclick="show('diagnostic-assessment')">diagnostic
+                  assessment</a> page — this is the one cadence that is genuinely diagnostic rather than formative.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Formative Assessment Under AI Conditions</h3>
+          <p>Any probe completed outside class on a device now has an unknown provenance, which means it measures
+            something other than the student's model. This does not break formative assessment — it constrains where it
+            can live. The properties that make a probe AI-resistant happen to be the same properties that make it
+            formative: short, in-session, unaided, and about prediction or explanation rather than production of an
+            artifact. A two-minute handwritten prediction with a justification is both the cheapest formative instrument
+            available and the one with the cleanest signal under current conditions. See <a class="w-xref" href="javascript:void(0)" onclick="show('ai-problem')">the AI problem</a> for the
+            broader assessment redesign argument.</p>
+
+          <div class="w-callout">
+            <div class="w-callout-label">What This Page Does Not Claim</div>
+            <p>That formative assessment is a large-effect intervention. The honest position given Kingston &amp; Nash
+              is that the category is weakly supported and that its science-specific effect is close to zero. The claim
+              here is narrower and better supported: <strong>retrieval practice is robustly effective, task-level
+              feedback with time to act on it is robustly effective, and self-level feedback is actively harmful.</strong>
+              A system built from those three findings is defensible. A system built because "formative assessment has
+              an effect size of 0.7" is built on a number that its own author has disavowed.</p>
+          </div>
+
+          <h3>Key Literature for This Section</h3>
+          <ul class="w-ref-list">
+            <li><span class="w-ref-author">Kingston, N., &amp; Nash, B. (2011).</span> Formative assessment: A
+              meta-analysis and a call for research. <em>Educational Measurement: Issues and Practice, 30</em>(4),
+              28–37. — The actual meta-analysis. Weighted mean effect 0.20 across 42 effect sizes from 13 qualifying
+              studies; 0.32 ELA, 0.17 math, 0.09 science. Cite this rather than Black &amp; Wiliam for any quantitative
+              claim.</li>
+            <li><span class="w-ref-author">Kluger, A.N., &amp; DeNisi, A. (1996).</span> The effects of feedback
+              interventions on performance. <em>Psychological Bulletin, 119</em>(2), 254–284. — 607 effect sizes; mean
+              0.41 but ~38% negative. Task-directed vs self-directed attention is the moderator. The most important
+              single citation on this page.</li>
+            <li><span class="w-ref-author">Butler, R. (1988).</span> Enhancing and undermining intrinsic motivation:
+              The effects of task-involving and ego-involving evaluation on interest and performance. <em>British
+                Journal of Educational Psychology, 58</em>(1), 1–14. — Comments outperform grades and praise on
+              subsequent performance and interest. Source for BP-02.</li>
+            <li><span class="w-ref-author">Shute, V.J. (2008).</span> Focus on formative feedback. <em>Review of
+                Educational Research, 78</em>(1), 153–189. — The most practically usable synthesis; source for the
+              specificity, volume, and differential-timing guidelines.</li>
+            <li><span class="w-ref-author">Bennett, R.E. (2011).</span> Formative assessment: A critical review.
+              <em>Assessment in Education, 18</em>(1), 5–25. — Argues formative assessment is not a coherent construct
+              and that instrument and use are routinely conflated. Source for the definition section.</li>
+            <li><span class="w-ref-author">Black, P., &amp; Wiliam, D. (1998).</span> Assessment and classroom learning.
+              <em>Assessment in Education, 5</em>(1), 7–74. — Foundational and worth reading for its design principles.
+              <strong>Not</strong> a source for effect sizes; see the provenance warning above.</li>
+            <li><span class="w-ref-author">Wiliam, D., &amp; Thompson, M. (2007).</span> Integrating assessment with
+              instruction: What will it take to make it work? In C.A. Dwyer (Ed.), <em>The Future of Assessment</em>. —
+              Source for the five strategies framework (FA-01 through FA-05).</li>
+            <li><span class="w-ref-author">Wiliam, D. (2011).</span> <em>Embedded Formative Assessment.</em> Solution
+              Tree Press. — Practitioner-facing; source for hinge questions and for the "decision determines the
+              question" criterion.</li>
+            <li><span class="w-ref-author">Ruiz-Primo, M.A., &amp; Furtak, E.M. (2007).</span> Exploring teachers'
+              informal formative assessment practices and students' understanding in the context of scientific inquiry.
+              <em>Journal of Research in Science Teaching, 44</em>(1), 57–84. — The ESRU cycle and the finding that
+              cycles reaching "Use" are the ones associated with learning.</li>
+            <li><span class="w-ref-author">Hattie, J., &amp; Timperley, H. (2007).</span> The power of feedback.
+              <em>Review of Educational Research, 77</em>(1), 81–112. — Four levels of feedback: task, process,
+              self-regulation, self. Source for BP-03.</li>
+            <li><span class="w-ref-author">Nyquist, J.B. (2003).</span> <em>The benefits of reconstruing feedback as a
+                larger system of formative assessment.</em> Unpublished master's thesis, Vanderbilt University. —
+              Source of the widely cited feedback-type ladder. <strong>Unpublished; do not quote the numbers as
+              peer-reviewed.</strong></li>
+          </ul>
+
+          <p class="w-updated">Next: the <a class="w-xref" href="javascript:void(0)" onclick="show('diagnostic-assessment')">diagnostic assessment</a> page covers the pre-unit and post-unit
+            instruments referenced in the per-module row above.</p>
+        </div>
+
+        <!-- DIAGNOSTIC ASSESSMENT -->
+        <div id="diagnostic-assessment" class="w-page">
+          <div class="w-page-header">
+            <div class="w-page-tag">wiki / assessment</div>
+            <h2>Diagnostic Assessment</h2>
+            <p>Pre-unit and post-unit instruments — with specific item banks, the decision each item is supposed to
+              drive, and the measurement traps that make most pre/post survey data uninterpretable.</p>
+          </div>
+
+          <div class="w-callout w-blue">
+            <div class="w-callout-label">Three Timings, Three Functions — Kept Separate</div>
+            <p><strong><span class="w-gloss" onclick="wikiGloss(this, 'diagnosticAssessment')">Diagnostic</span></strong> runs <em>before</em> instruction and determines what to teach.
+              <strong><span class="w-gloss" onclick="wikiGloss(this, 'formativeAssessment')">Formative</span></strong> runs <em>during</em> and adjusts instruction in flight.
+              <strong><span class="w-gloss" onclick="wikiGloss(this, 'summativeAssessment')">Summative</span></strong> runs <em>after</em> and measures achievement. A post-unit survey is
+              summative in timing but diagnostic in function — it is too late to help the students who took it, and its
+              value is entirely in what it tells you about the next cohort and the next module. Designing it as though
+              it will help the current students is the most common way to waste it.</p>
+          </div>
+
+          <h3>Why Pre-Unit Measurement Is Worth the Class Time</h3>
+          <p>Three independent arguments, only one of which is about you knowing your students:</p>
+          <p><strong>1. Prior knowledge is the strongest single predictor of what students will learn.</strong> Dochy,
+            Segers &amp; Buehl (1999) reviewed the prior-knowledge literature and found prior knowledge accounting for
+            substantial variance in learning outcomes across domains — in many studies more than aptitude measures. If
+            you measure one thing before a unit, measure this. Critically, Hailikari et al. (2008) found that
+            <em>objectively assessed</em> prior knowledge predicted achievement while students' <em>self-assessed</em>
+            prior knowledge predicted it weakly. This has a direct design consequence: a pre-unit survey built out of
+            "rate your familiarity 1–5" items is measuring something close to noise.</p>
+          <p><strong>2. Taking the pretest is itself an intervention.</strong> The <span class="w-gloss" onclick="wikiGloss(this, 'pretestingEffect')">pretesting effect</span> (Kornell, Hays &amp;
+            Bjork, 2009; Richland, Kornell &amp; Kao, 2009) means students learn more from subsequent instruction after
+            attempting questions they cannot answer. The pre-unit survey is not overhead subtracted from teaching time
+            — it is the activation phase of <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">probe sequencing</a>, delivered in survey form.</p>
+          <p><strong>3. You cannot detect a gain you did not baseline.</strong> Without a pre-measure, a post-unit score
+            of 70% is uninterpretable — it is consistent with excellent teaching of an underprepared cohort and with
+            poor teaching of a well-prepared one. This is the argument for pre/post specifically, as opposed to
+            diagnosis alone.</p>
+
+          <div class="w-callout w-red">
+            <div class="w-callout-label">The Trap That Invalidates Most Pre/Post Survey Data</div>
+            <p>If your pre-survey and post-survey both ask "how well do you understand X, 1–5," your gain scores are
+              contaminated by <span class="w-gloss" onclick="wikiGloss(this, 'responseShiftBias')">response-shift bias</span> (Howard, 1980). Instruction changes the student's
+              understanding of the <em>scale</em>, not just their position on it. A student who rated themselves 4 out
+              of 5 before the unit now knows how much there was to know and rates themselves 3 — having learned a great
+              deal. Measured gain: <strong>negative</strong>. This is not a small effect and it is not random; it biases
+              systematically <em>against</em> the units that taught the most, which is the opposite of what you want.
+              Two fixes, and you should use both: (a) measure knowledge with items that have right answers rather than
+              with self-ratings, and (b) where you do want self-report, use a <span class="w-gloss" onclick="wikiGloss(this, 'retrospectivePretest')">retrospective pretest</span> — ask both
+              "now" and "before this unit" <em>at the same time, on the post-survey</em>, so both ratings use the same
+              scale. Also note <span class="w-gloss" onclick="wikiGloss(this, 'dunningKruger')">Dunning-Kruger</span> compounds this: pre-unit confidence is least accurate exactly among
+              the students with the least prior knowledge.</p>
+          </div>
+
+          <hr>
+
+          <h3>The Pre-Unit Survey</h3>
+
+          <div class="w-callout">
+            <div class="w-callout-label">Design Constraints Before Item Selection</div>
+            <p><strong>Length:</strong> 8–12 minutes, administered in class in the first session, not emailed. Emailed
+              pre-surveys get low and selected response rates, which reintroduces exactly the <span class="w-gloss" onclick="wikiGloss(this, 'selectionBias')">selection bias</span> the
+              instrument exists to avoid. <strong>Framing:</strong> state out loud that it is not graded and that you
+              expect most students to get most of the knowledge items wrong — otherwise <span class="w-gloss" onclick="wikiGloss(this, 'socialDesirabilityBias')">social desirability</span>
+              pressure turns honest gaps into guesses at what you want to hear. <strong>Item discipline:</strong> every
+              item must have a named decision attached. If you cannot say what you will do differently depending on the
+              answer, cut it — a long survey you cannot act on costs you response quality on the items that matter.</p>
+          </div>
+
+          <h4>Block A — Prior Knowledge, Objectively Measured <span style="color: var(--text-dim); font-weight: 400;">(4–6 items · highest value block)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Hinge-style items with misconception distractors</div>
+            <p>This is the block that carries the measurement value, and the one most often replaced by self-ratings
+              because it is more work. Use multiple-choice items where each <span class="w-gloss" onclick="wikiGloss(this, 'distractor')">distractor</span> corresponds to a documented
+              misconception — see the <a class="w-xref" href="javascript:void(0)" onclick="show('concept-inventories')">misconception clusters</a> for ready-made item stems. You are not measuring
+              "how much do they know"; you are measuring <em>which wrong model most of the room is running</em>.</p>
+            <div class="w-probe-example"># Pre-unit item, MC-01 (container vs reference)
+x = [1, 2, 3]
+y = x
+y.append(4)
+What is x now?
+  (A) [1, 2, 3]        → container/copy model
+  (B) [1, 2, 3, 4]     → correct
+  (C) an error         → immutability assumption
+  (D) I don't know yet → explicit, and NOT penalized
+
+# Decision this item drives:
+#   >50% pick (A)  → notional-machine session before any
+#                    pandas work; skip the planned intro
+#   mostly (B)     → cut the planned 20-min mutability
+#                    segment, reallocate to broadcasting
+#   split A/B      → bimodal cohort; pair strong with weak
+#                    deliberately rather than by table</div>
+            <p><strong>Always include an explicit "I haven't learned this yet" option.</strong> Without it, students
+              guess, and guessing destroys the diagnostic value of the distractor distribution — you can no longer tell
+              a held misconception from a coin flip. Say aloud that choosing it is the most useful answer they can give
+              if it is true.</p>
+          </div>
+
+          <h4>Block B — Prior Experience, Behavioral <span style="color: var(--text-dim); font-weight: 400;">(1 item, checklist)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">What they have done, not how they feel about it</div>
+            <p>Asking what people <em>did</em> is more reliable than asking how they feel — the same design principle
+              as <a class="w-xref" href="javascript:void(0)" onclick="show('evaluations')">behavioral survey questions</a>. The phrase that does the work is "start to finish, on your own":
+              it excludes following a tutorial, which is where most claimed experience actually comes from.</p>
+            <div class="w-probe-example">Which of these have you personally done start to finish,
+on your own, without following along with a tutorial?
+(check all that apply — most students check very few)
+
+[ ] written a for-loop that accumulates a result
+[ ] loaded a CSV and fixed a column that imported wrong
+[ ] merged two tables on a shared key
+[ ] read a traceback and found the bug from it
+[ ] written a function you later called more than once
+[ ] made a plot you then changed based on what you saw
+[ ] used git to recover something you had broken
+[ ] installed a package and hit a version conflict
+
+# Decision: rows checked by &lt;30% of the class are
+# prerequisites you are assuming and must not assume.
+# This is the single most actionable item on the survey.</div>
+          </div>
+
+          <h4>Block C — Calibration Pair <span style="color: var(--text-dim); font-weight: 400;">(1 item, attached to Block A)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Confidence paired with performance on the same item</div>
+            <p>Self-rated confidence is worthless alone and genuinely informative when paired with performance on the
+              specific item it refers to — the pairing is what turns it into a calibration measure rather than a
+              sentiment measure. After each Block A item: <em>"How sure are you of that answer? (guessing / fairly sure
+              / certain)"</em></p>
+            <p><strong>The pattern to look for is confident-and-wrong.</strong> Students who are uncertain and wrong
+              will update readily during instruction. Students who are <em>certain</em> and wrong will assimilate your
+              explanation into the model they already hold rather than replacing it, which is precisely the case where
+              <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">naming the conflict explicitly</a> is not optional. A room that is 60% confidently wrong on one
+              item is a different teaching problem from a room that is 60% uncertainly wrong, and only this pairing
+              distinguishes them.</p>
+          </div>
+
+          <h4>Block D — Goals and Utility Value <span style="color: var(--text-dim); font-weight: 400;">(1–2 open items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Serves two functions at once</div>
+            <p>Asking students to articulate a personal connection to material is not just data collection — it is a
+              light-touch version of a <span class="w-gloss" onclick="wikiGloss(this, 'utilityValue')">utility value</span> intervention (Hulleman &amp; Harackiewicz, 2009), which improved
+              performance in a randomized study, with the largest effects for students with low initial confidence. The
+              key design feature is that the student generates the connection rather than being told it.</p>
+            <div class="w-probe-example">"Name one specific thing you'd like to be able to do
+ with this material by the end of the unit. Be concrete —
+ 'analyze data' is too vague, 'figure out whether my lab's
+ replicates actually agree' is the right size."
+
+"Is there anything in your own research, coursework, or
+ outside interests that this might connect to?"
+
+# Decisions: harvest 3–4 answers into worked examples
+# and project prompt options. Then TELL them you did —
+# visible responsiveness raises response quality on
+# every subsequent survey you run.</div>
+          </div>
+
+          <h4>Block E — Constraints and Logistics <span style="color: var(--text-dim); font-weight: 400;">(2–4 items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">The unglamorous block that changes next week most</div>
+            <p>Ask only about constraints you can actually accommodate. Questions here that you will not act on are
+              worse than absent, because they imply an offer.</p>
+            <div class="w-probe-example">- Which environment will you be working in?
+  (local Python / Colab / cluster / haven't set one up)
+- Realistically, how many hours per week outside class?
+  (&lt;2 / 2–5 / 5–10 / &gt;10)
+- Anything about how this course is scheduled or run
+  that will make it hard for you to participate fully?
+- Which of these have you used before?
+  (git / conda or venv / Jupyter / an IDE / none)
+
+# Decisions: environment answers determine whether
+# session 1 is content or setup. Hours-per-week
+# determines project scope, and should be believed.</div>
+          </div>
+
+          <div class="w-callout w-red">
+            <div class="w-callout-label">What Not to Put on a Pre-Unit Survey</div>
+            <p><strong>Learning-style inventories.</strong> The meshing hypothesis — that matching instruction to a
+              preferred modality improves learning — has been tested and not supported (Pashler et al., 2008;
+              Rogowsky et al., 2015). Asking the question implies you will act on it, and acting on it is not
+              evidence-based.<br>
+              <strong>Bare familiarity ratings.</strong> "Rate your comfort with loops, 1–5." Weakly predictive
+              (Hailikari et al.), and it sets up the response-shift problem if you plan to repeat it.<br>
+              <strong>Anything you will not act on.</strong> Including demographic items collected out of habit. If you
+              are not analyzing by a variable, do not ask for it — and if you are, say why, because unexplained
+              identity questions depress honest response on the rest of the instrument.<br>
+              <strong>Anything that reads as a graded pretest.</strong> If students think it counts, they optimize for
+              looking competent, and Blocks A and C stop working.</p>
+          </div>
+
+          <hr>
+
+          <h3>The Post-Unit Survey</h3>
+
+          <div class="w-callout">
+            <div class="w-callout-label">Three Separable Measurements — Do Not Average Them</div>
+            <p>A post-unit survey can measure <strong>(1)</strong> learning gain, <strong>(2)</strong> where and how
+              students got stuck, and <strong>(3)</strong> how the experience felt. These are different constructs with
+              different validity. Gain is the one you can defend to a curriculum committee; stuck-points are the one
+              that changes your teaching; experience is the weakest and the one institutional forms overweight. Keep the
+              blocks visibly separate and never combine them into a single score.</p>
+          </div>
+
+          <h4>Block A — Isomorphic Repeat of the Pre-Unit Knowledge Items <span style="color: var(--text-dim); font-weight: 400;">(4–6 items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Same concept, different surface</div>
+            <p>Do not reuse the identical items — you will measure memory of the pretest. Use <span class="w-gloss" onclick="wikiGloss(this, 'isomorphicItem')">isomorphic items</span>: same
+              underlying concept and same distractor logic, different surface features. This is the <a class="w-xref" href="javascript:void(0)" onclick="show('mental-models')">near vs far
+              transfer</a> distinction operationalized — if your post item looks like your pre item and like your
+              worked example, you are measuring near transfer and will overestimate learning.</p>
+            <div class="w-probe-example"># Pre item probed MC-01 with a list and .append()
+# Post item probes the SAME model, different surface:
+
+def add_tag(tags, new):
+    tags.append(new)
+    return tags
+
+user_tags = ['a', 'b']
+archive = user_tags
+add_tag(user_tags, 'c')
+What is len(archive)?
+  (A) 2  → container/copy model  (same distractor logic)
+  (B) 3  → correct
+  (C) error
+
+# A student who memorized "append mutates the original"
+# from the pretest still fails this if they didn't build
+# the reference model — which is exactly what you want
+# the item to detect.</div>
+            <p>Report the result as <span class="w-gloss" onclick="wikiGloss(this, 'normalizedGain')">normalized gain</span> rather than raw difference: <em>g = (post − pre) / (100 − pre)</em>
+              (Hake, 1998). Raw gain penalizes cohorts that arrived well-prepared, since there was less room to
+              improve. Hake's benchmark from ~6,000 physics students: traditional lecture courses cluster around
+              <em>g</em> ≈ 0.23, interactive-engagement courses around <em>g</em> ≈ 0.48 — a useful external reference
+              point. <strong>Caveats:</strong> normalized gain is a course-level statistic and is unstable for
+              individual students; it misbehaves for students whose scores decline (see Marx &amp; Cummings, 2007, on
+              normalized change as an alternative); and with 4–6 items your confidence interval is wide. Report it as a
+              signal, not a measurement.</p>
+          </div>
+
+          <h4>Block B — Retrospective Pretest Pair <span style="color: var(--text-dim); font-weight: 400;">(2–3 paired items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Both ratings collected now, on the same scale</div>
+            <p>The fix for response-shift bias. Ask about "now" and "before" side by side, on the post-survey only, so
+              the student is using one consistent scale for both judgments. This still measures perception rather than
+              knowledge — Block A is the knowledge measure — but it measures perceived change without the built-in bias
+              against effective instruction.</p>
+            <div class="w-probe-example">"Thinking about where you are NOW versus where you were
+ BEFORE this unit, rate both:
+
+  Explaining why two dataframes align the way they do
+    Before: 1 2 3 4 5     Now: 1 2 3 4 5
+
+  Debugging a wrong result that raises no error
+    Before: 1 2 3 4 5     Now: 1 2 3 4 5"
+
+# Decision: compare against Block A. Perceived gain HIGH
+# and measured gain LOW is the important pattern — the
+# unit produced confidence without competence, which is
+# the most dangerous outcome and invisible to either
+# measure alone.</div>
+          </div>
+
+          <h4>Block C — Behavioral Stuck-Point Items <span style="color: var(--text-dim); font-weight: 400;">(2–3 open items · most actionable block)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">What they did, at the moment it broke</div>
+            <p>Behavioral specificity is what separates these from satisfaction items. "Was the pace too fast?" produces
+              comparative sentiment. The items below produce a location and a coping behavior, and the coping behavior
+              tells you where <span class="w-gloss" onclick="wikiGloss(this, 'scaffolding')">scaffolding</span> was missing.</p>
+            <div class="w-probe-example">"Describe the last time you were stuck for more than
+ 15 minutes on this material. What were you trying to do,
+ and what did you do next?"
+
+"Was there a point where you decided to move on without
+ fully understanding something? What was it?"
+
+"What did you use when you got stuck, and roughly how
+ often? (course notes / documentation / classmate /
+ office hours / an AI assistant / Stack Overflow /
+ gave up and submitted)"
+
+"For the AI row above: what did you ask it, and did you
+ end up understanding the answer it gave you?"</div>
+            <p>Ask the AI items <strong>non-punitively and after the grades are settled</strong>, or you will get
+              fiction. Framed safely, they are among the highest-value diagnostic data available: "I asked it to write
+              the merge because I couldn't tell which key to use" identifies a precise scaffolding gap that no
+              satisfaction item would ever surface. See <a class="w-xref" href="javascript:void(0)" onclick="show('ai-problem')">the AI problem</a> for what to do with the answers.</p>
+          </div>
+
+          <h4>Block D — Production Items <span style="color: var(--text-dim); font-weight: 400;">(2 items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Doubles as a comprehension check</div>
+            <p>Two questions that make the survey itself an assessment instrument, drawing on <a class="w-xref" href="javascript:void(0)" onclick="show('feedback-techniques')">production over
+              self-report</a>:</p>
+            <div class="w-probe-example">"In one or two sentences, and without looking anything
+ up, explain the main idea of this unit to someone who
+ took the course last year and missed it."
+
+"Where would the method we spent the most time on break
+ or give you a misleading answer?"</div>
+            <p>The first detects the <span class="w-gloss" onclick="wikiGloss(this, 'illusionExplanatoryDepth')">illusion of explanatory depth</span> — incoherent paraphrases from students who
+              reported understanding are the most diagnostic responses on the whole instrument. The second tests
+              boundary conditions, which is a stronger indicator of a real model than central-case knowledge, and is
+              also the professional habit you are trying to build.</p>
+          </div>
+
+          <h4>Block E — Forward-Looking Design Items <span style="color: var(--text-dim); font-weight: 400;">(1–2 items)</span></h4>
+          <div class="w-card">
+            <div class="w-card-title">Framed as a change and a consequence</div>
+            <p>"What could be improved?" invites complaint without information. Requiring students to pair a proposed
+              change with what it would have enabled forces them to reason about mechanism, and makes the responses
+              sortable into things you can act on.</p>
+            <div class="w-probe-example">"Name one thing I should change about this unit next
+ time, and say what that change would have let you do
+ that you couldn't do this time."
+
+"What should I have spent less time on, so there'd be
+ more time for something else? Name both."
+
+# The forced trade-off in the second item is the point.
+# It converts "more of everything" into a priority
+# ranking you can actually use.</div>
+          </div>
+
+          <h4>Block F — Experience <span style="color: var(--text-dim); font-weight: 400;">(2 items maximum)</span></h4>
+          <div class="w-card">
+            <p>Per <a class="w-xref" href="javascript:void(0)" onclick="show('evaluations')">on student evaluations</a>, satisfaction ratings measure satisfaction and not learning — but
+              two things they do measure reliably are worth having, because both are precursors to engagement:
+              <em>perceived organization</em> and <em>perceived respect</em>. Ask those two, keep them clearly separated
+              from Blocks A–E, and resist adding more. Every additional experience item costs you completion rate on
+              the blocks that carry actual signal.</p>
+            <div class="w-probe-example">"Could you tell, during each session, what you were
+ supposed to be able to do by the end of it?"
+
+"Was there a point where asking a question felt costly?
+ What made it feel that way?"</div>
+            <p>The second is doing more work than it appears to — it is a direct probe of the <a class="w-xref" href="javascript:void(0)" onclick="show('silence-gap')">silence-confusion
+              gap</a>, and it is one of very few ways to get data on the students who never asked anything.</p>
+          </div>
+
+          <hr>
+
+          <h3>Matching Pre to Post While Staying Anonymous</h3>
+          <div class="w-card">
+            <p>Gain scores require matched pairs, but named surveys suppress honest answers on Blocks A, C, and F. The
+              standard resolution is a self-generated identification code: students construct the same code on both
+              surveys from stable personal facts you do not hold.</p>
+            <div class="w-probe-example">"Write your code: first 2 letters of the street you grew
+ up on + your birth day-of-month (2 digits) + last 2
+ letters of your mother's first name.
+ Example: MA07NA. Write it the same way both times."
+
+# Works because it is reconstructible without being
+# memorable, and you cannot map it to a roster.
+# Expect 10–20% unmatchable. That is acceptable —
+# don't fix it by asking for names.</div>
+            <p>Tell students explicitly what the code is for and that you cannot reverse it. Unexplained codes read as
+              surveillance and cost you more in honesty than they gain you in matching.</p>
+          </div>
+
+          <h3>Reading the Results — Pattern to Action</h3>
+          <table class="w-evidence-table">
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>What it most likely means</th>
+                <th>What to do</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Measured gain low, perceived gain high (Block A vs B)</td>
+                <td>The unit produced fluency and confidence without a model. Often a symptom of teaching that was very
+                  clear — clarity produces the illusion of explanatory depth most strongly.</td>
+                <td>The highest-priority finding on the instrument. Add production probes mid-unit rather than more
+                  explanation; introduce a case where the students' model makes a visibly wrong prediction.</td>
+              </tr>
+              <tr>
+                <td>Measured gain low, perceived gain low</td>
+                <td>Students know they did not get it. Usually a prerequisite or pacing problem rather than an
+                  explanation problem.</td>
+                <td>Check Block B of the pre-survey — you probably assumed a prerequisite that under 30% of the class
+                  had. Fix the assumption, not the explanation.</td>
+              </tr>
+              <tr>
+                <td>Gain concentrated in students with high pre-scores</td>
+                <td>The unit was pitched above the median. It worked for students who were already close.</td>
+                <td>Re-pitch to the actual median from the pre-survey and use <a class="w-xref" href="javascript:void(0)" onclick="show('coding-pace')">task layering</a> to keep the prepared
+                  students occupied rather than pitching to them.</td>
+              </tr>
+              <tr>
+                <td>One distractor dominates both pre and post</td>
+                <td>A specific misconception survived instruction — the most common outcome when the conflict was never
+                  named.</td>
+                <td>Redesign that segment around <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">conceptual change</a>: activate the wrong model, make it predict, show the
+                  prediction fail. Re-explaining will not move it.</td>
+              </tr>
+              <tr>
+                <td>Block C answers cluster on one stuck point</td>
+                <td>A single missing piece of scaffolding, not general difficulty.</td>
+                <td>Cheapest fix available. Add one worked example or one reference sheet at that exact point.</td>
+              </tr>
+              <tr>
+                <td>Block C answers say "used AI and moved on"</td>
+                <td>The task was completable without understanding it. A task-design problem, not a compliance
+                  problem.</td>
+                <td>See <a class="w-xref" href="javascript:void(0)" onclick="show('ai-problem')">the AI problem</a>. Move the verification of that concept into an unaided in-class probe.</td>
+              </tr>
+              <tr>
+                <td>Bimodal on everything</td>
+                <td>Two cohorts in one room. Averages describe neither of them.</td>
+                <td>Stop reading means. Report and plan from the distribution; consider deliberate heterogeneous pairing
+                  and layered tasks rather than a single pitch.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="w-callout w-blue">
+            <div class="w-callout-label">Close the Loop Publicly</div>
+            <p>Report back to students what the surveys showed and what you changed because of them — briefly, in one
+              slide, at the start of the next unit. This is not a courtesy. Response quality on every subsequent
+              instrument depends on students believing the data is used, and it is the same <strong>U</strong> step whose
+              absence truncates formative assessment cycles. A survey whose results visibly change nothing trains
+              students to complete the next one carelessly.</p>
+          </div>
+
+          <div class="w-callout">
+            <div class="w-callout-label">Practical Constraint</div>
+            <p>Two ten-minute surveys plus the reading and analysis is roughly a session's worth of time per module. The
+              defensible version of this is to run the full pre/post pair on <strong>one or two modules</strong> — the
+              ones you most suspect are not working — rather than a thin version everywhere. Block A of the pre-survey
+              alone, at four items, is five minutes and captures most of the actionable value; add the rest only where
+              you intend to do the analysis.</p>
+          </div>
+
+          <h3>Key Literature for This Section</h3>
+          <ul class="w-ref-list">
+            <li><span class="w-ref-author">Dochy, F., Segers, M., &amp; Buehl, M. (1999).</span> The relation between
+              assessment practices and outcomes of studies: The case of research on prior knowledge. <em>Review of
+                Educational Research, 69</em>(2), 145–186. — Prior knowledge as a dominant predictor of learning
+              outcomes; the core argument for pre-unit measurement.</li>
+            <li><span class="w-ref-author">Hailikari, T., Nevgi, A., &amp; Komulainen, E. (2008).</span> Academic
+              self-beliefs and prior knowledge as predictors of student achievement. <em>Educational Psychology,
+                28</em>(1), 59–71. — Objectively measured prior knowledge predicts achievement; self-assessed prior
+              knowledge predicts it weakly. Source for rejecting familiarity-rating items.</li>
+            <li><span class="w-ref-author">Howard, G.S. (1980).</span> Response-shift bias: A problem in evaluating
+              interventions with pre/post self-reports. <em>Evaluation Review, 4</em>(1), 93–106. — The response-shift
+              problem and the retrospective-pretest remedy. The single most important methodological citation for
+              pre/post survey design.</li>
+            <li><span class="w-ref-author">Hake, R.R. (1998).</span> Interactive-engagement versus traditional methods:
+              A six-thousand-student survey of mechanics test data for introductory physics courses. <em>American
+                Journal of Physics, 66</em>(1), 64–74. — Normalized gain <em>g</em>; benchmark values ≈0.23 traditional
+              vs ≈0.48 interactive engagement.</li>
+            <li><span class="w-ref-author">Marx, J.D., &amp; Cummings, K. (2007).</span> Normalized change.
+              <em>American Journal of Physics, 75</em>(1), 87–91. — Alternative to Hake's <em>g</em> that behaves
+              correctly for students whose scores decline. Read alongside Hake before reporting gain.</li>
+            <li><span class="w-ref-author">Kornell, N., Hays, M.J., &amp; Bjork, R.A. (2009).</span> Unsuccessful
+              retrieval attempts enhance subsequent learning. <em>Journal of Experimental Psychology: LMC, 35</em>(4),
+              989–998. — Pretesting effect: the pre-survey is an intervention, not just a measurement.</li>
+            <li><span class="w-ref-author">Richland, L.E., Kornell, N., &amp; Kao, L.S. (2009).</span> The pretesting
+              effect: Do unsuccessful retrieval attempts enhance learning? <em>Journal of Experimental Psychology:
+                Applied, 15</em>(3), 243–257. — Replication and boundary conditions for the pretesting effect.</li>
+            <li><span class="w-ref-author">Carpenter, S.K., &amp; Toftness, A.R. (2017).</span> The effect of
+              prequestions on learning from video presentations. <em>Journal of Applied Research in Memory and
+                Cognition, 6</em>(1), 104–109. — Important caveat: prequestions reliably improve learning of the
+              prequestioned material but may not help, and can draw attention away from, material that was not
+              prequestioned. Choose pre-survey items to match what you most want learned.</li>
+            <li><span class="w-ref-author">Hulleman, C.S., &amp; Harackiewicz, J.M. (2009).</span> Promoting
+              interest and performance in high school science classes. <em>Science, 326</em>(5958), 1410–1412. —
+              Randomized utility-value intervention; largest effects for low-confidence students. Basis for Block D of
+              the pre-survey.</li>
+            <li><span class="w-ref-author">Pashler, H., McDaniel, M., Rohrer, D., &amp; Bjork, R. (2008).</span>
+              Learning styles: Concepts and evidence. <em>Psychological Science in the Public Interest, 9</em>(3),
+              105–119. — The meshing hypothesis is not supported by adequately designed studies. Source for excluding
+              learning-style items.</li>
+            <li><span class="w-ref-author">Rozenblit, L., &amp; Keil, F. (2002).</span> The misunderstood limits of
+              folk science. <em>Cognitive Science, 26</em>(5), 521–562. — Illusion of explanatory depth; why Block D
+              production items outperform any self-rating.</li>
+            <li><span class="w-ref-author">Dunning, D., &amp; Kruger, J. (1999).</span> Unskilled and unaware of it.
+              <em>Journal of Personality and Social Psychology, 77</em>(6), 1121–1134. — Metacognitive accuracy is
+              lowest at low competence; why pre-unit confidence must be paired with performance to be interpretable.</li>
+          </ul>
+
+          <p class="w-updated">Related: <a class="w-xref" href="javascript:void(0)" onclick="show('formative-assessment')">formative assessment</a> for the in-session cadence ·
+            <a class="w-xref" href="javascript:void(0)" onclick="show('concept-inventories')">concept inventories</a> for building the Block A items · <a class="w-xref" href="javascript:void(0)" onclick="show('probe-sequencing')">probe sequencing</a> for what to do
+            with the results inside a module</p>
         </div>
 
         <!-- MENTAL MODELS -->
@@ -3907,6 +4827,72 @@ permalink: /teaching-wiki
               discrimination and transfer.</li>
           </ul>
 
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('formative-assessment')">Formative Assessment</a> and Feedback</h3>
+          <ul class="w-ref-list">
+            <li><span class="w-ref-author">Kingston, N., &amp; Nash, B. (2011).</span> Formative assessment: A
+              meta-analysis and a call for research. <em>Educational Measurement: Issues and Practice, 30</em>(4),
+              28–37. — Weighted mean effect 0.20 (ELA 0.32, math 0.17, science 0.09) from 13 qualifying studies. This,
+              not Black &amp; Wiliam's 0.4–0.7, is the citable effect size.</li>
+            <li><span class="w-ref-author">Black, P., &amp; Wiliam, D. (1998).</span> Assessment and classroom learning.
+              <em>Assessment in Education, 5</em>(1), 7–74. — Foundational narrative review. Source of the widely
+              misused 0.4–0.7 range, which is not a pooled meta-analytic estimate. Cite for principles, never for
+              magnitude.</li>
+            <li><span class="w-ref-author">Kluger, A.N., &amp; DeNisi, A. (1996).</span> The effects of feedback
+              interventions on performance. <em>Psychological Bulletin, 119</em>(2), 254–284. — 607 effect sizes; mean
+              0.41 but roughly 38% of feedback interventions <em>reduced</em> performance. Task-directed vs
+              self-directed attention is the moderator.</li>
+            <li><span class="w-ref-author">Butler, R. (1988).</span> Enhancing and undermining intrinsic motivation.
+              <em>British Journal of Educational Psychology, 58</em>(1), 1–14. — Comments-only outperformed grades and
+              praise on subsequent performance and interest. Basis for keeping grades off formative work.</li>
+            <li><span class="w-ref-author">Shute, V.J. (2008).</span> Focus on formative feedback. <em>Review of
+                Educational Research, 78</em>(1), 153–189. — Specificity, volume, and differential-timing guidelines;
+              the most directly usable synthesis.</li>
+            <li><span class="w-ref-author">Bennett, R.E. (2011).</span> Formative assessment: A critical review.
+              <em>Assessment in Education, 18</em>(1), 5–25. — Formative assessment is a use, not an instrument;
+              explains why the meta-analytic literature is so heterogeneous.</li>
+            <li><span class="w-ref-author">Wiliam, D., &amp; Thompson, M. (2007).</span> Integrating assessment with
+              instruction. In C.A. Dwyer (Ed.), <em>The Future of Assessment.</em> — The five-strategies framework.</li>
+            <li><span class="w-ref-author">Ruiz-Primo, M.A., &amp; Furtak, E.M. (2007).</span> Exploring teachers'
+              informal formative assessment practices and students' understanding. <em>Journal of Research in Science
+                Teaching, 44</em>(1), 57–84. — ESRU cycle; only cycles reaching "Use" were associated with learning
+              gains.</li>
+            <li><span class="w-ref-author">Nyquist, J.B. (2003).</span> Unpublished master's thesis, Vanderbilt
+              University. — Source of the feedback-type ladder (score only ≈0.16 → elaborated feedback with guidance
+              ≈0.5+). <strong>Unpublished; ordering is safe, numbers are not.</strong></li>
+          </ul>
+
+          <h3>On <a class="w-xref" href="javascript:void(0)" onclick="show('diagnostic-assessment')">Diagnostic Assessment</a> and Pre/Post Design</h3>
+          <ul class="w-ref-list">
+            <li><span class="w-ref-author">Dochy, F., Segers, M., &amp; Buehl, M. (1999).</span> The relation between
+              assessment practices and outcomes of studies. <em>Review of Educational Research, 69</em>(2), 145–186. —
+              Prior knowledge as a dominant predictor of learning outcomes.</li>
+            <li><span class="w-ref-author">Hailikari, T., Nevgi, A., &amp; Komulainen, E. (2008).</span> Academic
+              self-beliefs and prior knowledge as predictors of student achievement. <em>Educational Psychology,
+                28</em>(1), 59–71. — Objectively measured prior knowledge predicts achievement; self-rated prior
+              knowledge does so weakly. Reason to drop familiarity-rating items.</li>
+            <li><span class="w-ref-author">Howard, G.S. (1980).</span> Response-shift bias. <em>Evaluation Review,
+                4</em>(1), 93–106. — Instruction changes how learners interpret self-report scales, biasing gain scores
+              against effective teaching. Retrospective pretest as the remedy.</li>
+            <li><span class="w-ref-author">Hake, R.R. (1998).</span> Interactive-engagement versus traditional methods.
+              <em>American Journal of Physics, 66</em>(1), 64–74. — Normalized gain <em>g</em>; ≈0.23 traditional vs
+              ≈0.48 interactive engagement across ~6,000 students.</li>
+            <li><span class="w-ref-author">Marx, J.D., &amp; Cummings, K. (2007).</span> Normalized change.
+              <em>American Journal of Physics, 75</em>(1), 87–91. — Corrects Hake's <em>g</em> for declining scores.</li>
+            <li><span class="w-ref-author">Carpenter, S.K., &amp; Toftness, A.R. (2017).</span> The effect of
+              prequestions on learning from video presentations. <em>Journal of Applied Research in Memory and
+                Cognition, 6</em>(1), 104–109. — Prequestions help the prequestioned material specifically and may draw
+              attention from the rest. Choose pre-survey items deliberately.</li>
+            <li><span class="w-ref-author">Richland, L.E., Kornell, N., &amp; Kao, L.S. (2009).</span> The pretesting
+              effect. <em>Journal of Experimental Psychology: Applied, 15</em>(3), 243–257. — Replication and boundary
+              conditions.</li>
+            <li><span class="w-ref-author">Hulleman, C.S., &amp; Harackiewicz, J.M. (2009).</span> Promoting interest
+              and performance in high school science classes. <em>Science, 326</em>(5958), 1410–1412. — Randomized
+              utility-value intervention; largest gains for low-confidence students.</li>
+            <li><span class="w-ref-author">Pashler, H., McDaniel, M., Rohrer, D., &amp; Bjork, R. (2008).</span>
+              Learning styles: Concepts and evidence. <em>Psychological Science in the Public Interest, 9</em>(3),
+              105–119. — The meshing hypothesis fails adequately designed tests. Do not collect learning-style data.</li>
+          </ul>
+
           <h3>On CS Education and Misconceptions</h3>
           <ul class="w-ref-list">
             <li><span class="w-ref-author">Sorva, J. (2012).</span> <em>Visual Program Simulation in Introductory
@@ -3981,7 +4967,16 @@ permalink: /teaching-wiki
       selectionBias: { term: 'Selection Bias', body: 'A distortion that occurs when the people who respond to something (like an optional survey) are not representative of the full population being studied. In course evaluations, low voluntary response rates tend to overrepresent students with the strongest opinions — very satisfied or very dissatisfied — and underrepresent the more moderate majority.' },
       anchoringEffect: { term: 'Anchoring Effect', body: 'The tendency to judge something relative to a recent reference point rather than in absolute terms. In course evaluations, this means a rigorous module taught right after an easy one will tend to be rated lower than the same module taught in isolation, simply because of the contrast with what students experienced immediately before.' },
       advanceOrganizer: { term: 'Advance Organizer', body: 'Ausubel\'s (1960) concept for introductory material presented before new content that helps learners connect it to what they already know. It works best when the learner is prompted to construct the link themselves (e.g., "why does that matter for today?") rather than simply being told the connection.' },
-      formativeAssessment: { term: 'Formative Assessment', body: 'Low-stakes or ungraded assessment used during the learning process to give the instructor and student real-time information about understanding, so instruction can be adjusted before it is too late — as opposed to summative assessment, which measures achievement after the fact for a grade.' }
+      formativeAssessment: { term: 'Formative Assessment', body: 'Low-stakes or ungraded assessment used during the learning process to give the instructor and student real-time information about understanding, so instruction can be adjusted before it is too late — as opposed to summative assessment, which measures achievement after the fact for a grade. Note that formative is a description of how the information is used, not of the instrument: the same quiz is formative if it changes what happens next and summative if it goes into a gradebook.' },
+      summativeAssessment: { term: 'Summative Assessment', body: 'Assessment that measures achievement after learning has happened, typically for a grade or a certification decision — exams, final projects, end-of-term papers. Its purpose is to report on what was learned rather than to change what happens next, which is why summative timing and formative function are usually incompatible in the same instrument.' },
+      diagnosticAssessment: { term: 'Diagnostic Assessment', body: 'Assessment administered before instruction to establish what students already know, which misconceptions they hold, and what prerequisites are actually present — so that instruction can be designed around the real starting point rather than an assumed one. Distinct from formative assessment mainly in timing and purpose: diagnostic determines what to teach, formative adjusts teaching already in progress.' },
+      egoInvolvement: { term: 'Ego-Involving vs Task-Involving Evaluation', body: 'Butler\'s (1988) distinction between feedback that directs a student\'s attention to themselves and their standing relative to others (grades, praise, ability comments) and feedback that directs attention to the work and what it needs (specific comments on the task). Ego-involving evaluation reliably reduces subsequent performance and interest compared with task-involving comments, which is the central reason for keeping grades off formative work.' },
+      exitTicket: { term: 'Exit Ticket', body: 'A very short written response — typically one or two questions on a card or form — collected in the last minutes of a session, usually anonymously and ungraded. Its function is to give the instructor a same-day read on the whole class before planning the next session, at a cost low enough to run every time rather than occasionally.' },
+      responseShiftBias: { term: 'Response-Shift Bias', body: 'A measurement problem identified by Howard (1980): when the same self-rating question is asked before and after instruction, the instruction itself changes how the learner interprets the scale, not just where they sit on it. Students who learn a great deal often discover how much there was to know and rate themselves lower afterwards, producing apparently negative gains. It biases systematically against the most effective instruction, which is why self-report gain scores from separate pre and post administrations are usually uninterpretable.' },
+      retrospectivePretest: { term: 'Retrospective Pretest (Post-Then-Pre)', body: 'A survey design that asks respondents to rate both their current state and their state before the intervention at the same time, on the same occasion and the same scale, rather than collecting a rating before and another after. Because both judgments use one consistent frame of reference, it avoids response-shift bias — at the cost of relying on the respondent\'s recall of where they started.' },
+      isomorphicItem: { term: 'Isomorphic Item', body: 'A test question that targets exactly the same underlying concept and the same misconception structure as another item but differs in its surface features — different variable names, different domain, different framing. Isomorphic pre and post items let you measure whether a mental model changed rather than whether students remembered the specific pretest question.' },
+      normalizedGain: { term: 'Normalized Gain (Hake\'s g)', body: 'A measure of pre/post improvement expressed as a fraction of the improvement that was possible: g = (post − pre) / (100 − pre). It exists because raw score differences unfairly penalize cohorts that started well-prepared and had little headroom. It is a course-level statistic and is unreliable for individual students, particularly those whose scores decline.' },
+      socialDesirabilityBias: { term: 'Social Desirability Bias', body: 'The tendency for survey respondents to answer in ways they believe will be viewed favorably rather than accurately — overstating good behavior and understating unwanted behavior. In a classroom it means any instrument students suspect is graded, or attached to their name, will collect their best guess at what the instructor wants instead of what they actually think or did.' }
     };
 
     function wikiGloss(el, key) {
