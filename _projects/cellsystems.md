@@ -4,7 +4,7 @@ title: Groves et al. (2022) Cell Systems
 description: Code associated with my publication in Cell Systems.
 img: assets/img/cellsys_graphical_abstract.png
 importance: 3
-category: work
+category: research
 ---
 {% assign repo_url =  include.repository | split: '/' %}
 

@@ -1,16 +1,19 @@
 ---
 layout: default
 title: blog
-pagination:
-  enabled: true
-  collection: posts
-  permalink: /page/:num/
-  per_page: 5
-  sort_field: date
-  sort_reverse: true
-  trail:
-    before: 1 # The number of links before the current page
-    after: 3 # The number of links after the current page
+nav: true
+nav_order: 1
+nav_title: Writing
+dropdown: true
+children:
+  - title: Blog
+    permalink: /blog/
+  - title: Announcements
+    permalink: /announcements/
+  - title: Code Notebooks
+    permalink: /notebooks/
+  - title: BooleaBayes
+    permalink: /series/booleabayes/
 ---
 
 <div class="post">
@@ -35,17 +38,9 @@ pagination:
   </div>
   {% endif %}
 
+  {%- assign blog_posts = site.posts | where_exp: "post", "post.inline != true" | sort: "date" | reverse -%}
   <ul class="post-list">
-    {% for post in paginator.posts %}
-
-    {% if post.inline %}
-
-    <li class="post-inline">
-      <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
-      <p>{{ post.content | remove: '<p>' | remove: '</p>' | emojify }}</p>
-    </li>
-
-    {% else %}
+    {% for post in blog_posts %}
 
     {% if post.external_source == blank %}
     {% assign read_time = post.content | number_of_words | divided_by: 180 | plus: 1 %}
@@ -102,11 +97,7 @@ pagination:
       </p>
     </li>
 
-    {% endif %}
-
     {% endfor %}
   </ul>
-
-  {% include pagination.html %}
 
 </div>

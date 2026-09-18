@@ -2,57 +2,37 @@
 layout: page
 title: projects
 permalink: /projects/
-description: A growing collection of my packages and projects.
+description: "[Placeholder: intro blurb for the research/fun projects page]"
 nav: true
-nav_order: 2
-display_categories: [packages, work, fun]
-horizontal: false
+nav_order: 3
+nav_title: Research
+dropdown: true
+children:
+  - title: Projects
+    permalink: /projects/
+  - title: Packages
+    permalink: /packages/
+display_categories: [research, service, fun]
 ---
 
 <!-- pages/projects.md -->
 <div class="projects">
-{%- if site.enable_project_categories and page.display_categories %}
-  <!-- Display categorized projects -->
   {%- for category in page.display_categories %}
-  <h2 class="category">{{ category }}</h2>
-  {%- assign categorized_projects = site.projects | where: "category", category -%}
-  {%- assign sorted_projects = categorized_projects | sort: "importance" %}
-  <!-- Generate cards for each project -->
-  {% if page.horizontal -%}
-  <div class="container">
-    <div class="row row-cols-2">
-    {%- for project in sorted_projects -%}
-      {% include projects_horizontal.html %}
+  <h2 class="category">{{ category | capitalize }}</h2>
+  {%- assign sorted_projects = site.projects | where: "category", category | sort: "importance" %}
+  <ul class="project-list">
+    {%- for project in sorted_projects %}
+    <li class="project-list-item">
+      <h3>
+        {%- if project.redirect %}
+        <a href="{{ project.redirect }}">{{ project.title }}</a>
+        {%- else %}
+        <a href="{{ project.url | relative_url }}">{{ project.title }}</a>
+        {%- endif %}
+      </h3>
+      <p>{{ project.description }}</p>
+    </li>
     {%- endfor %}
-    </div>
-  </div>
-  {%- else -%}
-  <div class="grid">
-    {%- for project in sorted_projects -%}
-      {% include projects.html %}
-    {%- endfor %}
-  </div>
-  {%- endif -%}
+  </ul>
   {% endfor %}
-
-{%- else -%}
-<!-- Display projects without categories -->
-  {%- assign sorted_projects = site.projects | sort: "importance" -%}
-  <!-- Generate cards for each project -->
-  {% if page.horizontal -%}
-  <div class="container">
-    <div class="row row-cols-2">
-    {%- for project in sorted_projects -%}
-      {% include projects_horizontal.html %}
-    {%- endfor %}
-    </div>
-  </div>
-  {%- else -%}
-  <div class="grid">
-    {%- for project in sorted_projects -%}
-      {% include projects.html %}
-    {%- endfor %}
-  </div>
-  {%- endif -%}
-{%- endif -%}
 </div>
