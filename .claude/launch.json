@@ -21,18 +21,6 @@
         "/Users/xpz5km/Library/CloudStorage/Box-Box/_Teaching/DS2003_Communicating_with_data/F26_DS2003_02"
       ],
       "port": 8765
-    },
-    {
-      "name": "site-build-preview",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8766",
-        "--directory",
-        "/private/tmp/claude-502/-Users-xpz5km-Documents-GitHub-smgroves-github-io/6e0d32be-903f-4ae9-bd05-f7be28b02973/scratchpad/site"
-      ],
-      "port": 8766
     }
   ]
 }

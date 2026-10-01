@@ -4,6 +4,21 @@
 
 // Typography
 
+body {
+  font-family: "Lato", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand,
+.post-title {
+  font-family: "Lora", serif;
+}
+
 p,
 h1,
 h2,
@@ -113,7 +128,7 @@ blockquote {
 // About
 
 .desc {
-  font-family: "Roboto Slab", serif;
+  font-family: "Lora", serif;
   font-weight: 700;
 }
 
