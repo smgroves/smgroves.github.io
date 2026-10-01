@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Physicochemical network control and condensate formation of chromosomal segregation proteins in breast cancer
-img: assets/img/cellsys_graphical_abstract.png
+img: assets/img/condensation.gif
 importance: 3
 category: research
 status: active
