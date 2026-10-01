@@ -12,12 +12,14 @@ children:
     permalink: /projects/
   - title: Packages
     permalink: /packages/
-display_categories: [research, service, fun]
+display_sections: [active, past]
 ---
 
 <!-- pages/projects.md -->
 <!--
-  Each project in _projects/ is shown here as a blurb. Front matter fields:
+  Each project in _projects/ is shown here as a blurb, grouped into active and
+  past sections and sorted by `importance`. Front matter fields:
+    status: active or past (which section it appears in)
     blurb:  the paragraph shown on this page (markdown allowed)
     papers: list of bib keys from _bibliography/papers.bib, listed below the blurb
     links:  optional list of {text, url} links shown below the blurb
@@ -25,9 +27,9 @@ display_categories: [research, service, fun]
   (this ignores `redirect`).
 -->
 <div class="projects">
-  {%- for category in page.display_categories %}
-  <h2 class="category">{{ category | capitalize }}</h2>
-  {%- assign sorted_projects = site.projects | where: "category", category | sort: "importance" %}
+  {%- for section in page.display_sections %}
+  <h2 class="project-section">{{ section }}</h2>
+  {%- assign sorted_projects = site.projects | where: "status", section | sort: "importance" %}
   {%- for project in sorted_projects %}
   <div class="project-blurb">
     <h3>{{ project.title }}</h3>
@@ -36,12 +38,12 @@ display_categories: [research, service, fun]
     {%- endif %}
     {{ project.blurb | default: project.description | markdownify }}
 
-    {%- if project.links or category == "fun" %}
+    {%- if project.links or project.category == "fun" %}
     <p class="project-links">
       {%- for link in project.links %}
       <a href="{{ link.url }}">{{ link.text }}</a>{% unless forloop.last %} &middot; {% endunless %}
       {%- endfor %}
-      {%- if category == "fun" %}
+      {%- if project.category == "fun" %}
       {%- if project.links %} &middot; {% endif %}
       <a href="{{ project.url | relative_url }}">Read more &rarr;</a>
       {%- endif %}

@@ -4,6 +4,7 @@ title: Physicochemical network control and condensate formation of chromosomal s
 img: assets/img/cellsys_graphical_abstract.png
 importance: 3
 category: research
+status: active
 # TODO: write your paragraph about this project
 blurb: >
   Come back soon!
