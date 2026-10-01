@@ -20,9 +20,22 @@ social: true  # includes social icons at the bottom of the page
 Welcome to my site! I am currently an **assistant professor** studying cancer systems biology and biological network science at the University of Virginia in the School of Data Science. 
 
 ## About me
+I consider myself a physicist by training and a biological network scientist by practice. My research and teaching experiences in undergrad, graduate school, and a post-doc allow me to combine these identities to approach complex biological problems through the analysis and modeling of high-dimensional data. 
 
-After receiving a B.S. in Physics and Mathematics from The College of William & Mary in 2016, I entered Vanderbilt via their <a href="https://medschool.vanderbilt.edu/qcb/">Quantitative and Chemical Biology program</a> and completed my PhD in the Quaranta Lab in March 2022, where I modeled regulatory networks and phenotypic transitions (cell state plasticity) in Small Cell Lung Cancer. More recently, I was a postdoctoral researcher in the <a href="https://sasco.virginia.edu/">Center for Systems Analysis of Stress-adapted Organelles (SASCO),</a> which combines **systems biology with mathematical modeling and data science** to solve complex biological problems. As a post-doc, I focused on computational modeling of dysregulated of chromosomal segregation during mitosis in cancer. I consider myself a physicist by training and a biological network scientist by practice. My research experiences in undergrad, graduate school, and my post-doc allow me to combine these identities to approach complex biological problems through the analysis and modeling of high-dimensional data. 
+- B.S. in Physics and Mathematics from The College of William & Mary (2016) 
+- PhD in Chemical and Physical Biology (Systems Biology) from Vanderbilt (2022) 
+  - I entered Vanderbilt via their <a href="https://medschool.vanderbilt.edu/qcb/">Quantitative and Chemical Biology program</a>
+  - I modeled regulatory networks and phenotypic transitions (cell state plasticity) in Small Cell Lung Cancer in the Quaranta lab. 
+- Postdoc in the <a href="https://sasco.virginia.edu/">Center for Systems Analysis of Stress-adapted Organelles (SASCO),</a> at UVA
+  - I combined **systems biology with mathematical modeling and data science** to solve complex biological problems. 
+  - My project focused on computational modeling of dysregulated of chromosomal segregation during mitosis in cancer
+- Passionate about **science communication**, particular in the visual form, and **educational research**
+  - I am excited to teach **Communicating with Data** in the Fall 2026
+  - I learned motion design to make educational video content in my role as the <a href="https://sasco.virginia.edu/outreach-cores/">SASCO Outreach Core Education Scholar</a>
+  - I've studied how AI integration affects engineering curriculum and student learning. 
 
-I am also passionate about **science communication**, particular in the visual form. I am excited to teach **Communicating with Data** in the Fall 2026. I’ve been learning motion design to make educational video content in my role as the <a href="https://sasco.virginia.edu/outreach-cores/">SASCO Outreach Core Education Scholar</a>.
+## Work with me
+
+See current projects <a href="https://smgroves.github.io/projects/">here</a>.
 
 If you are interested in working with me, please reach out by <a href="mailto:smgroves@virginia.edu">email</a>! 
