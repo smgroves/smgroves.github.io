@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · One Sample, One Point — A Skewed Population — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">One sample, one point — skewed</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 04 &amp; Class 10</div>
+    <h1>One Sample, One Point — A Skewed Population</h1>
+    <div class="subtitle">Same collapse, same layout, a population that isn't symmetric at all</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A companion to <a href="../activity-two-distributions/index.html">the die version</a> of this mini-lesson, rebuilt on a population that looks nothing like a die: customer wait times, modeled as <span class="gloss" data-gloss="skewed-pop">Exponential</span> with true mean \(\theta = 2\) minutes — most customers wait a short time, a few wait a very long time, and the histogram has a long right tail instead of six even bars.</p>
+
+  <div class="cite">
+    A companion exploration built to accompany the sample-mean material in Class 04 and the sampling-distribution material in Class 10 — no external dataset, the widget generates its own wait times in the browser.
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>does skew break the collapse?</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>In <a href="../activity-two-distributions/index.html">the die mini-lesson</a>, the top histogram was symmetric (roughly flat across six faces) and the bottom strip of averages still ended up looking clustered and roughly symmetric around θ. If the top histogram is instead heavily lopsided — mostly small values with a long tail of rare large ones — do you expect the bottom strip of averages to also look lopsided? Why or why not?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare predictions, then watch what the widget's bottom strip actually looks like once you've drawn 30+ samples.</li>
+        <li><span class="tps-phase">Share · 2 min</span>Agree on what's surprising (or not) about the answer.</li>
+      </ul>
+    </details>
+  </div>
+
+  <h2 id="widget">One sample, one point — skewed</h2>
+  <p>Same mechanic as the die version, different population. The top histogram is <span class="gloss" data-gloss="skewed-pop">one sample</span> of N customer wait times — most bars piled up near zero, a thinning tail stretching right. Averaging those N numbers collapses the whole histogram into \(\bar X_N\), which joins the <span class="gloss" data-gloss="sampling-distribution-2d-skew">sampling distribution</span> in the strip below, against the true \(\theta = 2\). Click any dot to bring its histogram back up top.</p>
+
+  <div class="viz" id="viz-two-distributions-skewed">
+    <div class="viz-description">Top: histogram of one sample's N raw wait times — visibly lopsided, long right tail. Bottom: every sample's mean collapsed to one dot, plus the solid <span class="gloss" data-gloss="theta-hat-skew">θ̂</span> line averaging every dot so far.</div>
+  </div>
+
+  <div class="callout insight">
+    <strong>The top stays lopsided; the bottom does not.</strong> No matter how many wait times you draw into one sample, that sample's own histogram keeps the same long-tailed shape — skew is a property of the population, and it doesn't go away. But the bottom strip of averages behaves completely differently: at small N it's a little lopsided too, but by N = 30 or 40 it already looks close to symmetric, clustered tightly around θ = 2. Averaging is what launders the skew away — a preview of exactly what the Central Limit Theorem formalizes.
+  </div>
+
+  <div class="exercise">
+    <div class="ex-label">Check your intuition</div>
+    <p>Set N = 2 and draw 30 samples. Look at the bottom strip's shape — is it symmetric? Now set N = 40 and draw 30 more. What changed about the strip's shape, not just its spread?</p>
+    <details>
+      <summary>Show answer</summary>
+      <p>At N = 2, the strip of averages is still visibly skewed right — averaging just two numbers barely dents the population's own lopsidedness. At N = 40, the strip looks much more symmetric and bell-shaped, clustered near θ = 2, even though the original wait-time population never stopped being skewed. The averaging step, not the population, is what produces the symmetry.</p>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Why does the mean equal the standard deviation for this population?</h3>
+  <p>That's a specific fact about the Exponential distribution: with rate \(\lambda\) and mean \(\theta = 1/\lambda\), the variance is also \(\theta^2\), so the standard deviation is \(\theta\) too. It isn't true of skewed distributions in general — it's a coincidence of this particular one, worth not over-generalizing from.</p>
+
+  <h3>Is this what the bootstrap actually looks like for skewed data?</h3>
+  <p>Close, with the same substitution as the die version: instead of drawing fresh wait times from the real (unknown) population, the bootstrap resamples with replacement from the one real sample you have, and treats each resample's mean the same way — one more dot in the same kind of bottom strip.</p>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-two-distributions/index.html">One sample, one point (die)</a>
+    <a href="../activity-two-distributions-variance/index.html">One sample, one point (variance)</a>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-min-sum-squares/index.html">What the sample mean minimizes</a>
+    <a href="../activity-bessel-correction/index.html">Why the sample variance undershoots</a>
+    <a href="../activity-standard-error/index.html">How bad is my estimator?</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Estimator Properties mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Lab 01 Dataset Catalog</title>
+  <style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <style type="text/css"></style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Lab 01 Dataset Catalog</h1>
+</header>
+<h1 id="dataset-catalog">Dataset Catalog</h1>
+<p>Generated on August 26, 2026.</p>
+<p>This catalog is based on:</p>
+<ul>
+<li>filenames and file structure in this directory</li>
+<li>spot-checks of rows/columns and encodings</li>
+<li>local companion docs/codebooks</li>
+<li>targeted web searches for likely upstream dataset pages</li>
+</ul>
+<p>Cleaning status is intentionally conservative:</p>
+<ul>
+<li><code>no</code>: looks like a raw or near-raw download/export</li>
+<li><code>mixed</code>: mostly upstream data, but converted, lightly
+renamed, trimmed, or reformatted</li>
+<li><code>yes</code>: clearly classroom-prepped, subsetted, aggregated,
+or feature-engineered</li>
+<li><code>unclear</code>: provenance/source is not pinned down
+confidently enough to say more</li>
+</ul>
+<p>Confidence is about provenance, not data quality.</p>
+<h2 id="main-catalog">Main Catalog</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>File</th>
+<th>Shape</th>
+<th>Likely source family</th>
+<th>Probable upstream source</th>
+<th>Cleaned?</th>
+<th>Confidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>2022 election cycle fundraising.csv</code></td>
+<td>537 x 9</td>
+<td>Kaggle / campaign-finance classroom dataset</td>
+<td>Likely the #MakeoverMonday / Kaggle version of 2022 congressional
+fundraising data built from FEC/OpenSecrets context: <a href="https://www.vizwiz.com/2022/11/mm2022-w44.html">VizWiz
+prompt</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Small summary table by member, not raw FEC filings.</td>
+</tr>
+<tr>
+<td><code>CardiacPatientData.csv</code></td>
+<td>5,906 x 20</td>
+<td>Academic clinical dataset</td>
+<td>Likely <a href="https://explore.openaire.eu/search/dataset?pid=10.5281%2Fzenodo.7603771">Cardiac
+Patient Bed Head Ticket Dataset</a></td>
+<td><code>mixed</code></td>
+<td>medium</td>
+<td>Columns match the published cardiac variables very closely; local
+file looks like a flat CSV export of the research data.</td>
+</tr>
+<tr>
+<td><code>ForeignGifts_edu.csv</code></td>
+<td>28,221 x 10</td>
+<td>U.S. government open data</td>
+<td>U.S. Department of Education Section 117 / <a href="https://catalog.data.gov/dataset/foreign-gifts-and-contracts-report">Foreign
+Gifts and Contracts Report</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Columns match the DOE spreadsheet export almost exactly.</td>
+</tr>
+<tr>
+<td><code>SIPRI Military Expenditure Database.csv</code></td>
+<td>5,882 x 7</td>
+<td>SIPRI official data</td>
+<td><a href="https://www.sipri.org/databases/milex">SIPRI Military
+Expenditure Database</a></td>
+<td><code>mixed</code></td>
+<td>high</td>
+<td>Looks like a tidy/exported slice with an added index column.</td>
+</tr>
+<tr>
+<td><code>USA_cars_datasets.csv</code></td>
+<td>2,499 x 13</td>
+<td>Kaggle</td>
+<td><a href="https://www.kaggle.com/datasets/doaaalsenani/usa-cers-dataset/data">US
+Cars Dataset</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Exact filename match.</td>
+</tr>
+<tr>
+<td><code>airbnb_NYC.csv</code></td>
+<td>30,478 x 13</td>
+<td>Inside Airbnb classroom/community extract</td>
+<td>Core upstream source is <a href="https://beta.insideairbnb.com/explore/">Inside Airbnb</a></td>
+<td><code>mixed</code></td>
+<td>medium</td>
+<td>Already reduced to a teaching-friendly 13-column NYC listing table;
+not a full raw Inside Airbnb dump.</td>
+</tr>
+<tr>
+<td><code>airbnb_hw.csv</code></td>
+<td>30,478 x 13</td>
+<td>Duplicate classroom copy</td>
+<td>Same likely upstream as <code>airbnb_NYC.csv</code>: <a href="https://beta.insideairbnb.com/explore/">Inside Airbnb</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Same shape/columns as <code>airbnb_NYC.csv</code>; likely the
+homework working copy.</td>
+</tr>
+<tr>
+<td><code>ames_prices.csv</code></td>
+<td>2,930 x 82</td>
+<td>Ames Housing teaching dataset</td>
+<td>Dean De Cock’s Ames Housing data: <a href="https://lab.cs307.org/housing/">Ames paper reference</a> and
+common <a href="https://www.kaggle.com/datasets/marcopale/housing">Kaggle
+mirror</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Local codebook matches Ames; <code>area</code>/<code>price</code>
+naming suggests class-side renaming/cleanup.</td>
+</tr>
+<tr>
+<td><code>brazil_default.csv</code></td>
+<td>50,000 x 54</td>
+<td>Brazilian credit/default dataset</td>
+<td>Upstream page not pinned down confidently; local
+<code>brazil_codebook.XLS</code> strongly suggests a Brazilian credit
+application/default dataset</td>
+<td><code>mixed</code></td>
+<td>low</td>
+<td>Kept in catalog because the codebook is detailed, but I could not
+verify a clean public landing page from the web.</td>
+</tr>
+<tr>
+<td><code>car_prices.csv</code></td>
+<td>92 x 20</td>
+<td>Local/classroom derivative</td>
+<td>Likely derived from local Charlottesville Craigslist car data rather
+than a public canonical dataset</td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Enriched version of the local Craigslist car scrape with extra
+parsed fields and free text.</td>
+</tr>
+<tr>
+<td><code>cars_env.csv</code></td>
+<td>524 x 13</td>
+<td>EPA model input / policy modeling</td>
+<td>EPA CVCM / OMEGA vehicle-sheet format documented in <a href="https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=P100EZ37.TXT">Consumer
+Vehicle Choice Model documentation</a></td>
+<td><code>mixed</code></td>
+<td>medium</td>
+<td><code>predicted mpg</code> and <code>baseline mpg/sales</code>
+suggest model-ready input rather than raw market data.</td>
+</tr>
+<tr>
+<td><code>cars_hw.csv</code></td>
+<td>976 x 12</td>
+<td>Used-car classroom dataset</td>
+<td>Likely a Kaggle/community used-car dataset, but no exact upstream
+page confirmed</td>
+<td><code>yes</code></td>
+<td>low</td>
+<td>Filename and structure strongly suggest a homework-prepped
+file.</td>
+</tr>
+<tr>
+<td><code>college_completion.csv</code></td>
+<td>3,798 x 63</td>
+<td>Kaggle</td>
+<td><a href="https://www.kaggle.com/datasets/thedevastator/boost-student-success-with-college-completion-da">College
+Completion Dataset</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Kaggle page says the data draw from NCES IPEDS and the Voluntary
+System of Accountability.</td>
+</tr>
+<tr>
+<td><code>corporate_ratings.csv</code></td>
+<td>2,029 x 31</td>
+<td>Kaggle</td>
+<td><a href="https://www.kaggle.com/datasets/agewerc/corporate-credit-rating">Corporate
+Credit Rating</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Exact schema match.</td>
+</tr>
+<tr>
+<td><code>craigslist_cville_cars.csv</code></td>
+<td>46 x 7</td>
+<td>Local scrape</td>
+<td>Charlottesville Craigslist listings, locally scraped</td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Not a third-party packaged dataset; this looks like your own small
+scrape/export.</td>
+</tr>
+<tr>
+<td><code>crimebystatecombinedwithunemployment.csv</code></td>
+<td>1,989 x 13</td>
+<td>Kaggle</td>
+<td><a href="https://www.kaggle.com/datasets/lydiavasil/crime-rate-and-unemployment-rate-by-state">Crime
+rate and unemployment rate by state</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Exact filename match.</td>
+</tr>
+<tr>
+<td><code>cville_weather.csv</code></td>
+<td>411 x 13</td>
+<td>NOAA climate data</td>
+<td>NOAA Climate Data Online / Daily Summaries, Charlottesville area: <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/locations/ZIP%3A22902/detail">CDO
+Daily Summaries location details</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Local file uses NOAA station-style columns and station
+<code>US1VACRC002</code>.</td>
+</tr>
+<tr>
+<td><code>diabetes-dataset.csv</code></td>
+<td>2,000 x 9</td>
+<td>Kaggle</td>
+<td>Likely <a href="https://www.kaggle.com/datasets/bugrahanayd/diadata">diadata</a>
+or a very similar Kaggle Pima-style repost</td>
+<td><code>no</code></td>
+<td>medium</td>
+<td>Exact filename appears on Kaggle; not the original 768-row UCI Pima
+file.</td>
+</tr>
+<tr>
+<td><code>divorce/divorce_data.csv</code></td>
+<td>170 x 55</td>
+<td>UCI</td>
+<td><a href="https://archive.ics.uci.edu/dataset/539/divorce%26">UCI
+Divorce Predictors data set</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Exact row count and 54 predictors + target.</td>
+</tr>
+<tr>
+<td><code>drilling_rigs.csv</code></td>
+<td>623 x 10</td>
+<td>U.S. government energy data</td>
+<td>EIA monthly drilling/rig statistics family, likely from the <a href="https://www.eia.gov/totalenergy/data/monthly/">Monthly Energy
+Review</a> or a related EIA table</td>
+<td><code>no</code></td>
+<td>medium</td>
+<td>Structure looks like a straight EIA table export.</td>
+</tr>
+<tr>
+<td><code>electricity_data_validation.csv</code></td>
+<td>108 x 14</td>
+<td>EIA API extract</td>
+<td>EIA electricity retail sales metadata/API: <a href="https://www.eia.gov/opendata/documentation.php">EIA open data
+docs</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Small Virginia-only recent-period validation slice, clearly not the
+full national dataset.</td>
+</tr>
+<tr>
+<td><code>energy.csv</code></td>
+<td>632 x 10</td>
+<td>EIA spreadsheet export</td>
+<td><a href="https://www.eia.gov/totalenergy/data/monthly/">Monthly
+Energy Review</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>The first rows are title/release-date rows from an EIA spreadsheet
+export.</td>
+</tr>
+<tr>
+<td><code>heart_failure_clinical_records_dataset.csv</code></td>
+<td>299 x 13</td>
+<td>UCI</td>
+<td><a href="https://archive-beta.ics.uci.edu/dataset/519/heart%2Bfailure%2Bclinical%2Brecords/files">UCI
+Heart Failure Clinical Records</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Exact filename match.</td>
+</tr>
+<tr>
+<td><code>iowa.csv</code></td>
+<td>159,904 x 14</td>
+<td>Iowa government open data</td>
+<td><a href="https://dev.socrata.com/foundry/data.iowa.gov/m3tr-qhgy">Iowa
+Liquor Sales</a></td>
+<td><code>mixed</code></td>
+<td>high</td>
+<td>Column names match the official dataset, but this file is a
+classroom-sized subset/export rather than the full live table.</td>
+</tr>
+<tr>
+<td><code>justice_data.parquet</code></td>
+<td>22,986 x 709</td>
+<td>Virginia official pretrial data</td>
+<td><a href="https://vscc.virginia.gov/virginiapretrialdataproject.asp">Virginia
+Pre-Trial Data Project</a></td>
+<td><code>mixed</code></td>
+<td>high</td>
+<td>Very likely the wide official public dataset converted from CSV/XLS
+to Parquet for easier work.</td>
+</tr>
+<tr>
+<td><code>land_mines.csv</code></td>
+<td>338 x 4</td>
+<td>UCI</td>
+<td><a href="https://archive-beta.ics.uci.edu/dataset/763/land%2Bmines-1">UCI
+Land Mines</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Row count matches UCI, but headers have been made friendlier
+(<code>voltage</code>, <code>height</code>, <code>soil</code>,
+<code>mine_type</code>).</td>
+</tr>
+<tr>
+<td><code>mammogram.csv</code></td>
+<td>89,835 x 2</td>
+<td>OpenIntro teaching dataset</td>
+<td>OpenIntro-style teaching distribution; see local companion doc <a href="mammogram.txt"><code>mammogram.txt</code></a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Highly distilled two-column teaching version, not a raw clinical
+file.</td>
+</tr>
+<tr>
+<td><code>metabric.csv</code></td>
+<td>1,343 x 14</td>
+<td>Kaggle / derived METABRIC subset</td>
+<td>Likely based on <a href="https://www.kaggle.com/datasets/gunesevitan/breast-cancer-metabric">Breast
+Cancer (METABRIC)</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Much smaller and tidier than the common full Kaggle METABRIC tables,
+so this looks class-prepared.</td>
+</tr>
+<tr>
+<td><code>mn_police_use_of_force.csv</code></td>
+<td>12,925 x 13</td>
+<td>OpenIntro from Minneapolis open data</td>
+<td><a href="https://openintrostat.github.io/openintro/reference/mn_police_use_of_force.html">OpenIntro
+dataset page</a>; original city source: <a href="https://www.ci.minneapolis.mn.us/government/government-data/datasource/use-of-force-dashboard/">Minneapolis
+use-of-force data</a></td>
+<td><code>mixed</code></td>
+<td>high</td>
+<td>Looks like the OpenIntro teaching distribution of Minneapolis public
+data.</td>
+</tr>
+<tr>
+<td><code>mnist/Z_train.parquet</code>,
+<code>mnist/Z_test.parquet</code>, <code>mnist/y_train.parquet</code>,
+<code>mnist/y_test.parquet</code></td>
+<td>60,000/10,000 image rows + labels</td>
+<td>Official benchmark dataset, locally converted</td>
+<td><a href="https://yann.lecun.org/exdb/mnist/index.html">Official
+MNIST page</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Raw MNIST image/label split converted into Parquet matrices and
+label vectors.</td>
+</tr>
+<tr>
+<td><code>nhanes_data_17_18.csv</code></td>
+<td>8,366 x 198</td>
+<td>NHANES</td>
+<td>CDC NHANES 2017-2018: <a href="https://wwwn.cdc.gov/nchs/nhanes/search/DataPage.aspx?Cycle=2017-2018">data
+portal</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>This is a merged, cleaned, human-readable NHANES extract, not a raw
+single XPT file.</td>
+</tr>
+<tr>
+<td><code>nhanes_meta_17_18.csv</code></td>
+<td>197 x 18</td>
+<td>NHANES metadata</td>
+<td>CDC NHANES 2017-2018: <a href="https://wwwn.cdc.gov/nchs/nhanes/continuousnhanes/default.aspx?BeginYear=2017">questionnaires/datasets
+page</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Custom variable dictionary/metadata table layered on top of NHANES
+docs and recodes.</td>
+</tr>
+<tr>
+<td><code>patents.csv</code></td>
+<td>161 x 7</td>
+<td>WIPO-derived custom extract</td>
+<td><a href="https://www.wipo.int/en/web/ip-statistics/about">WIPO IP
+Statistics Data Center</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Small country-by-country 2020-2021 extract; clearly a hand-selected
+summary rather than a raw WIPO bulk table.</td>
+</tr>
+<tr>
+<td><code>pierce_county_house_sales.csv</code></td>
+<td>16,814 x 19</td>
+<td>OpenIntro/usdata from county open data</td>
+<td><a href="https://openintrostat.github.io/usdata/reference/pierce_county_house_sales.html">OpenIntro/usdata
+page</a></td>
+<td><code>mixed</code></td>
+<td>high</td>
+<td>Distributed as a teaching dataset, sourced from Pierce County,
+Washington.</td>
+</tr>
+<tr>
+<td><code>pretrial_data.csv</code></td>
+<td>22,986 x 17</td>
+<td>Derived from Virginia pretrial data</td>
+<td><a href="https://vscc.virginia.gov/virginiapretrialdataproject.asp">Virginia
+Pre-Trial Data Project</a></td>
+<td><code>yes</code></td>
+<td>high</td>
+<td>Clearly a feature-selected/engineered modeling subset of
+<code>justice_data.parquet</code>.</td>
+</tr>
+<tr>
+<td><code>sharks.csv</code></td>
+<td>6,462 x 257</td>
+<td>Shark attack registry / likely community mirror</td>
+<td>Likely derived from the <a href="https://www.sharks.org/global-shark-attack-file">Global Shark
+Attack File</a></td>
+<td><code>no</code></td>
+<td>medium</td>
+<td>Messy wide structure with many empty columns suggests a raw-ish
+export, not a cleaned teaching table.</td>
+</tr>
+<tr>
+<td><code>tech_stocks.csv</code></td>
+<td>32,224 x 10</td>
+<td>Market API export / classroom aggregation</td>
+<td>Schema matches Alpha Vantage <a href="https://www.alphavantage.co/documentation/">TIME_SERIES_DAILY_ADJUSTED</a></td>
+<td><code>mixed</code></td>
+<td>medium</td>
+<td>Columns like <code>close_adjusted</code> and
+<code>split_coefficient</code> strongly suggest an Alpha Vantage-style
+export combined across symbols.</td>
+</tr>
+<tr>
+<td><code>time_use.csv</code></td>
+<td>67 x 7</td>
+<td>ATUS/BLS-derived summary</td>
+<td>Likely derived from the American Time Use Survey / <a href="https://www.bls.gov/news.release/archives/atus_07222021.htm">BLS
+ATUS releases</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Already aggregated to age-level summary measures; not raw diary
+records.</td>
+</tr>
+<tr>
+<td><code>tuna.csv</code></td>
+<td>10,032 x 1</td>
+<td>Biosequence classroom data</td>
+<td>Upstream not confidently identified</td>
+<td><code>mixed</code></td>
+<td>low</td>
+<td>One-column nucleotide sequence table; almost certainly preprocessed
+for class use, but I could not pin a canonical public source.</td>
+</tr>
+<tr>
+<td><code>us_power_consumption.csv</code></td>
+<td>75 x 13</td>
+<td>EIA-derived annual energy summary</td>
+<td>EIA energy data family / likely <a href="https://www.eia.gov/totalenergy/data/monthly/">Monthly Energy
+Review</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Tidy annual totals table; much more processed than the raw
+<code>energy.csv</code> export.</td>
+</tr>
+<tr>
+<td><code>wages_hw.csv</code></td>
+<td>731 x 6</td>
+<td>Kaggle-derived salary homework file</td>
+<td>Likely derived from a Glassdoor salary dataset such as <a href="https://www.kaggle.com/datasets/rashikrahmanpritom/data-science-job-posting-on-glassdoor">Data
+Science Job Posting on Glassdoor</a></td>
+<td><code>yes</code></td>
+<td>medium</td>
+<td>Minimal modeling subset with <code>avg_salary</code>,
+<code>job_state</code>, and a few employer descriptors.</td>
+</tr>
+<tr>
+<td><code>weapons-trade-register.csv</code></td>
+<td>CSV with SIPRI preamble + transfer rows</td>
+<td>SIPRI official data</td>
+<td><a href="https://www.sipri.org/databases/armstransfers">SIPRI Arms
+Transfers Database</a> / <a href="https://armstransfers.sipri.org/ArmsTransfer/TransferRegister">register
+export interface</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Straight export with explanatory lines above the header; definitely
+near-raw.</td>
+</tr>
+<tr>
+<td><code>zoo.csv</code></td>
+<td>101 x 18</td>
+<td>UCI</td>
+<td><a href="https://archive-beta.ics.uci.edu/dataset/111/zoo">UCI
+Zoo</a></td>
+<td><code>no</code></td>
+<td>high</td>
+<td>Classic UCI dataset with standard 101-row shape.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="companion-docs-and-related-files">Companion Docs And Related
+Files</h2>
+<p>These are not primary datasets themselves, but they explain or
+support the tabular files above.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>File</th>
+<th>Relates to</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ames_codebook.txt</code></td>
+<td><code>ames_prices.csv</code></td>
+<td>Local codebook for Ames Housing; confirms provenance.</td>
+</tr>
+<tr>
+<td><code>brazil_codebook.XLS</code></td>
+<td><code>brazil_default.csv</code></td>
+<td>Local variable dictionary for the Brazilian credit/default
+file.</td>
+</tr>
+<tr>
+<td><code>heart_failure_readme.txt</code></td>
+<td><code>heart_failure_clinical_records_dataset.csv</code></td>
+<td>Local UCI-style README with provenance and citation info.</td>
+</tr>
+<tr>
+<td><code>VirginiaPretrialData2017Codebook.pdf</code></td>
+<td><code>justice_data.parquet</code>,
+<code>pretrial_data.csv</code></td>
+<td>Official Virginia codebook for the October 2017 cohort.</td>
+</tr>
+<tr>
+<td><code>mammogram.txt</code></td>
+<td><code>mammogram.csv</code></td>
+<td>Local dataset description and original study citation.</td>
+</tr>
+<tr>
+<td><code>use_of_force.txt</code></td>
+<td><code>mn_police_use_of_force.csv</code></td>
+<td>Local dataset description matching OpenIntro wording.</td>
+</tr>
+<tr>
+<td><code>divorce/about.txt</code></td>
+<td><code>divorce/divorce_data.csv</code></td>
+<td>Local description of the divorce predictors data.</td>
+</tr>
+<tr>
+<td><code>divorce/questions.txt</code></td>
+<td><code>divorce/divorce_data.csv</code></td>
+<td>Human-readable questionnaire text for Q1-Q54.</td>
+</tr>
+<tr>
+<td><code>divorce/reference.tsv</code></td>
+<td><code>divorce/divorce_data.csv</code></td>
+<td>Variable-to-question lookup table.</td>
+</tr>
+<tr>
+<td><code>mnist/example_solution.ipynb</code></td>
+<td>MNIST Parquet files</td>
+<td>Teaching notebook/example solution using the local MNIST files.</td>
+</tr>
+<tr>
+<td><code>cpr.txt</code></td>
+<td>no matching CSV in this directory</td>
+<td>Dataset description for a CPR class example; the tabular file itself
+is not present here.</td>
+</tr>
+<tr>
+<td><code>Effectiveness of Bystander Cardiopulmonary Resuscitation and Survival Following Out-of-Hospital Cardiac Arrest.pdf</code></td>
+<td>CPR/cardiac arrest teaching material</td>
+<td>Source article or background reading; not a tabular dataset.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="short-takeaways">Short Takeaways</h2>
+<ul>
+<li><code>UCI</code> shows up clearly in
+<code>heart_failure_clinical_records_dataset.csv</code>,
+<code>zoo.csv</code>, <code>divorce/divorce_data.csv</code>, and
+<code>land_mines.csv</code>.</li>
+<li><code>NHANES</code> is clearly represented by
+<code>nhanes_data_17_18.csv</code> and
+<code>nhanes_meta_17_18.csv</code>, and both are already
+classroom-cleaned/merged.</li>
+<li><code>Kaggle/community mirrors</code> show up heavily in
+<code>USA_cars_datasets.csv</code>, <code>corporate_ratings.csv</code>,
+<code>college_completion.csv</code>,
+<code>crimebystatecombinedwithunemployment.csv</code>, and likely
+several of the homework-prepped derivatives.</li>
+<li><code>Official/public-sector data</code> is a large share of the
+directory too: DOE Section 117, NOAA weather, Iowa liquor sales,
+Virginia pretrial, EIA energy/electricity/rig data, SIPRI, and
+WIPO.</li>
+<li>The files most clearly cleaned by you or for class are
+<code>airbnb_hw.csv</code>, <code>ames_prices.csv</code>,
+<code>car_prices.csv</code>, <code>craigslist_cville_cars.csv</code>,
+<code>electricity_data_validation.csv</code>,
+<code>pretrial_data.csv</code>, the MNIST Parquet set, both NHANES CSVs,
+<code>patents.csv</code>, <code>us_power_consumption.csv</code>, and
+<code>wages_hw.csv</code>.</li>
+<li>The shakiest provenance calls are <code>brazil_default.csv</code>,
+<code>cars_hw.csv</code>, and <code>tuna.csv</code>; those are the ones
+I would label as inferred rather than fully verified if someone
+asks.</li>
+</ul>
+</body>
+</html>

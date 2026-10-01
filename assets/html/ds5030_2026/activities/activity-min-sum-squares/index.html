@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · What the Sample Mean Minimizes — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=2">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">What the sample mean minimizes</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 04 &amp; Class 10</div>
+    <h1>What the Sample Mean Minimizes</h1>
+    <div class="subtitle">One pinned sample, one slider, one geometric fact about the mean</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A standalone mini-lesson in a small, growing set on estimator properties. See also <a href="../activity-unbiased-consistent/index.html">an unbiased estimator that never gets more precise</a>; this page builds the geometric fact used to explain <a href="../activity-bessel-correction/index.html">why the naive sample variance undershoots</a>.</p>
+
+  <div class="cite">
+    A companion exploration built to accompany the sample-mean material in Class 04 — no external dataset, the widget recomputes everything from one pinned sample of five die rolls.
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>minimizing spread around a guess</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>You roll a die five times and get {2, 6, 4, 3, 5}. Pick any single number c you like, and add up the five squared distances from c to each roll. By hand, try c = 3.5 (the true θ) and c = 4 (the sample average). Which gives a smaller total?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare your two totals. Try a third value of c neither of you picked — does it ever beat 4?</li>
+        <li><span class="tps-phase">Share · 2 min</span>Agree as a table on which single value of c minimizes the total, then check it against the widget below.</li>
+      </ul>
+    </details>
+  </div>
+
+  <h2 id="widget">What the sample mean minimizes</h2>
+  <p>Take the pinned sample {2, 6, 4, 3, 5} — five valid die rolls, sample mean \(\bar X = 4\), true die mean \(\theta = 3.5\). For any candidate center c, define the <span class="gloss" data-gloss="sum-of-squares">sum of squared deviations</span>:</p>
+  <pre class="equation">$$SS(c) = \sum_{i=1}^{5} (x_i - c)^2$$</pre>
+  <p>This is a parabola in c, and it has exactly one minimum. Drag c across the slider below and watch where the marker bottoms out.</p>
+
+  <div class="viz" id="viz-min-ss">
+    <div class="viz-description">The gray tick marks along the bottom are the five rolls themselves. X̄ marks where SS(c) is smallest; θ marks the true population mean.</div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-label">Verify by hand</div>
+    <p>Confirm \(SS(3.5) = 11.25\) and \(SS(4) = 10\) directly: \((2-3.5)^2+(6-3.5)^2+(4-3.5)^2+(3-3.5)^2+(5-3.5)^2\) versus the same sum centered at 4.</p>
+    <details>
+      <summary>Show the arithmetic</summary>
+      <p>At c = 3.5: \(2.25+6.25+0.25+0.25+2.25 = 11.25\). At c = 4: \(4+4+0+1+1 = 10\). The gap, 1.25, is exactly \(n(\bar X - \theta)^2 = 5\times(0.5)^2 = 1.25\) — no coincidence, that identity holds for every sample, and it's exactly what the <a href="../activity-bessel-correction/index.html">sample-variance mini-lesson</a> uses to explain the bias.</p>
+    </details>
+  </div>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-bessel-correction/index.html">Why the sample variance undershoots</a>
+    <a href="../activity-standard-error/index.html">How bad is my estimator?</a>
+    <a href="../activity-two-distributions/index.html">One sample, one point</a>
+    <a href="../activity-two-distributions-skewed/index.html">One sample, one point (skewed)</a>
+    <a href="../activity-two-distributions-variance/index.html">One sample, one point (variance)</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Estimator Properties mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

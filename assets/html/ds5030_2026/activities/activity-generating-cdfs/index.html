@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In-Class Activity · Generating CDFs — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">In-Class Activity</div>
+  <ul>
+    <li><a href="#uniform">1 · Uniform from a finite grid</a></li>
+    <li><a href="#normal">2 · Normal from many small additions</a></li>
+    <li><a href="#exponential">3 · Exponential from a failure clock</a></li>
+    <li><a href="#poisson">4 · Poisson from soccer goals</a></li>
+    <li><a href="#pareto">5 · Pareto from Zipf's law</a></li>
+    <li><a href="#boltzmann">6 · Boltzmann from energy exchange</a></li>
+    <li><a href="#gumbel">7 · Gumbel from maxima</a></li>
+    <li><a href="#beta">8 · Beta from order statistics</a></li>
+    <li><a href="#lognormal">9 · Lognormal from binomial asset pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · In-Class Activity · Sep 15</div>
+    <h1>Generating CDFs</h1>
+    <div class="subtitle">Nine random machines, each one a story before it is a formula</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A named distribution is usually the limit of a simple random process, not an arbitrary formula someone wrote down. In each of the nine mini-labs below, the group builds the machine first — draw, count, sort, exchange, whatever the story calls for — and only afterward checks the machine's own <span class="gloss" data-gloss="ecdf-gen">ECDF</span> against the named distribution's CDF from <code>scipy.stats</code>. Success means the simulation's own staircase lines up with the textbook curve.</p>
+
+  <div class="cite">
+    Built from <code>labslop/06_generating_cdfs/lab_00_generating_cdfs.ipynb</code>. Every simulation below was re-run to confirm the reported quantiles; no external data required — every mini-lab generates its own.
+  </div>
+
+  <div class="mini-lab-nav">
+    <a href="#uniform">Uniform</a><a href="#normal">Normal</a><a href="#exponential">Exponential</a><a href="#poisson">Poisson</a><a href="#pareto">Pareto</a><a href="#boltzmann">Boltzmann</a><a href="#gumbel">Gumbel</a><a href="#beta">Beta</a><a href="#lognormal">Lognormal</a>
+  </div>
+
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>machine before formula</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>Pick any one of the nine distributions listed above by name. Before reading its story below: what physical or data-generating process would you guess produces it?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare guesses, then jump to that section and see how close the actual story is.</li>
+        <li><span class="tps-phase">Share · 2 min</span>As a table, agree on which of the nine stories was the most surprising match to its distribution's name.</li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="uniform">1 · A uniform distribution from a finite grid</h2>
+  <p><strong>Story:</strong> a machine chooses one of \(K\) equally spaced values. When \(K\) is small, each value has visible probability. As \(K\) grows, the probability of landing on any exact value goes to zero, but probabilities over <em>intervals</em> stay stable.</p>
+  <p><strong>Algorithm:</strong> build the grid \(\{1/K, 2/K, \dots, K/K\}\), sample grid points with equal probability, and compare the resulting ECDF to <code>stats.uniform(0,1).cdf</code>.</p>
+  <pre><code class="language-python">draws = rng.integers(1, K + 1, size=B) / K</code></pre>
+  <p class="keep-in-present">At \(K=5\) the ECDF is visibly a five-step staircase; by \(K=1{,}000\) the atom probability \(1/K = 0.001\) is small enough that the staircase is indistinguishable by eye from the smooth Uniform(0,1) CDF line. This is the same "grid gets finer" idea behind the PDF-as-limit-of-histogram puzzle from Class 06's lecture, run forward instead of backward.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="normal">2 · The normal distribution from many small additions</h2>
+  <p><strong>Story:</strong> many unrelated small shocks add together. After centering and scaling, the sum becomes normal — the Central Limit Theorem, built by hand instead of assumed.</p>
+  <p><strong>Algorithm (uniform shocks):</strong> draw \(N\) values from Uniform\([-\sqrt3, \sqrt3]\) (mean 0, variance 1), average them, multiply by \(\sqrt N\), repeat \(B\) times.</p>
+  <pre><code class="language-python">shocks = rng.uniform(-a, a, size=(B, N))     # a = sqrt(3)
+z_uniform = np.sqrt(N) * shocks.mean(axis=1)</code></pre>
+  <p>With \(B=30{,}000\) draws of \(N=40\) shocks each, the simulated quantiles already track the standard normal closely:</p>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation</th><th>Normal(0,1) (scipy)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">−1.277</td><td class="num">−1.282</td></tr>
+      <tr><td>0.25</td><td class="num">−0.684</td><td class="num">−0.674</td></tr>
+      <tr><td>0.50</td><td class="num">−0.007</td><td class="num">0.000</td></tr>
+      <tr><td>0.75</td><td class="num">0.678</td><td class="num">0.674</td></tr>
+      <tr><td>0.90</td><td class="num">1.289</td><td class="num">1.282</td></tr>
+    </tbody>
+  </table>
+  <p>The same convergence shows up starting from Bernoulli trials instead of uniform shocks — count successes in \(N\) yes/no trials, subtract the expected count \(Np\), divide by the standard deviation \(\sqrt{Np(1-p)}\) — the exact standardization behind the binomial-to-normal approximation.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="exponential">3 · An exponential distribution from a failure clock</h2>
+  <p><strong>Story:</strong> a device is alive. In each tiny time interval of length \(\Delta\), it dies with probability \(\lambda \Delta\). As the time step shrinks, the lifetime distribution becomes exponential.</p>
+  <p><strong>Algorithm:</strong> pick a death rate \(\lambda\) and a small step \(\Delta\) with \(\lambda\Delta \lt 1\); for each simulated device, draw the first period death occurs in (a geometric random variable), then convert periods to time by multiplying by \(\Delta\).</p>
+  <pre><code class="language-python">p_death = lam * Delta
+periods_until_death = rng.geometric(p_death, size=B)
+lifetimes = periods_until_death * Delta</code></pre>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation (λ=0.8)</th><th>Exponential(scale=1/λ)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">0.14</td><td class="num">0.132</td></tr>
+      <tr><td>0.25</td><td class="num">0.36</td><td class="num">0.360</td></tr>
+      <tr><td>0.50</td><td class="num">0.88</td><td class="num">0.866</td></tr>
+      <tr><td>0.75</td><td class="num">1.74</td><td class="num">1.733</td></tr>
+      <tr><td>0.90</td><td class="num">2.88</td><td class="num">2.878</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="poisson">4 · A Poisson distribution from soccer goals</h2>
+  <p><strong>Story:</strong> goals are rare in any tiny slice of a match, but there are many slices. Count the goals across a full 90-minute match.</p>
+  <p><strong>Algorithm:</strong> split the match into many tiny intervals; in each, a goal occurs with probability \(\mu / \text{intervals}\); sum across intervals for the match total.</p>
+  <pre><code class="language-python">p_goal = mu / intervals
+goals = rng.binomial(intervals, p_goal, size=B)   # mu = 2.7, intervals = 900</code></pre>
+  <table class="data-table">
+    <thead><tr><th>goals ≤</th><th>simulation P</th><th>Poisson(2.7) P</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td class="num">0.0677</td><td class="num">0.0672</td></tr>
+      <tr><td>1</td><td class="num">0.2485</td><td class="num">0.2487</td></tr>
+      <tr><td>2</td><td class="num">0.4954</td><td class="num">0.4936</td></tr>
+      <tr><td>3</td><td class="num">0.7174</td><td class="num">0.7141</td></tr>
+      <tr><td>4</td><td class="num">0.8645</td><td class="num">0.8629</td></tr>
+    </tbody>
+  </table>
+  <p class="keep-in-present">This is exactly the Poisson-as-limit-of-binomial construction: a huge number of tiny, independent, low-probability trials (goal chances per second) collapses to a Poisson count over the whole match.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="pareto">5 · A Pareto distribution from Zipf's law for cities</h2>
+  <p><strong>Story:</strong> rank cities from largest to smallest. Under Zipf's law, size is proportional to \(1/\text{rank}\). Choose a city uniformly by rank, and its size follows a Pareto distribution in the tail.</p>
+  <pre><code class="language-python">sampled_ranks = rng.integers(1, K + 1, size=B)
+city_sizes = (K / sampled_ranks) ** alpha</code></pre>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation</th><th>Pareto(b=1, scale=1)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">1.11</td><td class="num">1.11</td></tr>
+      <tr><td>0.25</td><td class="num">1.33</td><td class="num">1.33</td></tr>
+      <tr><td>0.50</td><td class="num">1.99</td><td class="num">2.00</td></tr>
+      <tr><td>0.75</td><td class="num">3.98</td><td class="num">4.00</td></tr>
+      <tr><td>0.90</td><td class="num">9.90</td><td class="num">10.00</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="boltzmann">6 · A Boltzmann distribution from energy exchange</h2>
+  <p><strong>Story:</strong> many particles share a fixed pool of energy quanta and randomly pass energy around. After enough random exchanges, one particle's energy looks like a discrete exponential — the Boltzmann distribution of statistical mechanics.</p>
+  <p><strong>Algorithm:</strong> assign \(Q\) quanta randomly to \(M\) particles; repeatedly pick a donor and receiver at random and move one quantum if the donor has any; after burn-in, sample particle energies periodically to reduce autocorrelation.</p>
+  <p>With \(M=500\) particles, \(Q=2{,}000\) quanta (mean energy 4 per particle), and 500,000 exchange steps: the matched Boltzmann parameter is \(\lambda = \log(1 + 1/\bar{E}) \approx 0.223\), and the quantiles land almost exactly on the fitted distribution:</p>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation</th><th>Boltzmann(λ≈0.223)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>0.25</td><td class="num">1</td><td class="num">1</td></tr>
+      <tr><td>0.50</td><td class="num">3</td><td class="num">3</td></tr>
+      <tr><td>0.75</td><td class="num">6</td><td class="num">6</td></tr>
+      <tr><td>0.90</td><td class="num">10</td><td class="num">10</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="gumbel">7 · A Gumbel distribution from maxima</h2>
+  <p><strong>Story:</strong> take the maximum of many independent draws. For many common light-tailed distributions, the centered maximum converges to a Gumbel distribution — the extreme-value analog of the CLT.</p>
+  <pre><code class="language-python">maxima = rng.exponential(scale=1, size=(B, n)).max(axis=1)
+centered_maxima = maxima - np.log(n)</code></pre>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation (n=1,000)</th><th>Gumbel (scipy)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">−0.826</td><td class="num">−0.834</td></tr>
+      <tr><td>0.25</td><td class="num">−0.311</td><td class="num">−0.327</td></tr>
+      <tr><td>0.50</td><td class="num">0.375</td><td class="num">0.367</td></tr>
+      <tr><td>0.75</td><td class="num">1.234</td><td class="num">1.246</td></tr>
+      <tr><td>0.90</td><td class="num">2.220</td><td class="num">2.250</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="beta">8 · A Beta distribution from order statistics</h2>
+  <p><strong>Story:</strong> sort a small sample of uniform draws. The location of the \(k\)th smallest value has a Beta distribution.</p>
+  <pre><code class="language-python">uniform_samples = rng.uniform(0, 1, size=(B, n))
+kth_smallest = np.sort(uniform_samples, axis=1)[:, k - 1]   # n=12, k=4</code></pre>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation</th><th>Beta(4, 9)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">0.153</td><td class="num">0.154</td></tr>
+      <tr><td>0.25</td><td class="num">0.215</td><td class="num">0.216</td></tr>
+      <tr><td>0.50</td><td class="num">0.297</td><td class="num">0.298</td></tr>
+      <tr><td>0.75</td><td class="num">0.389</td><td class="num">0.389</td></tr>
+      <tr><td>0.90</td><td class="num">0.475</td><td class="num">0.475</td></tr>
+    </tbody>
+  </table>
+  <p class="keep-in-present">This is exactly Class 07's "order statistics &amp; auctions" group-work exercise, given its closed form: the \(k\)th smallest of \(n\) uniforms is Beta(\(k\), \(n+1-k\)).</p>
+
+  <!-- ============================================================ -->
+  <h2 id="lognormal">9 · A lognormal distribution from binomial asset pricing</h2>
+  <p><strong>Story:</strong> an asset price repeatedly moves up or down by small multiplicative factors. As the time step shrinks, the terminal price becomes lognormal — the discrete binomial-tree model converging to geometric Brownian motion.</p>
+  <pre><code class="language-python">u, d = np.exp(sigma*np.sqrt(dt)), np.exp(-sigma*np.sqrt(dt))
+p_up = (np.exp(mu*dt) - d) / (u - d)
+up_counts = rng.binomial(N, p_up, size=B)
+final_prices = S0 * (u ** up_counts) * (d ** (N - up_counts))</code></pre>
+  <table class="data-table">
+    <thead><tr><th>quantile p</th><th>simulation</th><th>Lognormal (GBM)</th></tr></thead>
+    <tbody>
+      <tr><td>0.10</td><td class="num">$75.32</td><td class="num">$76.21</td></tr>
+      <tr><td>0.25</td><td class="num">$88.16</td><td class="num">$88.70</td></tr>
+      <tr><td>0.50</td><td class="num">$106.50</td><td class="num">$105.00</td></tr>
+      <tr><td>0.75</td><td class="num">$124.67</td><td class="num">$124.28</td></tr>
+      <tr><td>0.90</td><td class="num">$145.93</td><td class="num">$144.65</td></tr>
+    </tbody>
+  </table>
+  <p class="keep-in-present">This is the same binomial-tree asset-pricing model from Class 04's lecture, run to its \(N=252\)-step (daily, one trading year) limit — the same construction, the same lognormal-limit result Black-Scholes assumes outright.</p>
+
+  <div class="exercise">
+    <div class="ex-label">Discuss as a group</div>
+    <p>Every one of these nine stories starts from something crude and discrete (a grid, a coin flip, a random exchange) and ends at a smooth named distribution. What is the common mechanism — the one sentence that would explain <em>all nine</em> convergences at once, not just one of them?</p>
+    <details>
+      <summary>Show one way to answer</summary>
+      <p>Take many small, mostly-independent pieces of randomness and combine them (sum, count, max, or repeated exchange) — the combining operation itself erases the details of any one piece, leaving only a few aggregate quantities (a rate, a mean, a variance) to determine the limiting shape. That is the Law of Large Numbers and the Central Limit Theorem (and their extreme-value and combinatorial cousins), doing the same job nine different times.</p>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Why compare quantiles instead of just eyeballing the ECDF-vs-CDF plot?</h3>
+  <p>A plot is the fastest way to see gross disagreement, but quantiles give an exact number to check — if the simulated 50th percentile and the theoretical median differ by more than sampling noise should allow, something in the algorithm is wrong, not just "a little off in the picture."</p>
+
+  <h3>Why does the Boltzmann simulation need a burn-in period and thinning?</h3>
+  <p>The random-exchange process starts from an arbitrary initial assignment of quanta to particles, which isn't yet a "typical" configuration — burn-in (discarding the first 100,000 of 500,000 steps) lets the process forget its starting point. Thinning (keeping only every 2,000th step afterward) reduces the correlation between consecutive snapshots, since two exchanges apart is not enough randomness for two snapshots to look independent.</p>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Generating CDFs. Build the machine, watch order appear, then let the formula describe what the machine was already doing.
+  </footer>
+</main>
+
+<div class="glossary-panel" id="glossary-panel" hidden>
+  <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+  <div id="glossary-content"></div>
+</div>
+
+<script>
+  window.GLOSSARY = {
+    'ecdf-gen': {
+      title: 'ECDF',
+      body: '<p>The empirical cumulative distribution function: the proportion of simulated draws at or below each value, as a step function. Compared here against the theoretical CDF from <code>scipy.stats</code> to check whether a random machine actually produces the distribution its story claims.</p>',
+    },
+  };
+</script>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

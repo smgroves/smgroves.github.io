@@ -1,0 +1,791 @@
+/* ============================================================ */
+/*  DS 6042 — shared lab stylesheet                              */
+/*  Every lab page MUST link this file BEFORE its own styles.css */
+/*    <link rel="stylesheet" href="../shared/lab-base.css?v=N"> */
+/*    <link rel="stylesheet" href="styles.css?v=N">              */
+/*                                                                */
+/*  This file owns: the design tokens, base typography, page     */
+/*  chrome (TOC + header + footer), generic widget primitives    */
+/*  (.viz, .callout, .chat-downloads), the presentation-mode     */
+/*  toggle, and the 2-D plane widget primitives. Per-lab CSS     */
+/*  should only contain widget-specific extensions, NOT the      */
+/*  base palette or chrome.                                      */
+/* ============================================================ */
+
+:root {
+  --bg: #fbfaf7;
+  --bg-elev: #ffffff;
+  --bg-code: #f4f1ea;
+  --bg-viz: #fbf8f2;
+  --ink: #1f1d1a;
+  --ink-soft: #4a4742;
+  --ink-mute: #8a857d;
+  --rule: #e6e1d6;
+  --accent: #b14a2e;
+  --accent-soft: #e6c7bd;
+  --link: #8e3a22;
+  --highlight: #fff3d6;
+  --pos: #fde0d2;
+  --pos-stroke: #d8a48a;
+  --neg: #d5e6dc;
+  --neg-stroke: #9ec3ae;
+  --zero: #f0eee5;
+  --serif: "Iowan Old Style", "Charter", Georgia, "Hoefler Text", Cambria, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 28px 80px;
+}
+
+p { margin: 0 0 18px 0; }
+strong { color: var(--ink); }
+em { font-style: italic; color: var(--ink); }
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 28px 0 12px 0;
+}
+h1 { font-size: 38px; letter-spacing: -0.01em; margin-top: 6px; }
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--rule);
+  padding-top: 24px;
+  margin-top: 36px;
+}
+h3 { font-size: 18px; font-weight: 700; }
+
+a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+pre {
+  background: var(--bg-code);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 14px 0;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+}
+pre.equation {
+  background: var(--bg-elev);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+pre.equation code { font-size: 15px; }
+
+/* Lecture pages: a captured notebook cell's printed/returned output,
+ * placed directly under its code block. Dimmer than code so the two
+ * never get visually confused with each other. */
+pre.nb-output {
+  background: transparent;
+  border: 1px dashed var(--rule);
+  margin-top: -8px;
+  color: var(--ink-mute);
+}
+pre.nb-output code { background: transparent; font-size: 13px; color: var(--ink-mute); }
+pre.nb-output::before {
+  content: "Output";
+  display: block;
+  font-family: var(--sans); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-mute); margin-bottom: 4px;
+}
+
+/* Prism CDN theme sets font-size: 1em on .language-* code/pre. The CDN sheet
+ * loads after this one, so plain selectors lose; prepending `main` wins on
+ * specificity (0,1,2) > Prism's (0,1,1). */
+main code[class*="language-"],
+main pre[class*="language-"] {
+  font-size: 0.85em;
+}
+
+table {
+  font-family: var(--sans);
+  font-size: 14px;
+  border-collapse: collapse;
+  margin: 8px 0 18px 0;
+}
+th, td { padding: 6px 12px; }
+thead th { text-align: left; border-bottom: 1px solid var(--rule); font-weight: 600; }
+tbody td { border-bottom: 1px solid var(--rule); }
+tbody tr:last-child td { border-bottom: none; }
+
+ul, ol { margin: 0 0 18px 0; padding-left: 22px; }
+li { margin-bottom: 6px; }
+
+/* ============================================================ */
+/* TOC sidebar                                                  */
+/* ============================================================ */
+aside.toc {
+  position: fixed;
+  left: 24px;
+  top: 24px;
+  width: 220px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-soft);
+  z-index: 50;
+}
+aside.toc .toc-title {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 8px;
+}
+aside.toc ul { list-style: none; padding: 0; margin: 0; }
+aside.toc li { margin-bottom: 4px; }
+aside.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 2px solid transparent;
+}
+aside.toc a:hover { background: var(--bg-elev); }
+aside.toc a.active {
+  color: var(--ink);
+  border-left-color: var(--accent);
+  background: var(--bg-elev);
+}
+aside.toc .toc-foot { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--rule); font-size: 11px; }
+
+/* Lecture pages: h3-level TOC entries (a lecture runs longer than a lab,
+ * so its TOC nests h3s under each h2 for real navigation utility). */
+aside.toc li.toc-sub { margin-bottom: 2px; }
+aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
+
+@media (max-width: 1180px) {
+  aside.toc { display: none; }
+}
+
+/* ============================================================ */
+/* Header / hero / lede / cite                                  */
+/* ============================================================ */
+.hero { margin-bottom: 14px; }
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-mute);
+  margin-bottom: 6px;
+}
+.subtitle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink-soft);
+  margin: 6px 0 14px 0;
+}
+.byline {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-mute);
+}
+.lede {
+  font-size: 19px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.cite {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin: 18px 0 24px 0;
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border-radius: 6px;
+}
+.cite a { color: var(--ink-soft); }
+
+/* ============================================================ */
+/* Generic viz container + callouts                             */
+/* ============================================================ */
+.viz {
+  background: var(--bg-viz);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 20px 0 24px 0;
+}
+.viz-title {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  margin-bottom: 8px;
+}
+.viz-title code { font-size: 11px; padding: 0 4px; }
+.viz-title::before {
+  content: "● ";
+  color: var(--accent);
+}
+.viz-description {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  line-height: 1.55;
+}
+.viz-caption {
+  margin-top: 10px;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--ink-mute);
+  font-style: italic;
+}
+
+.callout {
+  margin: 18px 0;
+  padding: 14px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+}
+.callout.insight {
+  background: #fffaef;
+  border-left: 3px solid var(--accent);
+}
+.callout.note {
+  background: var(--bg-elev);
+  border-left: 3px solid #cfdbf2;
+}
+.callout .label {
+  display: block;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  margin-bottom: 8px;
+}
+.callout p { margin-bottom: 8px; font-size: 15px; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* Think · Pair · Share — peer-engagement callout */
+.callout.tps {
+  background: #f0f8f2;
+  border-left: 3px solid #4a9d6a;
+}
+.tps-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.tps-steps li { font-size: 15px; }
+.tps-steps .tps-phase {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #2f7a4d;
+  margin-right: 8px;
+}
+/* Gate Pair & Share behind a button so they don't leak the Think answer */
+.tps-reveal { margin-top: 10px; }
+.tps-reveal > summary {
+  cursor: pointer;
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #2f7a4d;
+  background: #e3f1e8;
+  border: 1px solid #b6d8c2;
+  border-radius: 5px;
+  padding: 5px 11px;
+  list-style: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.tps-reveal > summary::-webkit-details-marker { display: none; }
+.tps-reveal > summary::marker { content: ""; }
+.tps-reveal[open] > summary {
+  color: var(--ink-mute);
+  background: transparent;
+  border-color: transparent;
+  padding: 0;
+  font-weight: 400;
+  font-size: 11px;
+}
+.tps-reveal[open] > summary::before { content: "✓ "; }
+.tps-reveal .tps-steps { margin-top: 10px; }
+
+/* The optimization view — the course-long spine box.                */
+/* One per lecture: names the objective, the argmin, and how it is   */
+/* actually solved, so "argmin" is a familiar verb long before the   */
+/* optimization unit formalizes it. Same three rows every time.      */
+.callout.optview {
+  background: #f5f2fa;
+  border-left: 3px solid #7a6aa8;
+}
+.callout.optview .label { color: #5d4f85; }
+.optview-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.optview-rows li {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 15px;
+}
+.optview-key {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #5d4f85;
+}
+/* How the argmin is actually found. Three kinds, all semester:      */
+/* a closed form, a search over a grid, or an iterative solver.      */
+.optview-how {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  padding: 1px 7px;
+  margin-right: 7px;
+  white-space: nowrap;
+}
+.optview-how.how-formula   { background: var(--pos); color: #8a4a26; }
+.optview-how.how-grid      { background: var(--zero); color: #6b6558; }
+.optview-how.how-iterative { background: var(--neg); color: #2f6b4c; }
+
+@media (max-width: 620px) {
+  .optview-rows li { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* Exercise blocks (collapsible answer pattern) */
+.exercise {
+  margin: 18px 0;
+  padding: 14px 18px;
+  background: #fffdf5;
+  border: 1px solid #ead990;
+  border-left: 3px solid #c89b1f;
+  border-radius: 6px;
+}
+.exercise .ex-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8a6f1a;
+  margin-bottom: 8px;
+}
+.exercise details { margin-top: 8px; font-size: 14px; color: var(--ink-soft); }
+.exercise summary { cursor: pointer; font-family: var(--sans); font-size: 13px; color: var(--ink-mute); }
+
+/* ============================================================ */
+/* Buttons + slider controls (generic — labs reuse these)       */
+/* ============================================================ */
+.btn {
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 6px 14px;
+  background: var(--bg-elev);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.08s, border-color 0.08s, opacity 0.08s;
+}
+.btn:hover { background: #f0eee5; border-color: var(--ink-mute); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+
+/* ============================================================ */
+/* Download pill row (used in demos + assignments)              */
+/* ============================================================ */
+.chat-downloads {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  flex-wrap: wrap;
+}
+.chat-downloads-label {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-mute);
+  letter-spacing: 0.03em;
+}
+.chat-dl-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 5px 11px;
+  border: 1px solid var(--rule);
+  background: var(--bg-elev);
+  color: var(--ink-soft);
+  border-radius: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.08s, border-color 0.08s, color 0.08s;
+}
+.chat-dl-btn:hover {
+  background: #fff3d6;
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+/* ============================================================ */
+/* Footer                                                       */
+/* ============================================================ */
+footer {
+  margin-top: 60px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+
+/* ============================================================ */
+/* Presentation-mode controls (top-left, fixed) — REQUIRED       */
+/* See CLAUDE.md "Presentation mode" for the contract.           */
+/* The lab page only needs a single #present-toggle button;      */
+/* lab-base.js wraps it in .present-controls and auto-injects    */
+/* Back / Forward navigation buttons that show in presentation. */
+/* ============================================================ */
+.present-controls {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.present-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.present-toggle:hover { background: #fff3d6; color: var(--ink); border-color: var(--accent); }
+.present-toggle:active { transform: translateY(1px); }
+.present-toggle .present-icon { font-size: 16px; line-height: 1; }
+
+/* The main Present/Exit toggle goes accent-red while in presentation mode. */
+body.presentation-mode #present-toggle {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Back / Forward are hidden until presentation mode is on. */
+.present-toggle.present-nav {
+  display: none;
+  padding: 6px 10px;
+  min-width: 36px;
+  justify-content: center;
+}
+body.presentation-mode .present-toggle.present-nav {
+  display: inline-flex;
+}
+
+/* "← Index" link that sits leftmost in .present-controls.            */
+/* Same chip shape as the other buttons; subtler color so it doesn't  */
+/* shout louder than Present.                                         */
+.lab-index-link {
+  text-decoration: none;
+  color: var(--ink-mute);
+  background: var(--bg);
+}
+.lab-index-link:hover {
+  background: var(--bg-elev);
+  color: var(--ink);
+  border-color: var(--accent-soft);
+}
+.lab-index-link .present-icon { font-size: 15px; }
+body.presentation-mode .lab-index-link {
+  /* Still visible in presentation mode so the instructor can bail.   */
+  background: var(--bg);
+  color: var(--ink-mute);
+  border-color: var(--rule);
+}
+
+/* ============================================================ */
+/* Prev / Index / Next strip at the end of each lab page         */
+/* Injected by lab-base.js · placed inside <main> before footer  */
+/* ============================================================ */
+.lab-prev-next {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin: 56px 0 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+@media (max-width: 760px) {
+  .lab-prev-next { grid-template-columns: 1fr; }
+}
+.lab-prev-next-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 120ms, transform 120ms, background 120ms;
+  min-height: 88px;
+}
+.lab-prev-next-card:hover {
+  border-color: var(--accent);
+  background: white;
+  transform: translateY(-1px);
+}
+.lab-prev-next-card.lab-prev-next-next {
+  text-align: right;
+  align-items: flex-end;
+}
+.lab-prev-next-card.lab-prev-next-home {
+  text-align: center;
+  align-items: center;
+  background: #fff8e8;
+  border-color: #e7d9a8;
+}
+.lab-prev-next-card.lab-prev-next-home:hover {
+  background: #fff0c8;
+  border-color: var(--accent);
+}
+.lab-prev-next-dir {
+  font-family: var(--sans);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent);
+}
+.lab-prev-next-num {
+  font-family: var(--mono);
+  font-size: 12px; font-weight: 600;
+  color: var(--ink-mute);
+}
+.lab-prev-next-title {
+  font-family: var(--serif);
+  font-size: 16px; font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.lab-prev-next-empty {
+  /* keeps the 3-col grid intact when no prev/next exists (first/last lab) */
+  visibility: hidden;
+}
+
+/* In presentation mode, hide the prev/next strip (it's chrome). */
+body.presentation-mode .lab-prev-next { display: none; }
+
+/* In presentation mode:                                       */
+/*   - hide narrative prose (any <p> without .keep-in-present) */
+/*   - hide TOC + footer + byline chrome                       */
+/*   - keep .viz, svg, pre, headings, tables, callouts         */
+/*   - keep .viz-description and .viz-caption (they explain    */
+/*     what the slide is showing)                              */
+/*   - keep every interaction live                             */
+/*   - bump fonts ~1.2x, more whitespace                       */
+body.presentation-mode aside.toc,
+body.presentation-mode footer,
+body.presentation-mode .hero .byline,
+body.presentation-mode .lede,
+body.presentation-mode .cite,
+body.presentation-mode p:not(.keep-in-present):not(.viz-description):not(.viz-caption) {
+  display: none;
+}
+body.presentation-mode main {
+  max-width: 1040px;
+  font-size: 22px;
+  padding: 70px 40px 60px;
+}
+body.presentation-mode h1 { font-size: 56px; }
+body.presentation-mode h2 {
+  font-size: 30px;
+  margin-top: 60px;
+  padding-top: 30px;
+}
+body.presentation-mode h3 { font-size: 22px; }
+body.presentation-mode pre code,
+body.presentation-mode pre { font-size: 17px; }
+body.presentation-mode pre.equation code { font-size: 20px; }
+body.presentation-mode .viz {
+  margin: 32px 0 40px 0;
+  padding: 24px 28px;
+}
+body.presentation-mode .viz-description { font-size: 17px; }
+body.presentation-mode .callout { font-size: 18px; padding: 22px 28px; }
+body.presentation-mode table { font-size: 17px; }
+
+/* ============================================================ */
+/*  Inline glossary widget — shared across labs                   */
+/*  See CLAUDE.md "Inline glossary explainer" for the contract.   */
+/*  Lab markup:                                                   */
+/*    <span class="gloss" data-gloss="key">term</span>            */
+/*    <p class="glossary-hint">…</p>                              */
+/*    <div class="glossary-panel" id="glossary-panel" hidden>     */
+/*      <button id="glossary-close">×</button>                    */
+/*      <div id="glossary-content"></div>                         */
+/*    </div>                                                      */
+/*  Lab viz.js holds the GLOSSARY = { key: { title, body } } dict */
+/*  and re-parents the panel under the term's nearest block.      */
+/* ============================================================ */
+.gloss {
+  cursor: help;
+  border-bottom: 1px dotted var(--accent);
+  padding-bottom: 0.5px;
+  transition: background 0.12s, color 0.12s;
+}
+.gloss:hover, .gloss:focus, .gloss.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+  outline: none;
+  border-radius: 2px;
+}
+.gloss code {
+  background: transparent;
+  padding: 0;
+}
+
+.glossary-hint {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  background: var(--bg-elev);
+  padding: 12px 16px;
+  border-radius: 6px;
+  border-left: 3px solid var(--rule);
+  margin: 18px 0 10px 0;
+}
+.glossary-hint code {
+  background: var(--bg-code);
+  font-size: 0.92em;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.glossary-hint .gloss-demo {
+  border-bottom: 1px dotted var(--accent);
+  padding-bottom: 0.5px;
+}
+
+.glossary-panel {
+  position: relative;
+  background: #fffaef;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 14px 44px 12px 18px;
+  margin: 0 0 22px 0;
+  animation: gloss-fade-in 0.18s ease-out;
+}
+.glossary-panel[hidden] { display: none; }
+@keyframes gloss-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.glossary-panel-title {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  margin-bottom: 8px;
+}
+.glossary-content {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.glossary-content p { margin: 0 0 8px 0; }
+.glossary-content p:last-child { margin-bottom: 0; }
+.glossary-content code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.glossary-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink-mute);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.glossary-close:hover { color: var(--accent); background: var(--bg-elev); }
+body.presentation-mode .glossary-content { font-size: 18px; }
+body.presentation-mode .glossary-panel { padding: 18px 50px 16px 22px; }

@@ -1,0 +1,80 @@
+/* ============================================================
+ * Activity · Three Shapes of Risk — widget styles.
+ * Palette, typography, .viz/.callout chrome, presentation mode,
+ * and the glossary live in ../shared/lab-base.css. This sheet is
+ * purely additive: this activity's controls and plot furniture.
+ * ============================================================ */
+
+.est-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.est-slider { display: flex; align-items: center; gap: 8px; }
+.est-slider-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-mute);
+}
+.est-slider input[type="range"] { width: 160px; accent-color: var(--accent); }
+.est-slider-out {
+  font-family: var(--mono); font-size: 12px; color: var(--ink);
+  min-width: 70px;
+}
+
+.est-check-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border: 1px solid var(--rule); border-radius: 14px;
+  background: var(--bg-elev); cursor: pointer; font-size: 12.5px;
+}
+.est-check-btn input { accent-color: var(--accent); margin: 0; }
+.est-check-btn:hover { border-color: var(--accent-soft); }
+
+.est-board { margin: 6px 0 10px; }
+.est-board svg { max-width: 100%; }
+
+.est-readout {
+  font-family: var(--sans); font-size: 13.5px; color: var(--ink-soft);
+  margin-top: 6px; line-height: 1.5;
+}
+.est-readout code { font-size: 0.92em; }
+.est-readout strong { color: var(--ink); }
+
+.est-legend {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-family: var(--sans); font-size: 12px; color: var(--ink-soft);
+  margin-top: 8px;
+}
+.est-legend .swatch {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  margin-right: 5px; vertical-align: middle;
+}
+
+.est-series-nav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  font-family: var(--sans); font-size: 13px;
+  margin: 10px 0 4px;
+}
+.est-series-label { color: var(--ink-mute); }
+.est-series-nav a {
+  padding: 4px 12px; border: 1px solid var(--rule); border-radius: 14px;
+  text-decoration: none; color: var(--ink-soft);
+}
+.est-series-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.est-series-nav a.current { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+/* ---- Hazard-shape presets (this activity only) ---------------- */
+.hz-presets { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.hz-preset {
+  padding: 4px 11px; border: 1px solid var(--rule); border-radius: 14px;
+  background: var(--bg-elev); cursor: pointer;
+  font-family: var(--sans); font-size: 12.5px; color: var(--ink-soft);
+}
+.hz-preset:hover { border-color: var(--accent); color: var(--accent); }
+.hz-preset-k {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-mute);
+  margin-left: 4px;
+}

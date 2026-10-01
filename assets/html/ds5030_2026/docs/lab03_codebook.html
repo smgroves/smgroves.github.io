@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Lab 03 Codebook: ED Visits</title>
+  <style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css"></style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Lab 03 Codebook: ED Visits</h1>
+</header>
+<h1 id="ed-visits-probability-lab-dataset">ED Visits Probability Lab
+Dataset</h1>
+<p>This is a simplified teaching version of the prepared NHAMCS
+emergency department data.</p>
+<p>Each row is one emergency department visit record. The row includes
+patient characteristics for that visit, but the file should not be
+treated as a longitudinal patient file with unique patients tracked over
+time.</p>
+<p>This dataset is for probability and data-science teaching. It is not
+a clinical research dataset, and <code>disease_group</code> is a
+simplified teaching label rather than an ICD diagnosis.</p>
+<h2 id="files">Files</h2>
+<ul>
+<li><code>ed_visits_probability_lab.csv</code>: student-facing CSV
+version.</li>
+<li><code>ed_visits_probability_lab.parquet</code>: same data in compact
+Parquet format.</li>
+<li><code>nhamcs_ed_2018.parquet</code>: fuller prepared source
+file.</li>
+<li><code>disease_groups.md</code>: notes on how the simplified
+<code>disease_group</code> labels were created.</li>
+</ul>
+<h2 id="core-columns">Core Columns</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age_years</code></td>
+<td>patient age in years</td>
+</tr>
+<tr>
+<td><code>age_group</code></td>
+<td>simplified age group: <code>0-17</code>, <code>18-34</code>,
+<code>35-49</code>, <code>50-64</code>, or <code>65+</code></td>
+</tr>
+<tr>
+<td><code>sex</code></td>
+<td>recorded patient sex</td>
+</tr>
+<tr>
+<td><code>payer</code></td>
+<td>primary expected source of payment</td>
+</tr>
+<tr>
+<td><code>arrival_by_ambulance</code></td>
+<td>whether the patient arrived by ambulance</td>
+</tr>
+<tr>
+<td><code>triage_level</code></td>
+<td>simplified triage category</td>
+</tr>
+<tr>
+<td><code>wait_time_minutes</code></td>
+<td>recorded waiting time before being seen; some values are
+missing</td>
+</tr>
+<tr>
+<td><code>reason_for_visit_count</code></td>
+<td>number of reasons for visit recorded</td>
+</tr>
+<tr>
+<td><code>chronic_condition_count</code></td>
+<td>number of listed chronic conditions; some values are missing</td>
+</tr>
+<tr>
+<td><code>disease_group</code></td>
+<td>broad teaching label for the visit diagnosis</td>
+</tr>
+</tbody>
+</table>
+<h2 id="symptom-columns">Symptom Columns</h2>
+<p>The symptom columns are 0/1 indicators. A value of 1 means that
+reason for visit was recorded somewhere among the visit’s
+reason-for-visit fields.</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>abdominal_pain</code></td>
+<td>abdominal pain, cramps, or spasms</td>
+</tr>
+<tr>
+<td><code>cough</code></td>
+<td>cough</td>
+</tr>
+<tr>
+<td><code>vomiting</code></td>
+<td>vomiting</td>
+</tr>
+<tr>
+<td><code>fever</code></td>
+<td>fever</td>
+</tr>
+<tr>
+<td><code>nausea</code></td>
+<td>nausea</td>
+</tr>
+<tr>
+<td><code>chest_pain</code></td>
+<td>chest pain</td>
+</tr>
+<tr>
+<td><code>shortness_of_breath</code></td>
+<td>shortness of breath</td>
+</tr>
+<tr>
+<td><code>headache</code></td>
+<td>headache or pain in head</td>
+</tr>
+<tr>
+<td><code>accident</code></td>
+<td>accident, not otherwise specified</td>
+</tr>
+<tr>
+<td><code>dizziness</code></td>
+<td>vertigo or dizziness</td>
+</tr>
+<tr>
+<td><code>back_pain</code></td>
+<td>back pain, ache, soreness, or discomfort</td>
+</tr>
+<tr>
+<td><code>anxiety</code></td>
+<td>anxiety or nervousness</td>
+</tr>
+<tr>
+<td><code>skin_rash</code></td>
+<td>skin rash</td>
+</tr>
+</tbody>
+</table>
+<h2 id="suggested-probability-events">Suggested Probability Events</h2>
+<p>These columns make it easy to define events:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>cough <span class="op">=</span> df[<span class="st">&quot;cough&quot;</span>] <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>respiratory <span class="op">=</span> df[<span class="st">&quot;disease_group&quot;</span>] <span class="op">==</span> <span class="st">&quot;respiratory&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>urgent <span class="op">=</span> df[<span class="st">&quot;triage_level&quot;</span>] <span class="op">==</span> <span class="st">&quot;Urgent&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>ambulance <span class="op">=</span> df[<span class="st">&quot;arrival_by_ambulance&quot;</span>] <span class="op">==</span> <span class="st">&quot;Yes&quot;</span></span></code></pre></div>
+<p>Then empirical probabilities are just proportions:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>cough.mean()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>(cough <span class="op">&amp;</span> respiratory).mean()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>respiratory[cough].mean()</span></code></pre></div>
+<p>For this lab, interpret probabilities as proportions in this prepared
+dataset, not as national estimates.</p>
+</body>
+</html>

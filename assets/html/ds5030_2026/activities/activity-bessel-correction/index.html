@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · Why the Sample Variance Undershoots — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=2">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">Why the sample variance undershoots</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 04 &amp; Class 10</div>
+    <h1>Why the Sample Variance Undershoots</h1>
+    <div class="subtitle">A geometric fact about the mean, turned into Bessel's correction</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A standalone mini-lesson in a small, growing set on estimator properties. A companion lesson shows that <a href="../activity-min-sum-squares/index.html">centering on the sample mean always beats centering on the true θ</a> for the sum of squared deviations; this page turns that geometric fact into a statement about bias, and the fix for it.</p>
+
+  <div class="cite">
+    A companion exploration built to accompany the sampling-distribution material in Class 10 — no external dataset, every widget generates its own die rolls in the browser.
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>from "always smaller" to "biased"</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>If centering on \(\bar X_n\) always gives a smaller sum of squares than centering on the true \(\theta\), what does that predict about the average behavior of \(\frac1n\sum(x_i-\bar x)^2\), used again and again across many different samples, as an estimator of \(\sigma^2\)?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare predictions — should it hit \(\sigma^2\) exactly, land above it, or land below it, on average across many samples?</li>
+        <li><span class="tps-phase">Share · 2 min</span>Agree as a table, then check the direction (not yet the exact size) against the widget below.</li>
+      </ul>
+    </details>
+  </div>
+
+  <h2 id="widget">Why the sample variance undershoots</h2>
+  <p>For any sample, splitting the squared deviation from the true \(\theta\) into a within-sample part and a centering part always holds:</p>
+  <pre class="equation">$$\sum_i (x_i-\theta)^2 = \sum_i(x_i-\bar x)^2 + n(\bar x - \theta)^2$$</pre>
+  <p>The second term on the right is a square, so it is never negative — which means the within-sample sum of squares, centered on \(\bar x\), can never exceed the sum centered on the true \(\theta\). Take expectations of both sides (using \(\mathbb{V}[\bar X_n] = \sigma^2/n\) from Class 04) and the naive sample variance comes out biased low by a factor of \((n-1)/n\):</p>
+  <pre class="equation">$$\mathbb{E}\left[\frac1n\sum_i(x_i-\bar x)^2\right] = \frac{n-1}{n}\,\sigma^2$$</pre>
+  <p><span class="gloss" data-gloss="bessel">Bessel's correction</span> — dividing by \((n-1)\) instead of n — is the fix. Watch it happen across 500 freshly drawn samples at a time, rather than just one:</p>
+
+  <div class="viz" id="viz-bessel-bias">
+    <div class="viz-description">Each histogram bar is one sample's variance estimate. Toggle the correction and watch the whole histogram shift to recenter on the true σ².</div>
+  </div>
+
+  <div class="callout insight">
+    <strong>The bias shrinks with n, but never on its own without the correction.</strong> The undershoot factor \((n-1)/n\) gets closer to 1 as n grows — at n = 30 it's a 3% shrink, barely visible in the histogram — but it is never exactly 1 at any finite n. Bessel's correction removes it exactly, at every n, not just approximately at large n.
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Does Bessel's correction fix bias for every parameter, not just variance?</h3>
+  <p>No — the \((n-1)\) correction is specific to the sample variance, and it comes from exactly one source: using the estimated center \(\bar x\) instead of the true \(\theta\) when measuring spread. Other biased estimators (a sample maximum, for instance) need entirely different corrections, if a simple one exists at all.</p>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-min-sum-squares/index.html">What the sample mean minimizes</a>
+    <a href="../activity-standard-error/index.html">How bad is my estimator?</a>
+    <a href="../activity-two-distributions/index.html">One sample, one point</a>
+    <a href="../activity-two-distributions-skewed/index.html">One sample, one point (skewed)</a>
+    <a href="../activity-two-distributions-variance/index.html">One sample, one point (variance)</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Estimator Properties mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

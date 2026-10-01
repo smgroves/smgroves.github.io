@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · Three Shapes of Risk — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">Three shapes of risk</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 08 · Sep 17</div>
+    <h1>Three Shapes of Risk</h1>
+    <div class="subtitle">One exponent turns a lifetime model into wear-out, constant risk, or infant mortality</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">The <span class="gloss" data-gloss="survival-function">survival function</span> tells you what fraction of a population is still running. The <span class="gloss" data-gloss="hazard-rate">hazard rate</span> tells you something more useful: the risk faced right now by the units that are <em>still alive</em>. This page pins one distribution and gives you one knob, so you can see the two curves move together.</p>
+
+  <div class="cite">
+    A companion exploration for the Survival Function &amp; Hazard Rate material in Class 08. No external dataset — the widget evaluates the <span class="gloss" data-gloss="weibull">Weibull</span> family directly, with the scale fixed at \(\beta = 1\).
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>does age matter?</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>A jet engine has run 200 cycles without failing. A second, identical engine is fresh out of the box. Which one is more likely to fail in the next cycle — and is there any lifetime model in which the honest answer is <em>neither</em>?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare with a neighbour. Did either of you argue for the <em>used</em> engine being safer? Under what circumstances would that be right?</li>
+        <li><span class="tps-phase">Share · 2 min</span>As a table, commit to a prediction for what the hazard curve looks like for each of your three answers — rising, flat, or falling — then carry it into <a href="#widget">the widget below</a>.</li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="widget">Three shapes of risk</h2>
+
+  <p>Every lifetime distribution can be described three equivalent ways: by its CDF \(F(t)\), by its survival function \(S(t) = 1 - F(t)\), or by its hazard rate. The hazard is the density renormalized by the probability of still being around:</p>
+
+  <pre class="equation">$$h(t) = \frac{f(t)}{S(t)} = \frac{f(t)}{1 - F(t)}$$</pre>
+
+  <p>Read it as a conditional statement: \(h(t)\,dt\) is roughly the probability of failing in the next instant <em>given</em> survival past \(t\). That conditioning is the whole point — \(f(t)\) describes failures spread across every unit that ever existed, while \(h(t)\) describes the risk to the units you still own.</p>
+
+  <p>The <strong>Weibull</strong> family makes the shape of that risk a single parameter. With the scale fixed at \(\beta = 1\):</p>
+
+  <pre class="equation">$$S(t) = e^{-(\beta t)^k}, \qquad h(t) = k\beta(\beta t)^{k-1}$$</pre>
+
+  <p>Drag \(k\) and watch both panels. The tint under the hazard curve marks the regime: orange where risk climbs with age, green where it falls.</p>
+
+  <div class="viz" id="viz-hazard-shapes">
+    <div class="viz-description">Left: the hazard \(h(t)\). Right: the survival curve \(S(t)\) it implies. The two dots mark \(t = 0.5\) and \(t = 2\) on both panels, so you can read the same two ages off either view.</div>
+  </div>
+
+  <div class="callout insight">
+    <span class="label">The case worth remembering</span>
+    <p>At \(k = 1\) the hazard is exactly flat — the Weibull collapses to the <strong>exponential</strong>, and \(h(t) = \beta\) forever. That flatness is <span class="gloss" data-gloss="memoryless">memorylessness</span>: a component that has run for 200 cycles is neither safer nor more fragile than a new one. Nothing wears out and nothing settles in.</p>
+    <p class="keep-in-present">This is why the exponential is the <em>null model</em> for lifetimes rather than a realistic one. When you plot an empirical hazard and it is not flat, you have learned something real about the mechanism — rising means wear-out, falling means manufacturing defects burning off early.</p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-label">Read it off the widget</div>
+    <p>Set \(k = 0.6\), then \(k = 1.8\). In each case, compare \(h(0.5)\) with \(h(2.0)\) in the readout. Which value of \(k\) describes a population where surviving a long time is <em>good news</em> about the unit you're holding?</p>
+    <details>
+      <summary>Show answer</summary>
+      <p>\(k = 0.6\). The hazard falls from about 0.79 at \(t=0.5\) to about 0.46 at \(t=2\), a ratio of roughly 0.57× — a unit that has lasted to \(t=2\) faces <em>less</em> instantaneous risk than a young one, because the fragile units have already failed and been removed from the at-risk pool. At \(k = 1.8\) the ratio runs the other way (about 3×): every cycle survived is a cycle closer to wearing out.</p>
+      <p>Note that \(S(t)\) is decreasing in <em>both</em> cases — survival always falls. It is the <em>rate</em> of failing, conditional on still being alive, that can go either way. Confusing those two is the most common error in reading these curves.</p>
+    </details>
+  </div>
+
+  <div class="callout note">
+    <span class="label">One knob is not the whole story</span>
+    <p>Real systems often show a <strong>bathtub curve</strong>: a falling hazard early (defects), a flat stretch in the middle (random shocks), and a rising hazard late (wear-out). No single Weibull produces all three at once — you need a mixture. The value of the one-parameter version is that it names the three regimes cleanly enough to recognize them in data.</p>
+  </div>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-min-sum-squares/index.html">What the sample mean minimizes</a>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-bessel-correction/index.html">Why the sample variance undershoots</a>
+    <a href="../activity-standard-error/index.html">How bad is my estimator?</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Survival &amp; Hazard mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

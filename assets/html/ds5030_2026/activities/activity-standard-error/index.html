@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · How Bad Is My Estimator? — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">How far should you expect to be off?</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 04 &amp; Class 11</div>
+    <h1>How Bad Is My Estimator?</h1>
+    <div class="subtitle">The standard error of the mean: one number for how far a sample mean typically lands from the truth</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A standalone mini-lesson in a small, growing set on estimator properties. The running example is still the fair die, \(\theta = 3.5\), \(\sigma \approx 1.708\) — the same die from <a href="../activity-unbiased-consistent/index.html">unbiased, but never consistent</a>, now asking a sharper question: not just "does \(\bar X_n\) tighten as n grows," but "by how much, exactly, and how far off should I expect to be right now?"</p>
+
+  <div class="cite">
+    A companion exploration built to accompany the sample-mean material in Class 04 and the sampling-distribution material in Class 11 — no external dataset, the widget generates its own die rolls in the browser.
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>is 4.1 far from 3.5?</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>You roll a die n times and get \(\bar X_n = 4.1\), when the true θ is 3.5. Is that a bad estimate? Would your answer change between n = 5 and n = 500 — and what single number would you need to know to answer precisely, instead of by gut feel?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare what each of you would need to know before calling 0.6 "big" or "small."</li>
+        <li><span class="tps-phase">Share · 2 min</span>Agree as a table on a rule of thumb, then check it against the widget below.</li>
+      </ul>
+    </details>
+  </div>
+
+  <h2 id="widget">How far should you expect to be off?</h2>
+  <p>The <span class="gloss" data-gloss="se-mean">standard error of the mean</span> answers exactly this question. It's the standard deviation of \(\bar X_n\) itself, across hypothetical repeated samples:</p>
+  <pre class="equation">$$SE(\bar X_n) = \frac{\sigma}{\sqrt n}$$</pre>
+  <p>Not a bound and not a guarantee — a typical scale. Being off from θ by about one SE is ordinary; being off by three or four SEs would be a surprise. Larger n shrinks SE like \(1/\sqrt n\), which is the precise version of "more data means a better estimate."</p>
+
+  <div class="callout note">
+    <strong>Two distributions are stacked below — keep track of which is which.</strong> The die has one, fixed distribution that never changes. Every dot in the swarm is <em>not</em> a die roll — it's an entire sample's worth of rolls collapsed into one number, \(\bar X_n\). The spread of those collapsed numbers is the <span class="gloss" data-gloss="sampling-dist-se">sampling distribution</span> of the estimator, one level removed from the die, and SE is exactly that spread's standard deviation.
+  </div>
+
+  <div class="viz" id="viz-standard-error">
+    <div class="viz-description">The highlighted point above the axis is one specific sample's estimate, with its own ±1 SE error bar. The swarm below shows 250 more hypothetical replications against shaded ±1 SE / ±2 SE bands around the true θ.</div>
+  </div>
+
+  <div class="callout insight">
+    <strong>SE turns "more data helps" into a number.</strong> Drag n up and the shaded bands visibly narrow, and the live percentages track how many of the 250 replications actually land inside them. The bands are doing real work: they are not asserting a fixed rule, they're showing what "typical" means for <em>this</em> population at <em>this</em> n, and you can watch that change as n changes.
+  </div>
+
+  <div class="exercise">
+    <div class="ex-label">Verify by hand</div>
+    <p>Compute SE at n = 5 using \(\sigma \approx 1.708\): \(SE = 1.708/\sqrt5\). Then find the n at which SE first drops below 0.2.</p>
+    <details>
+      <summary>Show the arithmetic</summary>
+      <p>At n = 5: \(SE = 1.708/2.236 \approx 0.764\) — check it against the widget's readout. For \(SE < 0.2\): \(1.708/\sqrt n < 0.2 \Rightarrow \sqrt n > 8.54 \Rightarrow n > 72.9\), so n = 73 is the first integer sample size where the typical error drops below 0.2 dots.</p>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="faq">FAQ</h2>
+
+  <h3>The widget uses the true σ to compute SE. In practice we don't know σ — now what?</h3>
+  <p>You plug in an estimate of σ instead — the sample standard deviation s, computed with <a href="../activity-bessel-correction/index.html">Bessel's correction</a> so it isn't itself biased low. \(SE \approx s/\sqrt n\) is the version you'd actually compute from real data, and it's what most software reports by default.</p>
+
+  <h3>Does "within 2 SE" mean a 95% guarantee?</h3>
+  <p>No — that's a rule of thumb from the normal approximation (the Central Limit Theorem), and it's only accurate for large enough n. At small n, especially for a bounded, non-normal population like a die, the actual percentage can differ noticeably from 95% — which is exactly what the widget's live percentages let you check, rather than assume.</p>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-min-sum-squares/index.html">What the sample mean minimizes</a>
+    <a href="../activity-bessel-correction/index.html">Why the sample variance undershoots</a>
+    <a href="../activity-two-distributions/index.html">One sample, one point</a>
+    <a href="../activity-two-distributions-skewed/index.html">One sample, one point (skewed)</a>
+    <a href="../activity-two-distributions-variance/index.html">One sample, one point (variance)</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Estimator Properties mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Density vs. Cumulative — Understanding Uncertainty</title>
+<style>
+:root {
+  --bg: #fbfaf7;
+  --ink: #1f1d1a;
+  --ink-soft: #6b675f;
+  --rule: #cfc9bd;
+  --accent: #b14a2e;
+  --accent2: #2f6f9e;
+  --tint: #b14a2e22;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 6px 0;
+}
+
+.lede {
+  color: var(--ink-soft);
+  margin: 0 0 18px 0;
+  max-width: 62ch;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.mode-btn {
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  min-height: 28px;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls input[type="range"] {
+  width: 140px;
+}
+
+.question {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.question .tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+
+.question .tag.local { background: #b14a2e22; color: var(--accent); }
+.question .tag.accum { background: #2f6f9e22; color: var(--accent2); }
+
+.road {
+  display: none;
+}
+
+.road.active {
+  display: block;
+  margin-bottom: -6px;
+}
+
+.road svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.viz {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 8px 10px 4px;
+}
+
+.viz svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.readout {
+  margin-top: 10px;
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 10px 14px;
+  white-space: pre-line;
+}
+
+.readout .match { color: var(--accent2); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<main>
+  <h1>Density vs. Cumulative</h1>
+  <p class="lede">Three versions of the same idea: a <strong>rate</strong> curve on top, the thing it accumulates into on the bottom. Drag the two handles below the x-axis to pick an interval — the shaded area on top always equals the vertical rise on the bottom.</p>
+
+  <div class="mode-switch" role="tablist">
+    <button class="mode-btn active" data-mode="mass">Mass &amp; Density</button>
+    <button class="mode-btn" data-mode="pdf">PDF &amp; CDF</button>
+    <button class="mode-btn" data-mode="kde">ECDF &amp; KDE</button>
+  </div>
+
+  <div id="controls" class="controls"></div>
+
+  <div id="question" class="question"></div>
+
+  <div id="road" class="road"></div>
+
+  <div id="viz-density-cumulative" class="viz"></div>
+
+  <div id="readout" class="readout"></div>
+</main>
+
+<script>
+/* ============================================================
+ * Density vs. Cumulative -- one shared two-panel diagram,
+ * three "skins": mass/density, PDF/CDF, ECDF/KDE.
+ * ============================================================ */
+(function () {
+  'use strict';
+
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const ACCENT = '#b14a2e';   // rate/density curve
+  const ACCENT2 = '#2f6f9e';  // cumulative curve
+  const RULE = '#cfc9bd';
+  const INK = '#1f1d1a';
+  const INKSOFT = '#6b675f';
+
+  function el(name, attrs) {
+    const e = document.createElementNS(SVGNS, name);
+    if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  const W = 700, H = 430;
+  const ml = 48, mr = 16;
+  const plotW = W - ml - mr;
+  const topY0 = 16, topH = 150;
+  const handleY = topY0 + topH + 26;
+  const botY0 = topY0 + topH + 52, botH = 150;
+
+  const N = 320; // grid resolution
+
+  function linspace(lo, hi, n) {
+    const out = new Array(n);
+    for (let i = 0; i < n; i++) out[i] = lo + (hi - lo) * i / (n - 1);
+    return out;
+  }
+
+  function trapz(ys, xs) {
+    let s = 0;
+    for (let i = 0; i < xs.length - 1; i++) s += (ys[i] + ys[i + 1]) / 2 * (xs[i + 1] - xs[i]);
+    return s;
+  }
+
+  // integrate ys(xs) from a to b exactly, including partial end segments
+  // (interpolates the curve value at a and b rather than snapping to grid points)
+  function trapzRange(xs, ys, a, b) {
+    let s = 0;
+    let prevX = a, prevY = interp(a, xs, ys);
+    for (let i = 0; i < xs.length; i++) {
+      if (xs[i] <= a) continue;
+      if (xs[i] >= b) break;
+      s += (prevY + ys[i]) / 2 * (xs[i] - prevX);
+      prevX = xs[i]; prevY = ys[i];
+    }
+    const lastY = interp(b, xs, ys);
+    s += (prevY + lastY) / 2 * (b - prevX);
+    return s;
+  }
+
+  function cumtrapz(ys, xs) {
+    const out = new Array(xs.length);
+    out[0] = 0;
+    for (let i = 1; i < xs.length; i++) {
+      out[i] = out[i - 1] + (ys[i - 1] + ys[i]) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return out;
+  }
+
+  // interpolate a value of ys(xs) at an arbitrary x
+  function interp(x, xs, ys) {
+    if (x <= xs[0]) return ys[0];
+    if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+    let lo = 0, hi = xs.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (xs[mid] <= x) lo = mid; else hi = mid;
+    }
+    const t = (x - xs[lo]) / (xs[hi] - xs[lo]);
+    return ys[lo] + t * (ys[hi] - ys[lo]);
+  }
+
+  /* ---------------- mode definitions ---------------- */
+
+  // A tow truck drags a magnet down a stretch of road, sweeping up scattered
+  // metal debris -- a big spill (weight wA) at x=kA, a smaller spill (weight wB)
+  // at x=kB. Bimodal on purpose -- this is the shape a too-large bandwidth would
+  // smear into one misleading "average debris" hump (see the bandwidth/company
+  // discussion). Everything here runs along one axis -- position on the road --
+  // so there's no vertical-force-vs-horizontal-position mismatch to explain.
+  const ROAD_DEBRIS = { kA: 3, kB: 7, wA: 0.65, wB: 0.35 };
+
+  function massMode(state) {
+    const domain = [0, 10];
+    const xs = linspace(domain[0], domain[1], N);
+    const { kA, kB, wA, wB } = ROAD_DEBRIS;
+    const raw = xs.map(x =>
+      wA * Math.exp(-Math.pow((x - kA) / 0.7, 2)) +
+      wB * Math.exp(-Math.pow((x - kB) / 0.8, 2))
+    );
+    const total = trapz(raw, xs);
+    const ys = raw.map(v => v / total);
+    const cum = cumtrapz(ys, xs).map(v => v / total * total); // already normalized since ys normalized
+    return { xs, ys, cum, domain, topLabel: 'debris density  ρ(x)   [lbs of debris per foot of road]', botLabel: 'cumulative debris collected  W(x)', cumIsStep: false, exact: true, isRoad: true };
+  }
+
+  function pdfMode(state) {
+    const sigma = state.sigma;
+    const domain = [-6, 6];
+    const xs = linspace(domain[0], domain[1], N);
+    const ys = xs.map(x => Math.exp(-(x * x) / (2 * sigma * sigma)) / (sigma * Math.sqrt(2 * Math.PI)));
+    const cum = cumtrapz(ys, xs);
+    return { xs, ys, cum, domain, topLabel: `f(x),  Normal(0, σ=${sigma.toFixed(2)})`, botLabel: 'F(x)', cumIsStep: false, exact: true };
+  }
+
+  function kdeMode(state) {
+    const data = [5, 7, 7, 8, 10];
+    const domain = [0, 13];
+    const xs = linspace(domain[0], domain[1], N);
+    const h = state.h;
+    let ys;
+    if (state.kernel === 'uniform') {
+      ys = xs.map(x => {
+        let c = 0;
+        for (const xi of data) if (Math.abs(x - xi) < h) c++;
+        return c / (2 * data.length * h);
+      });
+    } else {
+      ys = xs.map(x => {
+        let s = 0;
+        for (const xi of data) {
+          const z = (x - xi) / h;
+          s += Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI);
+        }
+        return s / (data.length * h);
+      });
+    }
+    // ECDF -- fixed, independent of h/kernel, built directly from the data
+    const sorted = data.slice().sort((a, b) => a - b);
+    const ecdfAt = x => {
+      let c = 0;
+      for (const xi of sorted) if (xi <= x) c++;
+      return c / sorted.length;
+    };
+    const cum = xs.map(ecdfAt);
+    return { xs, ys, cum, domain, topLabel: `KDE, ${state.kernel} kernel, h=${h.toFixed(2)}`, botLabel: 'ECDF (fixed, from the data)', cumIsStep: true, exact: false, data: sorted };
+  }
+
+  /* ---------------- rendering ---------------- */
+
+  const container = document.getElementById('viz-density-cumulative');
+  const controlsEl = document.getElementById('controls');
+  const readoutEl = document.getElementById('readout');
+  const roadEl = document.getElementById('road');
+  const questionEl = document.getElementById('question');
+
+  const QUESTIONS = {
+    mass: {
+      local: "right at this spot on the road, how much debris (lbs per foot) is scattered here?",
+      accum: "by the time the truck has swept from the start of the road to this point, how much total debris has it collected?"
+    },
+    pdf: {
+      local: "are values near this x more or less likely than values elsewhere?",
+      accum: "if I draw one value from this distribution, what's the probability it's at or below x?"
+    },
+    kde: {
+      local: "based on the data I've already seen, how likely is a NEW value to land near this x?",
+      accum: "what fraction of the data I've already collected falls at or below x?"
+    }
+  };
+
+  function renderQuestion() {
+    const q = QUESTIONS[mode];
+    questionEl.innerHTML =
+      `<span class="tag local">local, top</span>${q.local}<br>` +
+      `<span class="tag accum">accumulated, bottom</span>${q.accum}`;
+  }
+
+  // deterministic scatter offsets so debris piles look organic but stay stable across renders
+  const SCATTER = [-14, -6, 3, 11, -10, 8, -2, 14, -18, 6];
+
+  function renderRoad(m) {
+    if (!m.isRoad) { roadEl.classList.remove('active'); roadEl.textContent = ''; return; }
+    roadEl.classList.add('active');
+    const { kA, kB, wA, wB } = ROAD_DEBRIS;
+    const domain = m.domain;
+    const svgH = 96;
+    const roadY = 58;
+    const leftX = x2px(domain[0] + 0.3, domain), rightX = x2px(domain[1] - 0.3, domain);
+    const xA = x2px(kA, domain), xB = x2px(kB, domain);
+    const nA = Math.round(8 + 14 * wA), nB = Math.round(8 + 14 * wB); // rock count ~ weight
+
+    const s = el('svg', { viewBox: `0 0 ${W} ${svgH}` });
+    // the road -- everything below happens along this one axis, no vertical force involved
+    s.appendChild(el('line', { x1: leftX, y1: roadY, x2: rightX, y2: roadY, stroke: '#9a958a', 'stroke-width': 16 }));
+    s.appendChild(el('line', { x1: leftX, y1: roadY, x2: rightX, y2: roadY, stroke: '#fbfaf7', 'stroke-width': 2, 'stroke-dasharray': '10 8' }));
+
+    // scattered debris piles: small rocks clustered at kA (big spill) and kB (small spill).
+    // spread each pile's width off the same std used in the density curve above, so the
+    // pile's footprint visually tracks the bump it corresponds to.
+    function pile(cx, n, color, std) {
+      const spreadX = std * (plotW / (domain[1] - domain[0])) * 1.6;
+      for (let i = 0; i < n; i++) {
+        const dx = (SCATTER[i % SCATTER.length] / 18) * spreadX;
+        const dy = SCATTER[(i * 3 + 1) % SCATTER.length] * 0.7;
+        s.appendChild(el('circle', { cx: cx + dx, cy: roadY - 13 + dy, r: 3.6, fill: color, 'fill-opacity': 0.85 }));
+      }
+    }
+    pile(xA, nA, ACCENT, 0.7);
+    pile(xB, nB, ACCENT2, 0.8);
+
+    // tow truck, starting from the left edge, about to drive right and sweep up both piles.
+    // front (cab + windshield) is the rightmost, tallest part -- unambiguous facing-right shape.
+    const truckX = x2px(domain[0] + 1, domain);
+    const wheelY = roadY - 20;
+    s.appendChild(el('rect', { x: truckX - 30, y: wheelY - 14, width: 32, height: 14, rx: 2, fill: INK })); // long low cargo bed, trailing
+    s.appendChild(el('rect', { x: truckX + 2, y: wheelY - 24, width: 18, height: 24, rx: 2, fill: INK })); // cab, leading (front)
+    s.appendChild(el('rect', { x: truckX + 6, y: wheelY - 20, width: 8, height: 8, rx: 1, fill: '#fbfaf7' })); // windshield
+    s.appendChild(el('circle', { cx: truckX - 20, cy: wheelY, r: 5, fill: INKSOFT })); // rear wheel
+    s.appendChild(el('circle', { cx: truckX + 11, cy: wheelY, r: 5, fill: INKSOFT })); // front wheel
+    // drag chain + magnet trailing behind (at the rear, to the left, since the truck drives right)
+    s.appendChild(el('line', { x1: truckX - 30, y1: wheelY + 2, x2: truckX - 38, y2: roadY - 12, stroke: INKSOFT, 'stroke-width': 1.5, 'stroke-dasharray': '2 2' }));
+    s.appendChild(el('rect', { x: truckX - 44, y: roadY - 16, width: 10, height: 8, rx: 2, fill: INKSOFT }));
+    // direction arrow, ahead of the cab
+    s.appendChild(el('line', { x1: truckX + 24, y1: wheelY - 12, x2: truckX + 38, y2: wheelY - 12, stroke: INKSOFT, 'stroke-width': 1.5 }));
+    s.appendChild(el('polygon', { points: `${truckX + 38},${wheelY - 16} ${truckX + 38},${wheelY - 8} ${truckX + 44},${wheelY - 12}`, fill: INKSOFT }));
+
+    // labels
+    const labelA = el('text', { x: xA, y: svgH - 4, 'text-anchor': 'middle', 'font-size': 11, fill: INKSOFT });
+    labelA.textContent = 'big spill';
+    const labelB = el('text', { x: xB, y: svgH - 4, 'text-anchor': 'middle', 'font-size': 11, fill: INKSOFT });
+    labelB.textContent = 'small spill';
+    s.appendChild(labelA); s.appendChild(labelB);
+
+    roadEl.textContent = '';
+    roadEl.appendChild(s);
+  }
+
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img' });
+  container.appendChild(svg);
+
+  const gTopAxis = el('g'), gTopArea = el('g'), gTopCurve = el('g');
+  const gHandles = el('g');
+  const gBotAxis = el('g'), gBotCurve = el('g'), gBotMarks = el('g');
+  svg.appendChild(gTopAxis); svg.appendChild(gTopArea); svg.appendChild(gTopCurve);
+  svg.appendChild(gHandles);
+  svg.appendChild(gBotAxis); svg.appendChild(gBotCurve); svg.appendChild(gBotMarks);
+
+  let mode = 'mass';
+  const state = { mass: {}, pdf: { sigma: 1.0 }, kde: { h: 1.3, kernel: 'gaussian' } };
+  const ab = { mass: [3, 6.5], pdf: [-1.2, 1.2], kde: [6, 9] };
+
+  let dragging = null; // 'a' | 'b' | null
+
+  function getModel() {
+    if (mode === 'mass') return massMode(state.mass);
+    if (mode === 'pdf') return pdfMode(state.pdf);
+    return kdeMode(state.kde);
+  }
+
+  function x2px(x, domain) { return ml + (x - domain[0]) / (domain[1] - domain[0]) * plotW; }
+  function px2x(px, domain) { return domain[0] + (px - ml) / plotW * (domain[1] - domain[0]); }
+
+  function render() {
+    const m = getModel();
+    renderRoad(m);
+    renderQuestion();
+    const { xs, ys, cum, domain } = m;
+    const topMax = Math.max(...ys) * 1.15;
+    const topYpx = v => topY0 + topH - (v / topMax) * topH;
+    const botYpx = v => botY0 + botH - v * botH;
+
+    // ----- axes -----
+    gTopAxis.textContent = '';
+    gTopAxis.appendChild(el('line', { x1: ml, y1: topY0 + topH, x2: ml + plotW, y2: topY0 + topH, stroke: RULE }));
+    gTopAxis.appendChild(el('line', { x1: ml, y1: topY0, x2: ml, y2: topY0 + topH, stroke: RULE }));
+    const topLabelText = el('text', { x: ml, y: topY0 - 2, 'font-size': 12, fill: INKSOFT });
+    topLabelText.textContent = m.topLabel;
+    gTopAxis.appendChild(topLabelText);
+
+    gBotAxis.textContent = '';
+    gBotAxis.appendChild(el('line', { x1: ml, y1: botY0 + botH, x2: ml + plotW, y2: botY0 + botH, stroke: RULE }));
+    gBotAxis.appendChild(el('line', { x1: ml, y1: botY0, x2: ml, y2: botY0 + botH, stroke: RULE }));
+    [0, 0.5, 1].forEach(v => {
+      const y = botYpx(v);
+      gBotAxis.appendChild(el('line', { x1: ml - 4, y1: y, x2: ml, y2: y, stroke: RULE }));
+      const t = el('text', { x: ml - 8, y: y + 3, 'text-anchor': 'end', 'font-size': 10, fill: INKSOFT });
+      t.textContent = v.toFixed(1);
+      gBotAxis.appendChild(t);
+    });
+    const botLabelText = el('text', { x: ml, y: botY0 - 2, 'font-size': 12, fill: INKSOFT });
+    botLabelText.textContent = m.botLabel;
+    gBotAxis.appendChild(botLabelText);
+    // shared x tick labels on the bottom axis
+    const nticks = 6;
+    for (let i = 0; i <= nticks; i++) {
+      const x = domain[0] + (domain[1] - domain[0]) * i / nticks;
+      const px = x2px(x, domain);
+      gBotAxis.appendChild(el('line', { x1: px, y1: botY0 + botH, x2: px, y2: botY0 + botH + 4, stroke: RULE }));
+      const t = el('text', { x: px, y: botY0 + botH + 16, 'text-anchor': 'middle', 'font-size': 10, fill: INKSOFT });
+      t.textContent = (Math.round(x * 10) / 10).toString();
+      gBotAxis.appendChild(t);
+    }
+
+    // ----- top curve -----
+    let dTop = `M${x2px(xs[0], domain).toFixed(1)},${topYpx(ys[0]).toFixed(1)}`;
+    for (let i = 1; i < xs.length; i++) dTop += ` L${x2px(xs[i], domain).toFixed(1)},${topYpx(ys[i]).toFixed(1)}`;
+    gTopCurve.textContent = '';
+    gTopCurve.appendChild(el('path', { d: dTop, fill: 'none', stroke: ACCENT, 'stroke-width': 2.2 }));
+
+    // ----- bottom curve -----
+    gBotCurve.textContent = '';
+    if (m.cumIsStep) {
+      let dBot = `M${x2px(xs[0], domain).toFixed(1)},${botYpx(cum[0]).toFixed(1)}`;
+      let prev = cum[0];
+      for (let i = 1; i < xs.length; i++) {
+        if (cum[i] !== prev) {
+          dBot += ` L${x2px(xs[i], domain).toFixed(1)},${botYpx(prev).toFixed(1)}`;
+          dBot += ` L${x2px(xs[i], domain).toFixed(1)},${botYpx(cum[i]).toFixed(1)}`;
+          prev = cum[i];
+        }
+      }
+      dBot += ` L${x2px(xs[xs.length - 1], domain).toFixed(1)},${botYpx(prev).toFixed(1)}`;
+      gBotCurve.appendChild(el('path', { d: dBot, fill: 'none', stroke: ACCENT2, 'stroke-width': 2.2 }));
+      // rug of data points
+      for (const xi of m.data) {
+        gBotCurve.appendChild(el('circle', { cx: x2px(xi, domain), cy: botY0 + botH + 26, r: 3, fill: ACCENT2, 'fill-opacity': 0.7 }));
+      }
+    } else {
+      let dBot = `M${x2px(xs[0], domain).toFixed(1)},${botYpx(cum[0]).toFixed(1)}`;
+      for (let i = 1; i < xs.length; i++) dBot += ` L${x2px(xs[i], domain).toFixed(1)},${botYpx(cum[i]).toFixed(1)}`;
+      gBotCurve.appendChild(el('path', { d: dBot, fill: 'none', stroke: ACCENT2, 'stroke-width': 2.2 }));
+    }
+
+    // ----- shaded area under top curve, between a and b -----
+    const [a, b] = ab[mode];
+    let dArea = `M${x2px(a, domain).toFixed(1)},${topYpx(0).toFixed(1)}`;
+    for (let i = 0; i < xs.length; i++) {
+      if (xs[i] < a || xs[i] > b) continue;
+      dArea += ` L${x2px(xs[i], domain).toFixed(1)},${topYpx(ys[i]).toFixed(1)}`;
+    }
+    dArea += ` L${x2px(b, domain).toFixed(1)},${topYpx(0).toFixed(1)} Z`;
+    gTopArea.textContent = '';
+    gTopArea.appendChild(el('path', { d: dArea, fill: ACCENT, 'fill-opacity': 0.18, stroke: 'none' }));
+    gTopArea.appendChild(el('line', { x1: x2px(a, domain), y1: topYpx(0), x2: x2px(a, domain), y2: topY0, stroke: INK, 'stroke-dasharray': '3 3', 'stroke-width': 1 }));
+    gTopArea.appendChild(el('line', { x1: x2px(b, domain), y1: topYpx(0), x2: x2px(b, domain), y2: topY0, stroke: INK, 'stroke-dasharray': '3 3', 'stroke-width': 1 }));
+
+    // ----- markers + bracket on bottom curve -----
+    const Fa = interp(a, xs, cum), Fb = interp(b, xs, cum);
+    gBotMarks.textContent = '';
+    [[a, Fa], [b, Fb]].forEach(([x, F]) => {
+      gBotMarks.appendChild(el('line', { x1: ml, y1: botYpx(F), x2: x2px(x, domain), y2: botYpx(F), stroke: INK, 'stroke-dasharray': '2 3', 'stroke-width': 1 }));
+      gBotMarks.appendChild(el('circle', { cx: x2px(x, domain), cy: botYpx(F), r: 4, fill: ACCENT2 }));
+    });
+    // bracket showing Fb - Fa
+    const bx = x2px(b, domain) + 10;
+    gBotMarks.appendChild(el('line', { x1: bx, y1: botYpx(Fa), x2: bx, y2: botYpx(Fb), stroke: INK, 'stroke-width': 1.4 }));
+    gBotMarks.appendChild(el('line', { x1: bx - 4, y1: botYpx(Fa), x2: bx + 4, y2: botYpx(Fa), stroke: INK, 'stroke-width': 1.4 }));
+    gBotMarks.appendChild(el('line', { x1: bx - 4, y1: botYpx(Fb), x2: bx + 4, y2: botYpx(Fb), stroke: INK, 'stroke-width': 1.4 }));
+
+    // ----- drag handles -----
+    gHandles.textContent = '';
+    gHandles.appendChild(el('line', { x1: ml, y1: handleY, x2: ml + plotW, y2: handleY, stroke: RULE }));
+    [['a', a], ['b', b]].forEach(([id, x]) => {
+      const c = el('circle', { cx: x2px(x, domain), cy: handleY, r: 7, fill: '#fff', stroke: INK, 'stroke-width': 1.6, style: 'cursor:ew-resize' });
+      c.dataset.handle = id;
+      gHandles.appendChild(c);
+    });
+
+    // ----- readout -----
+    const areaUnderTop = trapzRange(xs, ys, a, b);
+    const rise = Fb - Fa;
+    const closeEnough = Math.abs(areaUnderTop - rise) < 0.01;
+    let msg = `interval: [${a.toFixed(2)}, ${b.toFixed(2)}]\n`;
+    msg += `area under top curve, a to b   =  ${areaUnderTop.toFixed(4)}\n`;
+    msg += `bottom curve: F(b) - F(a)      =  ${rise.toFixed(4)}\n`;
+    if (m.exact) {
+      readoutEl.innerHTML = msg.replace(/\n/g, '<br>') + `<br><span class="match">These are exactly equal, by construction — the bottom curve IS the running integral of the top curve.</span>`;
+    } else {
+      readoutEl.innerHTML = msg.replace(/\n/g, '<br>') + `<br><span class="match">${closeEnough ? 'Close, but' : 'Notice:'} these are only APPROXIMATELY equal. The KDE is a smoothed <em>estimate</em> of a density; the ECDF is the real, exact empirical cumulative built straight from the data. They are related, not identical — unlike the other two modes.</span>`;
+    }
+  }
+
+  /* ---------------- controls per mode ---------------- */
+
+  function renderControls() {
+    controlsEl.textContent = '';
+    if (mode === 'pdf') {
+      const label = document.createElement('label');
+      label.innerHTML = `σ = <span id="sigma-val">${state.pdf.sigma.toFixed(2)}</span>`;
+      const input = document.createElement('input');
+      input.type = 'range'; input.min = '0.5'; input.max = '2.5'; input.step = '0.05'; input.value = state.pdf.sigma;
+      input.addEventListener('input', () => {
+        state.pdf.sigma = parseFloat(input.value);
+        label.querySelector('#sigma-val').textContent = state.pdf.sigma.toFixed(2);
+        render();
+      });
+      label.appendChild(input);
+      controlsEl.appendChild(label);
+    } else if (mode === 'kde') {
+      const hLabel = document.createElement('label');
+      hLabel.innerHTML = `h = <span id="h-val">${state.kde.h.toFixed(2)}</span>`;
+      const hInput = document.createElement('input');
+      hInput.type = 'range'; hInput.min = '0.3'; hInput.max = '3.5'; hInput.step = '0.05'; hInput.value = state.kde.h;
+      hInput.addEventListener('input', () => {
+        state.kde.h = parseFloat(hInput.value);
+        hLabel.querySelector('#h-val').textContent = state.kde.h.toFixed(2);
+        render();
+      });
+      hLabel.appendChild(hInput);
+      controlsEl.appendChild(hLabel);
+
+      const kLabel = document.createElement('label');
+      const sel = document.createElement('select');
+      ['gaussian', 'uniform'].forEach(k => {
+        const opt = document.createElement('option'); opt.value = k; opt.textContent = k + ' kernel';
+        if (k === state.kde.kernel) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', () => { state.kde.kernel = sel.value; render(); });
+      kLabel.appendChild(document.createTextNode('kernel: '));
+      kLabel.appendChild(sel);
+      controlsEl.appendChild(kLabel);
+
+      const dataLabel = document.createElement('span');
+      dataLabel.textContent = 'data: [5, 7, 7, 8, 10]';
+      controlsEl.appendChild(dataLabel);
+    } else {
+      const note = document.createElement('span');
+      note.textContent = 'A fixed density with no true single formula — just drag the interval below.';
+      controlsEl.appendChild(note);
+    }
+  }
+
+  /* ---------------- mode switch ---------------- */
+
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+      renderControls();
+      render();
+    });
+  });
+
+  /* ---------------- drag handling ---------------- */
+
+  function clientToSvgX(clientX) {
+    const rect = svg.getBoundingClientRect();
+    const px = (clientX - rect.left) * (W / rect.width);
+    return px;
+  }
+
+  svg.addEventListener('pointerdown', e => {
+    if (e.target.dataset && e.target.dataset.handle) {
+      dragging = e.target.dataset.handle;
+      svg.setPointerCapture(e.pointerId);
+    }
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const m = getModel();
+    const px = clientToSvgX(e.clientX);
+    let x = px2x(px, m.domain);
+    x = Math.max(m.domain[0], Math.min(m.domain[1], x));
+    x = Math.round(x * 20) / 20; // snap to 0.05
+    const pair = ab[mode];
+    if (dragging === 'a') pair[0] = Math.min(x, pair[1] - 0.05);
+    else pair[1] = Math.max(x, pair[0] + 0.05);
+    render();
+  });
+  svg.addEventListener('pointerup', () => { dragging = null; });
+  svg.addEventListener('pointerleave', () => { dragging = null; });
+
+  renderControls();
+  render();
+})();
+</script>
+</body>
+</html>

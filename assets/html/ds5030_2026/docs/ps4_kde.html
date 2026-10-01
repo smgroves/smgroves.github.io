@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Problem Set 4: Kernel Density Estimation</title>
+  <style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <style type="text/css"></style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Problem Set 4: Kernel Density Estimation</h1>
+</header>
+<h1 id="problems-kernel-density-estimation">Problems: Kernel Density
+Estimation</h1>
+<p><strong>You may use code to solve these problems. You may then sketch
+what your plots show, or add the plots to this homework and submit a pdf
+digitally (email).</strong></p>
+<p><strong>Problem 1.</strong> Suppose the data are
+<code>[1, 1.75, 2, 3, 3.25, 4]</code>.</p>
+<ul>
+<li><ol type="a">
+<li>Sketch the empirical cumulative distribution function.</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>Sketch the uniform kernel density estimator for a bandwidth of
+<code>h = 0.2</code></li>
+</ol></li>
+<li><ol start="3" type="a">
+<li>Compute the Silverman bandwidth for the uniform kernel using
+<code>h = 1.84 * SD * n**(-0.2)</code>.</li>
+</ol></li>
+<li><ol start="4" type="a">
+<li>Sketch the uniform kernel density estimator for the Silverman
+bandwidth.</li>
+</ol></li>
+<li><ol start="5" type="a">
+<li>How are b and d similar or different?</li>
+</ol></li>
+</ul>
+<p><strong>Problem 2.</strong> Suppose the data
+<code>X = [-1, -0.5, 0, 0.5, 1]</code> were drawn from a standard Normal
+distribution.</p>
+<ul>
+<li><ol type="a">
+<li>Using the uniform kernel with <code>h = 0.6</code>, compute the
+realized KDE at <code>x = 0</code>, <code>f_hat_h(0)</code>, directly
+from these five numbers.</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>Now compute <code>E[f_hat_h(0)]</code> at the same
+<code>h = 0.6</code>.</li>
+</ol></li>
+<li><ol start="3" type="a">
+<li>Calculate the true density at <code>x=0</code>, using the Normal
+distribution.</li>
+</ol></li>
+<li><ol start="4" type="a">
+<li>Are b and c equal? What does this mean about bias? (Keep in mind,
+truly proving anything about bias would require us to compare
+<code>E[f_hat_h]</code> to the Normal distribution for all x;
+calculating this at one point is only an indication of what is going on
+that you can extrapolate from.)</li>
+</ol></li>
+<li><ol start="5" type="a">
+<li>Recompute <code>E[f_hat_h(0)]</code> from (b) at a much smaller
+bandwidth, <code>h = 0.1</code>. What happens to the gap between
+<code>E[f_hat_h(0)]</code> and <code>f(0)</code> as <code>h</code>
+shrinks?</li>
+</ol></li>
+<li><ol start="6" type="a">
+<li>Is <code>f_hat_h</code> a consistent estimator? Explain your
+reasoning.</li>
+</ol></li>
+<li><ol start="7" type="a">
+<li>What are the main considerations in choosing a bandwidth value
+<code>h</code>?</li>
+</ol></li>
+</ul>
+<p><strong>Problem 3.</strong> Suppose the data are
+<code>X = [5, 7, 7, 8, 10]</code>, and fix the bandwidth at
+<code>h = 1.5</code> for both kernels below.</p>
+<ul>
+<li><ol type="a">
+<li>Compute the uniform-kernel KDE, <code>f_hat_h(x)</code>, at
+<code>x = 6.0</code>, <code>x = 6.5</code>, <code>x = 7.0</code>,
+<code>x = 8.0</code>, and <code>x = 8.5</code>.</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>Compute the Gaussian-kernel KDE at the same five values of
+<code>x</code>, using the same <code>h = 1.5</code>.</li>
+</ol></li>
+<li><ol start="3" type="a">
+<li>Your part (a) values should jump abruptly between some of these five
+points, while your part (b) values should change smoothly. Identify
+where the biggest jump in (a) happens, and explain in terms of the two
+kernel <em>shapes</em> – not just “one is smoother” – why that jump
+exists in the uniform case but not the Gaussian case.</li>
+</ol></li>
+<li><ol start="4" type="a">
+<li>Why might you prefer one kernel over the other in practice?</li>
+</ol></li>
+</ul>
+<p><strong>Problem 4.</strong> Load
+<code>./data/heart_failure_clinical_records_dataset.csv</code>.</p>
+<ul>
+<li><ol type="a">
+<li>Plot a</li>
+</ol></li>
+<li>kernel density estimate of <code>ejection_fraction</code>.</li>
+<li><ol start="2" type="a">
+<li>Use Pandas’ <code>df.sample(frac=1.0, replace=True)</code> to
+resample the data 15 times with replacement, plotting the kernel density
+estimtes for each sample.</li>
+</ol></li>
+<li><ol start="3" type="a">
+<li>For what values of <code>ejection_fraction</code> is the original
+plot reliable? For which values is there noticeable variation in your
+plots of the resampled data?</li>
+</ol></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cosine Similarity Clock</title>
+  <style>
+    :root {
+      --ink: #19323c;
+      --muted: #61747c;
+      --paper: #fffdf5;
+      --sky: #d9eff5;
+      --coral: #e8664f;
+      --gold: #f2b84b;
+      --blue: #247ba0;
+      --line: #c8d8d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 9% 8%, #ffe9ad 0 7%, transparent 22%),
+        radial-gradient(circle at 88% 80%, #cce7e4 0 10%, transparent 28%),
+        var(--paper);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    main { max-width: 1180px; margin: 0 auto; padding: 38px 24px 48px; }
+
+    header { max-width: 740px; margin-bottom: 28px; }
+    h1 { margin: 0; font-size: clamp(2.1rem, 6vw, 4.5rem); letter-spacing: -0.06em; line-height: .93; }
+    .subtitle { color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: 1.05rem; line-height: 1.55; }
+
+    .stage { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(340px, 1.25fr); gap: 24px; }
+    .panel { background: rgba(255,255,255,.72); border: 1px solid rgba(25,50,60,.14); border-radius: 24px; box-shadow: 0 14px 40px rgba(37,78,86,.10); overflow: hidden; }
+    .panel h2 { margin: 0; padding: 18px 22px 8px; font-size: 1.15rem; letter-spacing: .02em; }
+    .panel p { margin: 0; padding: 0 22px 12px; color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: .9rem; line-height: 1.4; }
+
+    svg { width: 100%; display: block; overflow: visible; }
+    .circle { fill: #f5fbfb; stroke: var(--line); stroke-width: 2; }
+    .tick { stroke: #a8c2c6; stroke-width: 1.2; }
+    .axis { stroke: #a8c2c6; stroke-width: 1.5; }
+    .x-vector { stroke: var(--blue); stroke-width: 6; stroke-linecap: round; }
+    .y-vector { stroke: var(--coral); stroke-width: 6; stroke-linecap: round; }
+    .arc { fill: none; stroke: var(--gold); stroke-width: 4; stroke-linecap: round; }
+    .curve { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .guide { stroke: var(--coral); stroke-width: 2; stroke-dasharray: 5 6; }
+    .dot { fill: var(--coral); stroke: var(--paper); stroke-width: 4; }
+    .svg-label { fill: var(--ink); font-family: "Trebuchet MS", sans-serif; font-size: 13px; font-weight: 700; }
+    .small-label { fill: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: 11px; }
+
+    .equation { margin: 2px 22px 18px; padding: 16px; border-radius: 15px; background: var(--sky); font-family: "Trebuchet MS", sans-serif; font-size: 1.05rem; line-height: 1.6; }
+    .equation strong { color: var(--coral); font-size: 1.55rem; }
+    .fraction { display: inline-block; vertical-align: middle; text-align: center; line-height: 1.1; }
+    .fraction span { display: block; padding: 0 5px; }
+    .fraction span:first-child { border-bottom: 1px solid currentColor; }
+
+    .controls { margin-top: 24px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 15px 18px; border-radius: 18px; background: var(--ink); color: white; font-family: "Trebuchet MS", sans-serif; }
+    button { border: 0; border-radius: 999px; padding: 10px 15px; color: white; background: var(--coral); font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button.secondary { color: var(--ink); background: var(--gold); }
+    input[type="range"] { accent-color: var(--gold); width: 100%; cursor: pointer; }
+    .step { min-width: 85px; text-align: right; font-variant-numeric: tabular-nums; }
+    .hint { margin: 16px 4px 0; color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: .9rem; }
+
+    @media (max-width: 760px) {
+      main { padding: 26px 15px 34px; }
+      .stage { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: auto 1fr auto; }
+      .controls .secondary { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Cosine similarity<br>is a clock.</h1>
+      <p class="subtitle">Keep <strong>x</strong> pointing straight up. Let <strong>y</strong> walk around the circle one tick at a time. The dot product is the height of y, which is exactly the cosine value on the curve.</p>
+    </header>
+
+    <section class="stage">
+      <article class="panel">
+        <h2>The circle clock</h2>
+        <p>x never moves. y rotates clockwise: <span id="theta-text">theta = 0.00 radians</span>.</p>
+        <svg id="clock" viewBox="0 0 400 390" role="img" aria-label="Unit circle with fixed vector x and rotating vector y">
+          <line class="axis" x1="42" y1="190" x2="358" y2="190"></line>
+          <line class="axis" x1="200" y1="348" x2="200" y2="32"></line>
+          <circle class="circle" cx="200" cy="190" r="130"></circle>
+          <g id="clock-ticks"></g>
+          <path id="angle-arc" class="arc"></path>
+          <line id="x-line" class="x-vector" x1="200" y1="190" x2="200" y2="60"></line>
+          <line id="y-line" class="y-vector" x1="200" y1="190" x2="200" y2="60"></line>
+          <circle cx="200" cy="190" r="5" fill="#19323c"></circle>
+          <text class="svg-label" x="211" y="78">x = (0, 1)</text>
+          <text id="y-label" class="svg-label" x="211" y="108">y</text>
+        </svg>
+        <div class="equation">
+          <div>x · y = <strong id="dot-value">1.000</strong></div>
+          <div>cos(theta) = <span class="fraction"><span>x · y</span><span>||x|| ||y||</span></span> = <strong id="cos-value">1.000</strong></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>The cosine curve</h2>
+        <p>The moving dot has the same horizontal position theta and vertical position cos(theta) as the clock's dot product.</p>
+        <svg id="curve-svg" viewBox="0 0 650 390" role="img" aria-label="Cosine curve with a moving point">
+          <line class="axis" x1="52" y1="195" x2="620" y2="195"></line>
+          <line class="axis" x1="52" y1="40" x2="52" y2="350"></line>
+          <line class="tick" x1="52" y1="55" x2="620" y2="55"></line>
+          <line class="tick" x1="52" y1="335" x2="620" y2="335"></line>
+          <text class="small-label" x="22" y="59">1</text>
+          <text class="small-label" x="16" y="199">0</text>
+          <text class="small-label" x="14" y="339">-1</text>
+          <text class="small-label" x="47" y="218">0</text>
+          <text class="small-label" x="182" y="218">pi/2</text>
+          <text class="small-label" x="325" y="218">pi</text>
+          <text class="small-label" x="456" y="218">3pi/2</text>
+          <text class="small-label" x="598" y="218">2pi</text>
+          <path id="cosine-path" class="curve"></path>
+          <line id="curve-guide" class="guide" x1="52" y1="195" x2="52" y2="55"></line>
+          <circle id="curve-dot" class="dot" cx="52" cy="55" r="8"></circle>
+          <text id="curve-value" class="svg-label" x="64" y="48">cos(theta) = 1.000</text>
+        </svg>
+      </article>
+    </section>
+
+    <section class="controls" aria-label="Animation controls">
+      <button id="play-button" type="button">Pause</button>
+      <input id="step-slider" type="range" min="0" max="64" value="0" aria-label="Clock step">
+      <span id="step-readout" class="step">k = 0 / 64</span>
+      <button id="reset-button" class="secondary" type="button">Reset</button>
+    </section>
+    <p class="hint">The slider controls k. Each tick changes theta by 2 pi / K, with K = 64. Try pausing at the top, side, and bottom of the clock.</p>
+  </main>
+
+  <script>
+    const K = 64;
+    const center = { x: 200, y: 190 };
+    const radius = 130;
+    const slider = document.getElementById("step-slider");
+    const playButton = document.getElementById("play-button");
+    const resetButton = document.getElementById("reset-button");
+    let playing = true;
+    let k = 0;
+    let lastFrame = 0;
+
+    function pointOnClock(theta, distance) {
+      return {
+        x: center.x + distance * Math.sin(theta),
+        y: center.y - distance * Math.cos(theta),
+      };
+    }
+
+    function makeArc(theta) {
+      if (theta < 0.02) return "";
+      const end = pointOnClock(theta, 40);
+      const largeArc = theta > Math.PI ? 1 : 0;
+      return `M ${center.x} ${center.y - 40} A 40 40 0 ${largeArc} 1 ${end.x} ${end.y}`;
+    }
+
+    function drawTicks() {
+      const ticks = document.getElementById("clock-ticks");
+      for (let tick = 0; tick < 12; tick += 1) {
+        const theta = tick * 2 * Math.PI / 12;
+        const inner = pointOnClock(theta, 121);
+        const outer = pointOnClock(theta, 139);
+        ticks.insertAdjacentHTML("beforeend", `<line class="tick" x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"></line>`);
+      }
+    }
+
+    function drawCosineCurve() {
+      const left = 52;
+      const width = 568;
+      const middle = 195;
+      const amplitude = 140;
+      const points = [];
+      for (let step = 0; step <= 160; step += 1) {
+        const theta = step * 2 * Math.PI / 160;
+        points.push(`${left + width * theta / (2 * Math.PI)},${middle - amplitude * Math.cos(theta)}`);
+      }
+      document.getElementById("cosine-path").setAttribute("d", "M " + points.join(" L "));
+    }
+
+    function update() {
+      const theta = 2 * Math.PI * k / K;
+      const cosine = Math.cos(theta);
+      const yPoint = pointOnClock(theta, radius);
+      const labelPoint = pointOnClock(theta, radius + 25);
+      const curveX = 52 + 568 * theta / (2 * Math.PI);
+      const curveY = 195 - 140 * cosine;
+
+      document.getElementById("y-line").setAttribute("x2", yPoint.x);
+      document.getElementById("y-line").setAttribute("y2", yPoint.y);
+      document.getElementById("y-label").setAttribute("x", labelPoint.x + 4);
+      document.getElementById("y-label").setAttribute("y", labelPoint.y + 4);
+      document.getElementById("angle-arc").setAttribute("d", makeArc(theta));
+      document.getElementById("theta-text").textContent = `theta = ${theta.toFixed(2)} radians`;
+      document.getElementById("dot-value").textContent = cosine.toFixed(3);
+      document.getElementById("cos-value").textContent = cosine.toFixed(3);
+      document.getElementById("step-readout").textContent = `k = ${k} / ${K}`;
+      document.getElementById("curve-guide").setAttribute("x1", curveX);
+      document.getElementById("curve-guide").setAttribute("x2", curveX);
+      document.getElementById("curve-guide").setAttribute("y2", curveY);
+      document.getElementById("curve-dot").setAttribute("cx", curveX);
+      document.getElementById("curve-dot").setAttribute("cy", curveY);
+      document.getElementById("curve-value").setAttribute("x", Math.min(curveX + 12, 450));
+      document.getElementById("curve-value").setAttribute("y", curveY - 12);
+      document.getElementById("curve-value").textContent = `cos(theta) = ${cosine.toFixed(3)}`;
+    }
+
+    function animate(time) {
+      if (playing && time - lastFrame > 110) {
+        k = (k + 1) % (K + 1);
+        slider.value = k;
+        update();
+        lastFrame = time;
+      }
+      requestAnimationFrame(animate);
+    }
+
+    slider.addEventListener("input", () => {
+      k = Number(slider.value);
+      update();
+    });
+    playButton.addEventListener("click", () => {
+      playing = !playing;
+      playButton.textContent = playing ? "Pause" : "Play";
+    });
+    resetButton.addEventListener("click", () => {
+      k = 0;
+      slider.value = k;
+      update();
+    });
+
+    drawTicks();
+    drawCosineCurve();
+    update();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

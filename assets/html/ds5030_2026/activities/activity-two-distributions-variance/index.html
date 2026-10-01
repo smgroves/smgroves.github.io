@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity · One Sample, One Point — Estimating Variance — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=8">
+<link rel="stylesheet" href="styles.css?v=1">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Mini-Lesson</div>
+  <ul>
+    <li><a href="#widget">One sample, one variance estimate</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Mini-Lesson · pairs with Class 04 &amp; Class 10</div>
+    <h1>One Sample, One Point — Estimating Variance</h1>
+    <div class="subtitle">Same collapse, a different target — and a connector that has to bridge two different scales</div>
+    <div class="byline">Understanding Uncertainty · in-class group work</div>
+  </header>
+
+  <p class="lede">A third version of <a href="../activity-two-distributions/index.html">one sample, one point</a>, back on the familiar die, \(\theta = 3.5\), \(\sigma^2 = 35/12 \approx 2.92\) — but this time each sample collapses to its own <span class="gloss" data-gloss="variance-estimator-td">variance estimate</span>, \(S^2_N\), not its mean. That single change breaks something the first two versions could take for granted.</p>
+
+  <div class="cite">
+    A companion exploration built to accompany the sample-mean and sample-variance material in Class 04, and the sampling-distribution material in Class 10 — no external dataset, the widget generates its own die rolls in the browser.
+  </div>
+
+  <p class="glossary-hint">
+    New vocabulary is <span class="gloss gloss-demo">underlined like this</span> —
+    hover or tap any term for a one-line explanation that appears right below the line you are reading.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="callout tps">
+    <span class="label">Think · Pair · Share · <em>can the connector still be a straight line?</em></span>
+    <ul class="tps-steps">
+      <li><span class="tps-phase">Think · 2 min</span>In the mean version of this widget, a die roll of "4" and the collapsed estimate \(\bar X_N = 4\) sit at the <em>same</em> spot on the number line — both are just "die-face units." Now the collapse is to \(S^2_N = \frac1N\sum(x_i-\bar x)^2\) instead. Is a value like \(x_i = 4\) (a die roll) measured in the same units as \(S^2_N = 4\) (a variance estimate)? What would go wrong if you tried to plot both on the exact same axis?</li>
+    </ul>
+    <details class="tps-reveal">
+      <summary>I've done the Think step — reveal Pair &amp; Share</summary>
+      <ul class="tps-steps">
+        <li><span class="tps-phase">Pair · 3 min</span>Compare: what are the actual units of \(S^2_N\), and why is squaring the deviations responsible for the units changing?</li>
+        <li><span class="tps-phase">Share · 2 min</span>Agree on why the widget below needs two separately-scaled axes instead of one shared number line.</li>
+      </ul>
+    </details>
+  </div>
+
+  <h2 id="widget">One sample, one variance estimate</h2>
+  <p>The top histogram is still one sample's N raw die rolls, in ordinary die-face units, 1 through 6. But the collapse this time is \(S^2_N\), the sample variance — and squaring deviations changes the units, so the bottom strip lives on a completely different scale (squared-deviation units, not die-face units). The curved connector threads the currently selected sample's own histogram down to its variance estimate, crossing from one scale to the other instead of dropping straight down.</p>
+
+  <div class="viz" id="viz-two-distributions-variance">
+    <div class="viz-description">Top: histogram of one sample's N raw rolls (die-face units). Bottom: every sample's variance estimate collapsed to one dot (squared-deviation units), plus σ² (true, dashed) and <span class="gloss" data-gloss="sigma-hat-td">σ̂²</span> (running average, solid). Toggle Bessel's correction and watch every dot shift at once.</div>
+  </div>
+
+  <div class="callout insight">
+    <strong>Toggling the correction moves the whole swarm, not just one number.</strong> Every stored sample keeps its raw sum of squared deviations; flipping the checkbox only changes the divisor applied to that same stored sum. Watch σ̂² (the solid line) slide from noticeably left of σ² — undershooting, as in <a href="../activity-bessel-correction/index.html">the Bessel's-correction mini-lesson</a> — to sitting right on top of it, the instant you check the box.
+  </div>
+
+  <div class="exercise">
+    <div class="ex-label">Check your intuition</div>
+    <p>At N = 5, draw 30 samples with the correction off, and note where σ̂² lands relative to σ² ≈ 2.92. Turn the correction on without resetting. Does σ̂² jump to exactly 2.92, or does it land somewhere else nearby?</p>
+    <details>
+      <summary>Show answer</summary>
+      <p>With the correction off, σ̂² should sit noticeably below 2.92 — the familiar undershoot. Turning the correction on shifts every dot's divisor from n to n − 1, which multiplies every stored estimate by \(n/(n-1)\); at n = 5 that's a factor of 1.25. σ̂² moves to somewhere close to 2.92, not exactly on it — "unbiased" is a statement about the expectation over infinitely many samples, and 30 is still a finite, noisy batch.</p>
+    </details>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Why does the connector curve instead of dropping straight down like the mean versions?</h3>
+  <p>In the mean versions, a raw event and its collapsed average share the same units — die faces, or minutes — so both panels could share one x-axis and the connector is just a vertical line. Variance breaks that: squaring deviations changes the units entirely, so the two panels are genuinely different scales, and a straight vertical line would silently misrepresent that as if they were the same number line.</p>
+
+  <h3>Why can't N go down to 1 here, like the mean versions allow?</h3>
+  <p>With N = 1, there's only one roll, so \(\bar x\) equals that roll exactly and every deviation is zero — the sum of squares is 0 regardless of what you rolled, and Bessel's correction would need to divide by \(n - 1 = 0\). Variance needs at least two points to say anything at all about spread.</p>
+
+  <div class="est-series-nav">
+    <span class="est-series-label">More estimator-properties mini-lessons:</span>
+    <a href="../activity-two-distributions/index.html">One sample, one point (mean, die)</a>
+    <a href="../activity-two-distributions-skewed/index.html">One sample, one point (mean, skewed)</a>
+    <a href="../activity-unbiased-consistent/index.html">Unbiased, but never consistent</a>
+    <a href="../activity-min-sum-squares/index.html">What the sample mean minimizes</a>
+    <a href="../activity-bessel-correction/index.html">Why the sample variance undershoots</a>
+    <a href="../activity-standard-error/index.html">How bad is my estimator?</a>
+  </div>
+
+  <footer>
+    Understanding Uncertainty · In-Class Activity — Estimator Properties mini-lesson.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+/* ============================================================
+ * In-class activity — Generating CDFs: nine random machines.
+ * Palette, typography, .viz/.callout/.equation chrome, and
+ * presentation mode all live in ../shared/lab-base.css. This
+ * sheet is purely additive.
+ * ============================================================ */
+
+table.data-table {
+  width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px;
+  margin: 10px 0 16px;
+}
+table.data-table th, table.data-table td {
+  text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--rule);
+}
+table.data-table th { color: var(--ink-soft); font-weight: 600; }
+table.data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mini-lab-nav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 20px;
+  font-family: var(--mono); font-size: 11.5px;
+}
+.mini-lab-nav a {
+  padding: 3px 9px; border-radius: 12px; border: 1px solid var(--rule);
+  color: var(--ink-soft); text-decoration: none;
+}
+.mini-lab-nav a:hover { border-color: var(--accent); color: var(--accent); }
