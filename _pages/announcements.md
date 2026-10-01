@@ -2,14 +2,14 @@
 layout: default
 title: announcements
 permalink: /announcements/
-description: "[Placeholder: intro blurb for the announcements page]"
+description: "Quick announcements about what I've been working on, presenting, and publishing."
 ---
 
 <div class="post">
 
   <div class="header-bar">
     <h1>Announcements</h1>
-    <h2>[Placeholder: short intro — quick updates, talks, and news, separate from the full blog posts]</h2>
+    <h2>Quick updates and news about what I've been working on, presenting, and publishing.</h2>
   </div>
 
   {%- assign announcements = site.posts | where: "inline", true | sort: "date" | reverse -%}

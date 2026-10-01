@@ -2,7 +2,7 @@
 layout: page
 title: packages
 permalink: /packages/
-description: "[Placeholder: intro blurb about the packages you maintain and who they're for]"
+description: "Packaged tools I've developed for researchers and data enthusiasts"
 display_categories: [packages]
 horizontal: false
 ---

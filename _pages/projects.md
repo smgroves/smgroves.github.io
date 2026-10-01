@@ -2,7 +2,7 @@
 layout: page
 title: projects
 permalink: /projects/
-description: "[Placeholder: intro blurb for the research/fun projects page]"
+description: "A collection of projects I've worked on"
 nav: true
 nav_order: 3
 nav_title: Research
