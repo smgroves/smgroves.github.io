@@ -578,8 +578,15 @@ footer.sticky-bottom {
 
     .project-img {
       float: right;
-      max-width: 180px;
+      max-width: 300px;
       margin: 0 0 0.5rem 1rem;
+
+      @media (max-width: 576px) {
+        float: none;
+        display: block;
+        max-width: 100%;
+        margin: 0 0 0.75rem 0;
+      }
     }
 
     p a {
@@ -603,9 +610,10 @@ footer.sticky-bottom {
       }
 
       ol.bibliography {
-        list-style: none;
+        list-style: disc;
         margin: 0;
-        padding: 0;
+        padding-left: 1.25rem;
+        font-size: 0.875rem;
 
         li {
           margin-bottom: 0.25rem;
@@ -630,8 +638,12 @@ footer.sticky-bottom {
 
   h2.project-section {
     color: var(--global-theme-color);
-    font-weight: 400;
-    border-bottom: 1px solid var(--global-divider-color);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06rem;
+    border-bottom: 2px solid var(--global-theme-color);
+    padding-bottom: 0.25rem;
     padding-top: 0.5rem;
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
