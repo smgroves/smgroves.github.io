@@ -6,8 +6,7 @@ importance: 3
 category: research
 # TODO: write your paragraph about this project
 blurb: >
-  Write a paragraph about this project here. Markdown works, including
-  [links](https://github.com/smgroves/Groves-CellSys2021).
+  This page is being updated. Come back soon!
 links:
   - text: Code on GitHub
     url: https://github.com/smgroves/Groves-CellSys2021
