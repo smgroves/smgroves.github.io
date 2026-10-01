@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hallmarks of Cancer: Interactive Map</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // All icon components
+        const Zap = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+        );
+
+        const Shield = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+        );
+
+        const Skull = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="9" cy="12" r="1"></circle>
+                <circle cx="15" cy="12" r="1"></circle>
+                <path d="M8 20v2h8v-2"></path>
+                <path d="m12.5 17-.5-1-.5 1h1z"></path>
+                <path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"></path>
+            </svg>
+        );
+
+        const InfinityIcon = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18.178 8A6 6 0 0 0 6.634 8.002a5.968 5.968 0 0 0 0 7.996A6 6 0 1 0 18.178 8Z"></path>
+            </svg>
+        );
+
+        const Heart = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+            </svg>
+        );
+
+        const Share2 = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+        );
+
+        const Fuel = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="22" x2="15" y2="22"></line>
+                <line x1="4" y1="9" x2="14" y2="9"></line>
+                <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"></path>
+            </svg>
+        );
+
+        const Eye = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        );
+
+        const Dna = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 15c6.667-6 13.333 0 20-6"></path>
+                <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"></path>
+                <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"></path>
+                <path d="m17 6-2.5-2.5"></path>
+                <path d="m14 8-1-1"></path>
+                <path d="m7 18 2.5 2.5"></path>
+                <path d="m3.5 14.5.5.5"></path>
+                <path d="m20 9 .5.5"></path>
+                <path d="m6.5 12.5 1 1"></path>
+                <path d="m16.5 10.5 1 1"></path>
+                <path d="m10 16 1.5 1.5"></path>
+            </svg>
+        );
+
+        const Users = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        );
+
+        const Shuffle = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="16 3 21 3 21 8"></polyline>
+                <line x1="4" y1="20" x2="21" y2="3"></line>
+                <polyline points="21 16 21 21 16 21"></polyline>
+                <line x1="15" y1="15" x2="21" y2="21"></line>
+                <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+        );
+
+        const BookOpen = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+        );
+
+        const Bacteria = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 5a7 7 0 0 0-7 7 7 7 0 0 0 7 7 7 7 0 0 0 7-7 7 7 0 0 0-7-7Z"></path>
+                <path d="M12 2v3"></path>
+                <path d="M12 19v3"></path>
+                <path d="M2 12h3"></path>
+                <path d="M19 12h3"></path>
+            </svg>
+        );
+
+        const Clock = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        );
+
+        const ArrowLeftRight = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3L4 7l4 4"></path>
+                <path d="M4 7h16"></path>
+                <path d="m16 21 4-4-4-4"></path>
+                <path d="M20 17H4"></path>
+            </svg>
+        );
+
+        const HallmarksMap = () => {
+            const [connections, setConnections] = useState([]);
+            const [selectedHallmarks, setSelectedHallmarks] = useState([]);
+            const [showExamples, setShowExamples] = useState(false);
+            const [editingConnection, setEditingConnection] = useState(null);
+            const [labelInput, setLabelInput] = useState('');
+            const [draggingNode, setDraggingNode] = useState(null);
+            const [nodePositions, setNodePositions] = useState({});
+            const [dragStartPos, setDragStartPos] = useState(null);
+            const [svgSize, setSvgSize] = useState({ width: 1400, height: 800 });
+            const [viewingDefinition, setViewingDefinition] = useState(null);
+            const [viewingConnectionExplanation, setViewingConnectionExplanation] = useState(null);
+
+            const hallmarkDefinitions = {
+                1: "Cancer cells acquire the ability to sustain chronic proliferation through self-generated growth signals, becoming independent of external growth factors.",
+                2: "Tumors evade powerful programs that negatively regulate cell proliferation, such as p53 and Rb tumor suppressors.",
+                3: "Cancer cells develop mechanisms to evade apoptosis (programmed cell death), allowing damaged cells to survive and proliferate.",
+                4: "Tumor cells bypass normal limits on replicative potential, often by maintaining telomere length, achieving unlimited replicative potential.",
+                5: "Tumors induce angiogenesis (formation of new blood vessels) to sustain oxygen and nutrient supply needed for growth and provide routes for metastasis.",
+                6: "Cancer cells alter their attachment to other cells and the extracellular matrix, enabling invasion of nearby tissues and distant metastasis.",
+                7: "Cancer cells reprogram their metabolism to support rapid cell growth and proliferation, often favoring glycolysis even in oxygen-rich environments (Warburg effect).",
+                8: "Tumors develop strategies to avoid detection and elimination by the immune system, including expression of immune checkpoint proteins.",
+                9: "Increased mutation rates and genomic instability accelerate acquisition of other cancer hallmarks through accumulation of mutations.",
+                10: "Tumor-associated inflammation provides bioactive molecules that support multiple hallmarks, including growth factors and survival factors.",
+                11: "Cancer cells can reversibly transition between different phenotypic states (like epithelial-mesenchymal transition), enabling adaptation to different microenvironments and therapeutic pressures.",
+                12: "Changes in chromatin organization and gene expression patterns that don't involve DNA sequence changes, allowing cancer cells to reprogram their identity.",
+                13: "Microbial communities within and around tumors can influence cancer progression, immune responses, and treatment efficacy.",
+                14: "Senescent cells in the tumor microenvironment can paradoxically promote tumorigenesis through their senescence-associated secretory phenotype (SASP)."
+            };
+
+            useEffect(() => {
+                const updateSize = () => {
+                    const width = Math.max(1200, window.innerWidth - 100);
+                    const height = Math.max(700, window.innerHeight - 350);
+                    
+                    // Scale manually positioned nodes proportionally when window resizes
+                    if (Object.keys(nodePositions).length > 0) {
+                        const oldWidth = svgSize.width;
+                        const oldHeight = svgSize.height;
+                        const scaleX = width / oldWidth;
+                        const scaleY = height / oldHeight;
+                        
+                        const scaledPositions = {};
+                        Object.keys(nodePositions).forEach(id => {
+                            scaledPositions[id] = {
+                                x: nodePositions[id].x * scaleX,
+                                y: nodePositions[id].y * scaleY
+                            };
+                        });
+                        setNodePositions(scaledPositions);
+                    }
+                    
+                    setSvgSize({ width, height });
+                };
+                
+                updateSize();
+                window.addEventListener('resize', updateSize);
+                return () => window.removeEventListener('resize', updateSize);
+            }, []);
+
+            const hallmarks = [
+                { id: 1, name: "Sustaining Proliferative Signaling", short: "Proliferation", icon: Zap, color: "bg-red-500", position: { x: 0.50, y: 0.13 } },
+                { id: 2, name: "Evading Growth Suppressors", short: "Evade Suppressors", icon: Shield, color: "bg-orange-500", position: { x: 0.68, y: 0.16 } },
+                { id: 3, name: "Resisting Cell Death", short: "Resist Death", icon: Skull, color: "bg-yellow-500", position: { x: 0.82, y: 0.28 } },
+                { id: 4, name: "Enabling Replicative Immortality", short: "Immortality", icon: InfinityIcon, color: "bg-green-500", position: { x: 0.88, y: 0.46 } },
+                { id: 5, name: "Inducing Angiogenesis", short: "Angiogenesis", icon: Heart, color: "bg-blue-500", position: { x: 0.85, y: 0.64 } },
+                { id: 6, name: "Activating Invasion & Metastasis", short: "Metastasis", icon: Share2, color: "bg-purple-500", position: { x: 0.72, y: 0.78 } },
+                { id: 7, name: "Reprogramming Energy Metabolism", short: "Metabolism", icon: Fuel, color: "bg-pink-500", position: { x: 0.50, y: 0.86 } },
+                { id: 8, name: "Evading Immune Destruction", short: "Immune Evasion", icon: Eye, color: "bg-indigo-500", position: { x: 0.28, y: 0.78 } },
+                { id: 11, name: "Unlocking Phenotypic Plasticity", short: "Plasticity", icon: Shuffle, color: "bg-teal-500", position: { x: 0.15, y: 0.64 } },
+                { id: 12, name: "Nonmutational Epigenetic Reprogramming", short: "Epigenetic Reprog.", icon: BookOpen, color: "bg-cyan-500", position: { x: 0.12, y: 0.46 } },
+                { id: 13, name: "Polymorphic Microbiomes", short: "Microbiomes", icon: Bacteria, color: "bg-lime-500", position: { x: 0.18, y: 0.28 } },
+                { id: 14, name: "Senescent Cells", short: "Senescence", icon: Clock, color: "bg-amber-500", position: { x: 0.32, y: 0.16 } }
+            ];
+
+            const enabling = [
+                { id: 9, name: "Genome Instability & Mutation", short: "Genome Instability", icon: Dna, color: "bg-gray-600", position: { x: 0.38, y: 0.49 } },
+                { id: 10, name: "Tumor-Promoting Inflammation", short: "Inflammation", icon: Users, color: "bg-gray-600", position: { x: 0.62, y: 0.49 } }
+            ];
+
+            const allNodes = [...hallmarks, ...enabling];
+
+            const exampleConnections = [
+                { from: 4, to: 5, label: "Need nutrients", color: "text-green-600", explanation: "Immortal cells that replicate indefinitely require a constant supply of oxygen and nutrients, which can only be sustained through angiogenesis (new blood vessel formation)." },
+                { from: 1, to: 3, label: "More death signals", color: "text-red-600", explanation: "Rapid proliferation creates cellular stress and DNA damage, triggering apoptotic signals. Cancer cells must develop resistance to cell death to survive these proliferation-induced stresses." },
+                { from: 5, to: 6, label: "Vascular access", color: "text-blue-600", explanation: "Newly formed blood vessels not only supply nutrients but also provide physical routes for cancer cells to enter circulation and metastasize to distant sites." },
+                { from: 9, to: 1, label: "Activating mutations", color: "text-gray-600", explanation: "Genomic instability generates mutations in growth factor receptors and signaling pathways, allowing cells to produce their own growth signals independent of external cues." },
+                { from: 10, to: 8, label: "Immunosuppression", color: "text-gray-600", explanation: "Chronic inflammation in the tumor microenvironment releases cytokines and recruits regulatory immune cells that suppress anti-tumor immunity, helping cancer cells evade immune destruction." },
+                { from: 11, to: 6, label: "EMT transition", color: "text-teal-600", explanation: "Phenotypic plasticity enables epithelial-to-mesenchymal transition (EMT), where cells lose cell-cell adhesion and gain migratory properties essential for invasion and metastasis." },
+                { from: 12, to: 11, label: "Enables plasticity", color: "text-cyan-600", explanation: "Epigenetic changes alter chromatin structure and gene expression programs without changing DNA sequence, allowing cells to reversibly switch between different phenotypic states." }
+            ];
+
+            const getNodePosition = (id) => {
+                const node = allNodes.find(n => n.id === id);
+                // If manually positioned, keep the manual position
+                if (nodePositions[id]) {
+                    return nodePositions[id];
+                }
+                // Otherwise, calculate position based on percentage of current SVG size
+                return { 
+                    x: node.position.x * svgSize.width, 
+                    y: node.position.y * svgSize.height 
+                };
+            };
+
+            const handleMouseDown = (e, id) => {
+                if (e.button === 0) {
+                    const svg = e.currentTarget.ownerSVGElement;
+                    const point = svg.createSVGPoint();
+                    point.x = e.clientX;
+                    point.y = e.clientY;
+                    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    setDraggingNode(id);
+                    setDragStartPos({ x: svgPoint.x, y: svgPoint.y });
+                }
+            };
+
+            const handleMouseMove = (e) => {
+                if (draggingNode !== null) {
+                    const svg = e.currentTarget;
+                    const point = svg.createSVGPoint();
+                    point.x = e.clientX;
+                    point.y = e.clientY;
+                    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    setNodePositions(prev => ({
+                        ...prev,
+                        [draggingNode]: { x: svgPoint.x, y: svgPoint.y }
+                    }));
+                }
+            };
+
+            const handleMouseUp = () => {
+                setDraggingNode(null);
+                setDragStartPos(null);
+            };
+
+            const handleNodeClick = (e, id) => {
+                if (dragStartPos) {
+                    const svg = e.currentTarget.ownerSVGElement;
+                    const point = svg.createSVGPoint();
+                    point.x = e.clientX;
+                    point.y = e.clientY;
+                    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(svgPoint.x - dragStartPos.x, 2) + 
+                        Math.pow(svgPoint.y - dragStartPos.y, 2)
+                    );
+                    
+                    if (distance < 5) {
+                        toggleHallmark(id);
+                        setViewingDefinition(id);
+                    }
+                }
+            };
+
+            const toggleHallmark = (id) => {
+                if (selectedHallmarks.includes(id)) {
+                    setSelectedHallmarks(selectedHallmarks.filter(h => h !== id));
+                } else if (selectedHallmarks.length === 0) {
+                    setSelectedHallmarks([id]);
+                } else if (selectedHallmarks.length === 1) {
+                    const newConnection = {
+                        from: selectedHallmarks[0],
+                        to: id,
+                        label: ""
+                    };
+                    setConnections([...connections, newConnection]);
+                    setEditingConnection(connections.length);
+                    setLabelInput("");
+                    setSelectedHallmarks([]);
+                }
+            };
+
+            const updateConnectionLabel = (index, label) => {
+                const updated = [...connections];
+                updated[index].label = label;
+                setConnections(updated);
+                setEditingConnection(null);
+                setLabelInput("");
+            };
+
+            const deleteConnection = (index) => {
+                setConnections(connections.filter((_, i) => i !== index));
+                setEditingConnection(null);
+            };
+
+            const reverseConnection = (index) => {
+                const updated = [...connections];
+                const temp = updated[index].from;
+                updated[index].from = updated[index].to;
+                updated[index].to = temp;
+                setConnections(updated);
+            };
+
+            const resetLayout = () => {
+                setNodePositions({});
+            };
+
+            const exportAsSVG = () => {
+                try {
+                    const svgElement = document.querySelector('svg');
+                    const svgData = new XMLSerializer().serializeToString(svgElement);
+                    
+                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'hallmarks-of-cancer-map.svg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    
+                    alert('SVG downloaded! You can open it in any browser or convert it to PNG/PDF using online tools.');
+                } catch (error) {
+                    console.error('SVG Export error:', error);
+                    alert('Error exporting SVG: ' + error.message);
+                }
+            };
+
+            const exportAsPNG = () => {
+                alert('PNG Export Instructions:\n\n1. Right-click on the map below\n2. Select "Save image as..." or "Copy image"\n3. Save as PNG\n\nAlternatively, use the "Save as SVG" button and convert the SVG file to PNG using an online converter like cloudconvert.com');
+            };
+
+            const exportAsPDF = () => {
+                alert('PDF Export Instructions:\n\n1. Press Ctrl+P (or Cmd+P on Mac)\n2. Select "Save as PDF" as the printer\n3. Adjust margins to "None"\n4. Click Save\n\nAlternatively, use the "Save as SVG" button and convert the SVG file to PDF using an online converter.');
+            };
+
+            const getNode = (id) => allNodes.find(n => n.id === id);
+
+            const renderConnection = (conn, index, isExample = false) => {
+                const fromNode = getNode(conn.from);
+                const toNode = getNode(conn.to);
+                
+                if (!fromNode || !toNode) return null;
+
+                const fromPos = getNodePosition(conn.from);
+                const toPos = getNodePosition(conn.to);
+
+                // Calculate angle and shorten line to stop at circle edge
+                const dx = toPos.x - fromPos.x;
+                const dy = toPos.y - fromPos.y;
+                const angle = Math.atan2(dy, dx);
+                const radius = 45;
+
+                const fromX = fromPos.x + radius * Math.cos(angle);
+                const fromY = fromPos.y + radius * Math.sin(angle);
+                const toX = toPos.x - radius * Math.cos(angle);
+                const toY = toPos.y - radius * Math.sin(angle);
+
+                const midX = (fromX + toX) / 2;
+                const midY = (fromY + toY) / 2;
+
+                const handleConnectionClick = () => {
+                    if (isExample && conn.explanation) {
+                        setViewingConnectionExplanation(conn);
+                    } else if (!isExample) {
+                        setEditingConnection(index);
+                        setLabelInput(conn.label || "");
+                    }
+                };
+
+                return (
+                    <g key={`${isExample ? 'example' : 'conn'}-${index}`}>
+                        <line
+                            x1={fromX}
+                            y1={fromY}
+                            x2={toX}
+                            y2={toY}
+                            stroke={isExample ? "#999" : "#333"}
+                            strokeWidth="3"
+                            strokeDasharray={isExample ? "5,5" : "0"}
+                            markerEnd="url(#arrowhead)"
+                            opacity={isExample ? 0.5 : 0.8}
+                        />
+                        <circle
+                            cx={midX}
+                            cy={midY}
+                            r="12"
+                            fill="white"
+                            stroke="#333"
+                            strokeWidth="2"
+                            className="cursor-pointer hover:fill-gray-100"
+                            onClick={handleConnectionClick}
+                        />
+                        {conn.label && (
+                            <text
+                                x={midX}
+                                y={midY - 15}
+                                className={`text-xs font-medium ${conn.color || 'text-gray-700'}`}
+                                textAnchor="middle"
+                                style={{ pointerEvents: 'none' }}
+                            >
+                                {conn.label}
+                            </text>
+                        )}
+                        {!conn.label && (
+                            <text
+                                x={midX}
+                                y={midY + 4}
+                                className="text-xs text-gray-400"
+                                textAnchor="middle"
+                                style={{ pointerEvents: 'none' }}
+                            >
+                                {isExample ? '?' : '+'}
+                            </text>
+                        )}
+                    </g>
+                );
+            };
+
+            return (
+                <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+                    <div className="w-full mx-auto">
+                        <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                                Hallmarks of Cancer: Interactive Map
+                            </h1>
+                            <p className="text-gray-600 mb-4">
+                                Click two hallmarks to draw a connection between them. Click the + on a connection to add a label. <strong>Drag hallmarks to move them</strong> and adjust the layout.
+                            </p>
+                            
+                            <div className="flex gap-4 mb-4">
+                                <button
+                                    onClick={() => setShowExamples(!showExamples)}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                                >
+                                    {showExamples ? 'Hide' : 'Show'} Example Connections
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setConnections([]);
+                                        setSelectedHallmarks([]);
+                                    }}
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                >
+                                    Clear All Connections
+                                </button>
+                                <button
+                                    onClick={resetLayout}
+                                    className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+                                >
+                                    Reset Layout
+                                </button>
+                                <button
+                                    onClick={exportAsSVG}
+                                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                                >
+                                    Save as SVG
+                                </button>
+                                <button
+                                    onClick={exportAsPNG}
+                                    className="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 transition"
+                                >
+                                    PNG Instructions
+                                </button>
+                                <button
+                                    onClick={exportAsPDF}
+                                    className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+                                >
+                                    PDF Instructions
+                                </button>
+                            </div>
+
+                            {viewingDefinition && (
+                                <div className="bg-indigo-50 border border-indigo-200 rounded p-4 mb-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-indigo-900 mb-2">
+                                                {getNode(viewingDefinition).name}
+                                            </h3>
+                                            <p className="text-indigo-800">
+                                                {hallmarkDefinitions[viewingDefinition]}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => setViewingDefinition(null)}
+                                            className="text-indigo-600 hover:text-indigo-800 font-bold text-xl ml-4"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {viewingConnectionExplanation && (
+                                <div className="bg-amber-50 border border-amber-200 rounded p-4 mb-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-amber-900 mb-2">
+                                                {getNode(viewingConnectionExplanation.from).short} → {getNode(viewingConnectionExplanation.to).short}: {viewingConnectionExplanation.label}
+                                            </h3>
+                                            <p className="text-amber-800">
+                                                {viewingConnectionExplanation.explanation}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => setViewingConnectionExplanation(null)}
+                                            className="text-amber-600 hover:text-amber-800 font-bold text-xl ml-4"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedHallmarks.length === 1 && (
+                                <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+                                    <p className="text-blue-800 font-medium">
+                                        Selected: {getNode(selectedHallmarks[0]).short}. Now click another hallmark to connect them.
+                                    </p>
+                                </div>
+                            )}
+
+                            {editingConnection !== null && (
+                                <div className="bg-green-50 border border-green-200 rounded p-4 mb-4">
+                                    <p className="text-green-800 font-medium mb-2">Edit this connection:</p>
+                                    <div className="flex gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            value={labelInput}
+                                            onChange={(e) => setLabelInput(e.target.value)}
+                                            placeholder="e.g., 'Needs oxygen supply'"
+                                            className="flex-1 px-3 py-2 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            onKeyPress={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    updateConnectionLabel(editingConnection, labelInput);
+                                                }
+                                            }}
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={() => updateConnectionLabel(editingConnection, labelInput)}
+                                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => reverseConnection(editingConnection)}
+                                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                                        >
+                                            <ArrowLeftRight size={16} />
+                                            Reverse Direction
+                                        </button>
+                                        <button
+                                            onClick={() => deleteConnection(editingConnection)}
+                                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                        >
+                                            Delete
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setEditingConnection(null);
+                                                setLabelInput("");
+                                            }}
+                                            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-lg p-6 overflow-auto">
+                            <svg 
+                                width={svgSize.width} 
+                                height={svgSize.height} 
+                                className="mx-auto"
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUp}
+                                onMouseLeave={handleMouseUp}
+                            >
+                                <defs>
+                                    <marker
+                                        id="arrowhead"
+                                        markerWidth="10"
+                                        markerHeight="10"
+                                        refX="9"
+                                        refY="3"
+                                        orient="auto"
+                                    >
+                                        <polygon points="0 0, 10 3, 0 6" fill="#333" />
+                                    </marker>
+                                </defs>
+
+                                <text x={svgSize.width / 2} y="40" className="text-xl font-bold text-gray-700" textAnchor="middle">
+                                    Hallmarks of Cancer (2022)
+                                </text>
+
+                                {connections.map((conn, idx) => renderConnection(conn, idx, false))}
+                                {showExamples && exampleConnections.map((conn, idx) => renderConnection(conn, idx, true))}
+
+                                {allNodes.map((hallmark) => {
+                                    const Icon = hallmark.icon;
+                                    const isSelected = selectedHallmarks.includes(hallmark.id);
+                                    const pos = getNodePosition(hallmark.id);
+                                    const isDragging = draggingNode === hallmark.id;
+                                    const isEnabling = hallmark.id === 9 || hallmark.id === 10;
+                                    
+                                    return (
+                                        <g key={hallmark.id}>
+                                            <g
+                                                className={`${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                                                transform={`translate(${pos.x}, ${pos.y})`}
+                                                onMouseDown={(e) => handleMouseDown(e, hallmark.id)}
+                                                onMouseUp={(e) => handleNodeClick(e, hallmark.id)}
+                                            >
+                                                <circle
+                                                    r="45"
+                                                    className={`${hallmark.color} ${isSelected ? 'opacity-100' : 'opacity-80'} transition-all hover:opacity-100`}
+                                                    stroke={isSelected ? "#000" : "#666"}
+                                                    strokeWidth={isSelected ? "4" : "2"}
+                                                    style={{ pointerEvents: 'all' }}
+                                                />
+                                                <foreignObject x="-40" y="-40" width="80" height="80" style={{ pointerEvents: 'none' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>
+                                                        <Icon size={24} />
+                                                    </div>
+                                                </foreignObject>
+                                                <text
+                                                    y="65"
+                                                    className="text-xs font-semibold text-gray-800"
+                                                    textAnchor="middle"
+                                                    style={{ maxWidth: '100px', pointerEvents: 'none' }}
+                                                >
+                                                    {hallmark.short.split(' ').map((word, i) => (
+                                                        <tspan key={i} x="0" dy={i === 0 ? 0 : 12}>
+                                                            {word}
+                                                        </tspan>
+                                                    ))}
+                                                </text>
+                                            </g>
+                                            {isEnabling && (
+                                                <text
+                                                    x={pos.x}
+                                                    y={pos.y - 5}
+                                                    className="text-sm font-semibold text-gray-500"
+                                                    textAnchor="middle"
+                                                    style={{ pointerEvents: 'none' }}
+                                                >
+                                                    Enabling
+                                                </text>
+                                            )}
+                                        </g>
+                                    );
+                                })}
+                            </svg>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-lg p-6 mt-4">
+                            <h2 className="text-xl font-bold text-gray-800 mb-3">Discussion Prompts</h2>
+                            <ul className="space-y-2 text-gray-700">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-blue-500 font-bold">•</span>
+                                    <span><strong>Interdependence:</strong> Can a tumor grow indefinitely without angiogenesis? Why or why not?</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-red-500 font-bold">•</span>
+                                    <span><strong>Treatment resistance:</strong> If we block one hallmark with a drug, which others might compensate?</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-500 font-bold">•</span>
+                                    <span><strong>Evolution:</strong> How does selective pressure from treatment drive hallmark adaptation?</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-purple-500 font-bold">•</span>
+                                    <span><strong>Systems view:</strong> Why is this a network problem rather than a single-target problem?</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-teal-500 font-bold">•</span>
+                                    <span><strong>New hallmarks (2022):</strong> How do plasticity and epigenetic changes enable drug resistance?</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<HallmarksMap />, document.getElementById('root'));
+    </script>
+</body>
+</html>

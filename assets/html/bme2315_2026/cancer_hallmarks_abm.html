@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancer Hallmarks ABM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --surface2: #1e2336;
+            --border: #2a3050;
+            --text: #e2e8f0;
+            --text-dim: #8892aa;
+            --text-faint: #4a5568;
+            --accent: #7c85ff;
+
+            --h1-color: #ff6b6b;   /* sustained growth */
+            --h2-color: #ffa94d;   /* evade suppression */
+            --h3-color: #ff8787;   /* resist apoptosis */
+            --h4-color: #da77f2;   /* immortality */
+            --h5-color: #74c0fc;   /* angiogenesis */
+            --h6-color: #69db7c;   /* invasion */
+
+            --normal: #4a7fff;
+            --cancer: #ff4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .app {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+        header h1 span { color: var(--accent); }
+        header p {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* MAIN GRID — controls left, sim canvas right */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        /* CONTROLS PANEL */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .panel-body { padding: 1rem; }
+
+        /* HALLMARK TOGGLES */
+        .hallmark {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.6rem;
+            transition: border-color 0.2s;
+        }
+        .hallmark.active { border-color: var(--hcolor); }
+
+        .hallmark-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .hallmark-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--hcolor, var(--text-dim));
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .hallmark-desc {
+            font-size: 0.65rem;
+            color: var(--text-faint);
+            line-height: 1.5;
+        }
+        .hallmark.active .hallmark-desc { color: var(--text-dim); }
+
+        /* Toggle switch */
+        .toggle-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .toggle {
+            position: relative;
+            width: 38px;
+            height: 20px;
+        }
+        .toggle input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.25s;
+        }
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.25s;
+            pointer-events: none;
+        }
+        .toggle input:checked ~ .toggle-track { background: var(--hcolor, var(--accent)); }
+        .toggle input:checked ~ .toggle-track + .toggle-thumb { transform: translateX(18px); }
+        /* Fix thumb position — it's sibling after track, use JS instead */
+
+        /* BUTTONS */
+        .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-run { background: var(--accent); color: white; }
+        .btn-step { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+        .btn-reset { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .stat-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 0.6rem;
+        }
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .stat-value.v-cancer { color: var(--cancer); }
+        .stat-value.v-normal { color: var(--normal); }
+
+        /* STATUS MESSAGE */
+        .status-msg {
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            line-height: 1.6;
+            border-left: 3px solid;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .status-msg.ok  { background: rgba(100,180,100,0.08); border-color: #69db7c; color: #69db7c; }
+        .status-msg.warn { background: rgba(255,180,50,0.08); border-color: #ffa94d; color: #ffa94d; }
+        .status-msg.bad { background: rgba(255,80,80,0.08); border-color: #ff6b6b; color: #ff6b6b; }
+
+        /* SIM CANVAS */
+        .sim-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+        canvas#simCanvas {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            background: #0a0c12;
+            /* dimensions set in JS from GRID_W/GRID_H constants */
+        }
+
+        .sim-label {
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--text-faint);
+            padding: 0.4rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* PLOTS GRID */
+        .plots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .plot-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        canvas.plot-canvas {
+            display: block;
+            width: 100%;
+        }
+
+        /* LEGEND */
+        .legend-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .legend-dot {
+            width: 8px; height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── SIMULATION HISTORY ─────────────────────── */
+        .history-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .history-empty {
+            padding: 1.5rem 1.25rem;
+            font-size: 0.68rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        /* One run row */
+        .run-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid var(--border);
+            animation: fadeInRow 0.35s ease;
+        }
+        .run-row:last-child { border-bottom: none; }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Left meta column */
+        .run-meta {
+            flex-shrink: 0;
+            width: 160px;
+            padding: 0.9rem 1rem;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: var(--bg);
+        }
+
+        .run-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .run-id span {
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        .run-stats-mini {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--text-faint);
+            line-height: 1.8;
+        }
+        .run-stats-mini b { color: var(--text-dim); }
+
+        /* Hallmark badge strip */
+        .hallmark-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .hbadge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .hbadge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .no-hallmarks-badge {
+            font-size: 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-faint);
+            font-style: italic;
+        }
+
+        /* Snapshots area */
+        .run-snaps {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 1rem;
+            overflow-x: auto;
+        }
+
+        .snap-item {
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .snap-item canvas {
+            display: block;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+        .snap-item span {
+            display: block;
+            font-size: 0.58rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 3px;
+        }
+
+        @keyframes metaPop {
+            from { opacity: 0; transform: translateX(-50%) scale(0.8); }
+            to   { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
+
+        .snap-placeholder {
+            font-size: 0.62rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <header>
+        <h1>Cancer Hallmarks <span>ABM</span> — Epithelial Tissue Model</h1>
+        <p>Agent-based model · Toggle hallmarks to observe emergent tumor dynamics</p>
+    </header>
+
+    <div class="main-grid">
+
+        <!-- LEFT: CONTROLS -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="panel">
+                <div class="panel-header">Hallmark Toggles</div>
+                <div class="panel-body">
+
+                    <!-- H1 -->
+                    <div class="hallmark" id="hcard-h1" style="--hcolor: var(--h1-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">① Sustained Growth Signals</span>
+                            <label class="toggle" style="--hcolor: var(--h1-color)">
+                                <input type="checkbox" id="h1" onchange="syncHallmark('h1',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">Cancer cells produce their own mitogenic signals. Division rate ↑ 6×; cells expand perpendicular to the epithelial line (hyperplasia).</div>
+                    </div>
+
+                    <!-- H2 -->
+                    <div class="hallmark" id="hcard-h2" style="--hcolor: var(--h2-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">② Evade Growth Suppression</span>
+                            <label class="toggle" style="--hcolor: var(--h2-color)">
+                                <input type="checkbox" id="h2" onchange="syncHallmark('h2',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">Loss of contact inhibition (RB/p27 loss). Cancer cells ignore crowding signals and continue dividing even when packed with neighbors.</div>
+                    </div>
+
+                    <!-- H3 -->
+                    <div class="hallmark" id="hcard-h3" style="--hcolor: var(--h3-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">③ Resist Apoptosis</span>
+                            <label class="toggle" style="--hcolor: var(--h3-color)">
+                                <input type="checkbox" id="h3" onchange="syncHallmark('h3',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">p53 loss or BCL2 upregulation. Cancer cells no longer die stochastically — cell death rate drops to ~0. Cells accumulate indefinitely.</div>
+                    </div>
+
+                    <!-- H4 -->
+                    <div class="hallmark" id="hcard-h4" style="--hcolor: var(--h4-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">④ Replicative Immortality</span>
+                            <label class="toggle" style="--hcolor: var(--h4-color)">
+                                <input type="checkbox" id="h4" onchange="syncHallmark('h4',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">Telomerase reactivation. Normal cells have a Hayflick limit (~50 divisions). Cancer cells remove this cap — unlimited proliferation potential.</div>
+                    </div>
+
+                    <!-- H5 -->
+                    <div class="hallmark" id="hcard-h5" style="--hcolor: var(--h5-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">⑤ Induce Angiogenesis</span>
+                            <label class="toggle" style="--hcolor: var(--h5-color)">
+                                <input type="checkbox" id="h5" onchange="syncHallmark('h5',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">VEGF secretion recruits new blood vessels. Without this, inner tumor cells die from hypoxia. With it, the tumor can grow beyond ~2mm.</div>
+                    </div>
+
+                    <!-- H6 -->
+                    <div class="hallmark" id="hcard-h6" style="--hcolor: var(--h6-color)">
+                        <div class="hallmark-top">
+                            <span class="hallmark-label">⑥ Invasion & Metastasis</span>
+                            <label class="toggle" style="--hcolor: var(--h6-color)">
+                                <input type="checkbox" id="h6" onchange="syncHallmark('h6',this.checked)">
+                                <div class="toggle-track"></div>
+                            </label>
+                        </div>
+                        <div class="hallmark-desc">E-cadherin loss + EMT. Rare cancer cells stochastically undergo EMT and migrate freely through tissue — long-range spread beyond the primary site.</div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-run" id="runBtn" onclick="toggleRun()">▶ Run</button>
+                        <button class="btn btn-step" onclick="stepOnce()">Step</button>
+                        <button class="btn btn-reset" onclick="resetSim()">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">Live Statistics</div>
+                <div class="panel-body">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Normal cells</div>
+                            <div class="stat-value v-normal" id="sNormal">60</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Cancer cells</div>
+                            <div class="stat-value v-cancer" id="sCancer">1</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Hyperplasia ht</div>
+                            <div class="stat-value" id="sWidth">1</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Time (steps)</div>
+                            <div class="stat-value" id="sTime">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Max divisions</div>
+                            <div class="stat-value v-cancer" id="sDiv">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Migrant cells</div>
+                            <div class="stat-value v-cancer" id="sMig">0</div>
+                        </div>
+                    </div>
+                    <div id="statusMsg" class="status-msg ok">Ready — press Run to start the simulation.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: SIM CANVAS + LIVE SNAPS + PLOTS + HISTORY stacked -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="sim-panel">
+                <div class="panel-header">Epithelial Tissue View</div>
+                <canvas id="simCanvas"></canvas>
+                <div class="legend-row">
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--normal)"></div>Normal epithelial cell</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--cancer)"></div>Cancer cell (primary)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#ff9f43"></div>Dead / apoptotic</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#b47ffa"></div>Vessel (angiogenesis)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#69db7c"></div>Migrant cancer cell</div>
+                </div>
+                <div class="sim-label">← Position along epithelial line · Y-axis = perpendicular (hyperplasia) →</div>
+            </div>
+
+            <!-- Live snapshot strip (current run) -->
+            <div class="sim-panel">
+                <div class="panel-header">Current Run — Snapshots (every 200 steps)</div>
+                <div id="liveSnapRow" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;overflow-x:auto;min-height:60px;">
+                    <span style="font-size:0.65rem;color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-style:italic;">Snapshots will appear here as the simulation runs.</span>
+                </div>
+            </div>
+
+            <!-- Time-series plots -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+                <div class="plot-panel">
+                    <div class="panel-header">Cell Populations</div>
+                    <canvas id="plotPop" width="340" height="180"></canvas>
+                </div>
+                <div class="plot-panel">
+                    <div class="panel-header">Hyperplasia Height</div>
+                    <canvas id="plotWidth" width="340" height="180"></canvas>
+                </div>
+                <div class="plot-panel">
+                    <div class="panel-header">Cancer Fraction</div>
+                    <canvas id="plotFrac" width="340" height="180"></canvas>
+                </div>
+            </div>
+
+            <!-- Simulation history -->
+            <div class="history-section">
+                <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;">
+                    <span>Simulation History &mdash; newest run at top &nbsp;&middot;&nbsp; snapshots every 200 steps</span>
+                    <button onclick="clearHistory()" style="background:none;border:1px solid var(--border);color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-size:0.65rem;padding:3px 10px;border-radius:4px;cursor:pointer;letter-spacing:0.5px;">Clear all</button>
+                </div>
+                <div id="historyLog">
+                    <div class="history-empty">No simulations recorded yet &mdash; run a simulation and press Reset to log it here.</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const EPI_LEN  = 60;                                 // horizontal cells
+const MAX_Y    = 36;                                 // max perpendicular spread (above/below)
+const GRID_H   = 600;                               // canvas height (px)
+const CELL_H   = GRID_H / (2 * MAX_Y + 1);          // cell height — fills canvas exactly (~8.2px)
+const CELL_W   = CELL_H;                             // square cells
+const GRID_W   = Math.round(EPI_LEN * CELL_W);      // canvas width derived from square cells (~493px)
+
+const SNAP_INTERVAL = 200;
+const MAX_SNAPS     = 6;
+const PLOT_MAXPTS   = 600;
+const SIM_MAX_TIME  = 1000; // auto-stop and commit to history
+
+// Cell types
+const T_EMPTY   = 0;
+const T_NORMAL  = 1;
+const T_CANCER  = 2;
+const T_DEAD    = 3;
+const T_VESSEL  = 4;
+const T_MIGRANT = 5;
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let H = {
+    h1: false, // Sustained growth
+    h2: false, // Evade suppression
+    h3: false, // Resist apoptosis
+    h4: false, // Immortality
+    h5: false, // Angiogenesis
+    h6: false, // Invasion
+};
+
+// cells[(x,y)] = { type, divisions, age, migrant }
+let cells = {};
+let time  = 0;
+let maxWidth = 1;
+let isRunning = false;
+let animId = null;
+
+// Plot history
+let hist = { time:[], normal:[], cancer:[], width:[], frac:[] };
+
+// Snapshots
+let snaps = [];
+
+// ─────────────────────────────────────────────
+// HALLMARK SYNC
+// ─────────────────────────────────────────────
+function syncHallmark(id, val) {
+    H[id] = val;
+    document.getElementById('hcard-' + id).classList.toggle('active', val);
+}
+
+// ─────────────────────────────────────────────
+// PARAMETERS (derived from active hallmarks)
+// ─────────────────────────────────────────────
+function params() {
+    const nActive = Object.values(H).filter(Boolean).length;
+    return {
+        // Normal cell — balanced turnover; div limit mirrors Hayflick cap
+        normalDivProb:   0.008,
+        normalDivLimit:  40,
+        normalDeathProb: 0.005,
+
+        // Cancer cell division — baseline matches normal; H1 boosts rate and unlocks perp growth
+        cancerDivProb:  H.h1 ? 0.018 : 0.008,   // baseline = normal; H1 = ~2× boost
+        cancerDivLimit: H.h4 ? Infinity : 40,
+
+        // Contact inhibition: H2 off → cancer cannot divide if occupied cells on BOTH lateral sides
+        lateralInhibition: !H.h2,
+
+        // Apoptosis: without H3, cancer dies at same rate as normal cells
+        cancerDeathProb: H.h3 ? 0.0002 : 0.005,
+
+        // Perpendicular growth is always available — contact inhibition (H2) is what blocks it
+        // H1 only boosts division rate, not direction
+
+        // Angiogenesis: without H5, deeply buried cells die from hypoxia
+        hypoxiaDeath: !H.h5,
+
+        // Invasion/migration — EMT probability gates which cells can migrate at all
+        canMigrate: H.h6,
+        emtProb:    0.00008,
+        migrationProb: 0.06,
+    };
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function key(x, y) { return x + ',' + y; }
+
+function initSim() {
+    cells = {};
+    time = 0;
+    maxWidth = 1;
+    hist = { time:[], normal:[], cancer:[], width:[], frac:[] };
+    snaps = [];
+
+    // Normal epithelium at y=0
+    for (let x = 0; x < EPI_LEN; x++) {
+        cells[key(x, 0)] = { type: T_NORMAL, divisions: 0, age: 0 };
+    }
+
+    // One cancer cell in center
+    const cx = Math.floor(EPI_LEN / 2);
+    cells[key(cx, 0)] = { type: T_CANCER, divisions: 0, age: 0 };
+
+    metastasisReached = false;
+    const oldBanner = document.getElementById('metastasisBanner');
+    if (oldBanner) oldBanner.remove();
+
+    updateStats();
+    renderSim();
+    renderPlots();
+    snaps = [];
+    refreshLiveSnaps();
+}
+
+// ─────────────────────────────────────────────
+// NEIGHBORS
+// ─────────────────────────────────────────────
+const DIRS8 = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const DIRS4X = [[-1,0],[1,0]]; // along epithelium only
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.random() * (i + 1) | 0;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getFreeNeighbors(x, y, perp) {
+    const dirs = perp ? DIRS8 : DIRS4X;
+    const result = [];
+    for (const [dx, dy] of dirs) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || nx >= EPI_LEN) continue;
+        if (Math.abs(ny) > MAX_Y) continue;
+        if (!cells[key(nx, ny)]) result.push([nx, ny]);
+    }
+    return result;
+}
+
+function countCancerNeighbors(x, y) {
+    let n = 0;
+    for (const [dx, dy] of DIRS8) {
+        const c = cells[key(x+dx, y+dy)];
+        if (c && (c.type === T_CANCER || c.type === T_MIGRANT)) n++;
+    }
+    return n;
+}
+
+// ─────────────────────────────────────────────
+// HYPOXIA: distance from "open" edge
+// ─────────────────────────────────────────────
+function isTooDeepForHypoxia(x, y) {
+    // Simple: count cancer neighbors — if deeply buried and no vessel nearby, die
+    const p = params();
+    if (!p.hypoxiaDeath) return false;
+    // If there's a vessel within radius 3, safe
+    for (const [dx, dy] of DIRS8) {
+        const c = cells[key(x+dx, y+dy)];
+        if (c && c.type === T_VESSEL) return false;
+    }
+    // Count how many of 8 neighbors are occupied (crowding = hypoxia proxy)
+    let occupied = 0;
+    for (const [dx, dy] of DIRS8) {
+        if (cells[key(x+dx, y+dy)]) occupied++;
+    }
+    return occupied >= 7; // completely surrounded
+}
+
+// ─────────────────────────────────────────────
+// SIMULATION STEP
+// ─────────────────────────────────────────────
+function step() {
+    const p = params();
+    const keys = shuffle(Object.keys(cells));
+
+    const toRemove = [];
+    const toAdd    = [];
+
+    for (const k of keys) {
+        const cell = cells[k];
+        if (!cell) continue;
+        cell.age++;
+
+        const [x, y] = k.split(',').map(Number);
+
+        // ── VESSEL (static, no logic) ──────────────────────
+        if (cell.type === T_VESSEL) continue;
+
+        // ── DEAD CELL (fade and remove) ────────────────────
+        if (cell.type === T_DEAD) {
+            if (cell.age > 15) toRemove.push(k);
+            continue;
+        }
+
+        // ── NORMAL CELL ────────────────────────────────────
+        if (cell.type === T_NORMAL) {
+            if (Math.random() < p.normalDeathProb) {
+                toRemove.push(k);
+                continue;
+            }
+            if (cell.divisions < p.normalDivLimit && Math.random() < p.normalDivProb) {
+                const free = getFreeNeighbors(x, y, false);
+                if (free.length > 0) {
+                    const [nx, ny] = free[Math.random() * free.length | 0];
+                    toAdd.push({ k: key(nx, ny), cell: { type: T_NORMAL, divisions: cell.divisions + 1, age: 0 }});
+                    cell.divisions++;
+                }
+            }
+            continue;
+        }
+
+        // ── CANCER / MIGRANT CELL ──────────────────────────
+        if (cell.type === T_CANCER || cell.type === T_MIGRANT) {
+
+            // Hypoxia death (inner cells, no angiogenesis)
+            if (isTooDeepForHypoxia(x, y) && Math.random() < 0.05) {
+                toRemove.push(k);
+                toAdd.push({ k, cell: { type: T_DEAD, age: 0 }});
+                continue;
+            }
+
+            // Apoptosis
+            if (Math.random() < p.cancerDeathProb) {
+                toRemove.push(k);
+                toAdd.push({ k, cell: { type: T_DEAD, age: 0 }});
+                continue;
+            }
+
+            // Division
+            if (cell.divisions < p.cancerDivLimit && Math.random() < p.cancerDivProb) {
+                // Always consider all 8 neighbors as potential division targets
+                const allFreeN = getFreeNeighbors(x, y, true);
+
+                // Contact inhibition check (H2 off): blocked if BOTH lateral neighbors are occupied
+                const leftOccupied  = !!cells[key(x - 1, y)];
+                const rightOccupied = !!cells[key(x + 1, y)];
+                const inhibited = p.lateralInhibition && leftOccupied && rightOccupied;
+
+                if (!inhibited && allFreeN.length > 0) {
+                    const [nx, ny] = allFreeN[Math.random() * allFreeN.length | 0];
+                    const newMigrant = (cell.type === T_MIGRANT);
+                    toAdd.push({ k: key(nx, ny), cell: { type: newMigrant ? T_MIGRANT : T_CANCER, divisions: cell.divisions + 1, age: 0 }});
+                    cell.divisions++;
+                    maxWidth = Math.max(maxWidth, Math.abs(ny) + 1);
+
+                    // Angiogenesis: occasionally spawn a vessel nearby
+                    if (H.h5 && cell.divisions > 10 && Math.random() < 0.015) {
+                        const vdirs = shuffle([...DIRS8]);
+                        for (const [vdx, vdy] of vdirs) {
+                            const vk = key(nx + vdx, ny + vdy);
+                            if (!cells[vk]) {
+                                toAdd.push({ k: vk, cell: { type: T_VESSEL, age: 0 }});
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // EMT: stochastic conversion of cancer cell → migrant (H6 only)
+            if (p.canMigrate && cell.type === T_CANCER && Math.random() < p.emtProb) {
+                // This cell undergoes EMT and becomes a migrant
+                cells[k].type = T_MIGRANT;
+            }
+
+            // Migration (H6) — only migrant cells move
+            if (p.canMigrate && cell.type === T_MIGRANT && Math.random() < p.migrationProb) {
+                const migDirs = [[-2,0],[2,0],[-1,-2],[1,-2],[-1,2],[1,2],...DIRS8];
+                const shuffled = shuffle([...migDirs]);
+                for (const [dx, dy] of shuffled) {
+                    const nx = x + dx, ny = y + dy;
+                    if (nx < 0 || nx >= EPI_LEN) continue;
+                    if (Math.abs(ny) > MAX_Y) continue;
+                    const nk = key(nx, ny);
+                    if (!cells[nk]) {
+                        toRemove.push(k);
+                        toAdd.push({ k: nk, cell: { type: T_MIGRANT, divisions: cell.divisions, age: 0 }});
+                        maxWidth = Math.max(maxWidth, Math.abs(ny) + 1);
+                        // Fire metastasis banner immediately if this cell just hit a border
+                        if (!metastasisReached && (nx === 0 || nx === EPI_LEN - 1 || Math.abs(ny) === MAX_Y)) {
+                            metastasisReached = true;
+                            showMetastasisBanner();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Apply changes (remove first, then add, avoid conflicts)
+    for (const k of toRemove) delete cells[k];
+    for (const { k, cell } of toAdd) {
+        if (!cells[k]) cells[k] = cell;
+    }
+
+    time++;
+}
+
+// ─────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────
+let metastasisReached = false;
+
+function updateStats() {
+    let normal = 0, cancer = 0, maxDiv = 0, migrants = 0;
+    for (const k in cells) {
+        const c = cells[k];
+        if (c.type === T_NORMAL) normal++;
+        else if (c.type === T_CANCER) { cancer++; if (c.divisions > maxDiv) maxDiv = c.divisions; }
+        else if (c.type === T_MIGRANT) {
+            cancer++; migrants++;
+            if (c.divisions > maxDiv) maxDiv = c.divisions;
+        }
+    }
+    const total = normal + cancer;
+    const frac = total > 0 ? cancer / total : 0;
+
+    document.getElementById('sNormal').textContent = normal;
+    document.getElementById('sCancer').textContent = cancer;
+    document.getElementById('sWidth').textContent  = maxWidth;
+    document.getElementById('sTime').textContent   = time;
+    document.getElementById('sDiv').textContent    = maxDiv;
+    document.getElementById('sMig').textContent    = migrants;
+
+    hist.time.push(time);
+    hist.normal.push(normal);
+    hist.cancer.push(cancer);
+    hist.width.push(maxWidth);
+    hist.frac.push(frac);
+
+    // Trim plot history
+    if (hist.time.length > PLOT_MAXPTS) {
+        for (const k in hist) hist[k] = hist[k].slice(-PLOT_MAXPTS);
+    }
+
+    updateStatusMsg(cancer, maxWidth, migrants);
+}
+
+function showMetastasisBanner() {
+    const existing = document.getElementById('metastasisBanner');
+    if (existing) return;
+    const banner = document.createElement('div');
+    banner.id = 'metastasisBanner';
+    banner.style.cssText = `
+        position: fixed; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #0a1a0d 0%, #0d2e14 50%, #0a1a0d 100%);
+        border: 3px solid #69db7c;
+        color: #69db7c;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        padding: 1.75rem 3rem;
+        border-radius: 14px;
+        box-shadow: 0 0 60px rgba(105,219,124,0.6), 0 0 120px rgba(105,219,124,0.2), 0 8px 32px rgba(0,0,0,0.8);
+        letter-spacing: 2px;
+        text-align: center;
+        z-index: 9999;
+        animation: metaPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        min-width: 420px;
+    `;
+    banner.innerHTML = `
+        <div style="font-size:2.5rem;margin-bottom:0.5rem;">🟢</div>
+        <div>METASTASIS</div>
+        <div style="font-size:0.85rem;color:#a3f7b5;margin-top:0.4rem;letter-spacing:1px;font-weight:400;">Cancer cell reached a new site</div>
+        <div style="font-size:0.65rem;color:#4a7a55;margin-top:1rem;letter-spacing:0.5px;">click to dismiss</div>
+    `;
+    banner.onclick = () => banner.remove();
+    document.body.appendChild(banner);
+
+    // Auto-dismiss after 8 seconds
+    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 8000);
+}
+
+function updateStatusMsg(cancer, width, migrants) {
+    const msg = document.getElementById('statusMsg');
+    let text = '', cls = 'ok';
+
+    if (!H.h1 && !H.h2 && !H.h3 && !H.h4 && !H.h5 && !H.h6) {
+        text = '✓ No hallmarks active — cancer cell behaves like a normal cell.'; cls = 'ok';
+    } else if (time >= SIM_MAX_TIME) {
+        text = '■ Simulation complete (t=1000). Press Reset to start a new run.'; cls = 'ok';
+    } else if (migrants > 5) {
+        text = '✗ Invasive phenotype: cancer cells migrating through tissue (metastasis risk).'; cls = 'bad';
+    } else if (width > 8) {
+        text = '✗ Large hyperplasia — tumor has dramatically escaped epithelial architecture.'; cls = 'bad';
+    } else if (width > 4 || cancer > 40) {
+        text = '⚠ Significant tumor mass forming. Multiple hallmarks amplifying growth.'; cls = 'warn';
+    } else if (cancer > 10) {
+        text = '⚠ Early tumor: cancer cells accumulating. Hallmarks are providing advantage.'; cls = 'warn';
+    } else {
+        text = '● Simulation running — cancer cell growth limited by active constraints.'; cls = 'ok';
+    }
+
+    msg.className = 'status-msg ' + cls;
+    msg.textContent = text;
+}
+
+// ─────────────────────────────────────────────
+// RENDER SIM
+// ─────────────────────────────────────────────
+const simCanvas = document.getElementById('simCanvas');
+const simCtx = simCanvas.getContext('2d');
+
+const COLORS = {
+    [T_NORMAL]:  '#4a7fff',
+    [T_CANCER]:  '#ff4d4d',
+    [T_DEAD]:    '#ff9f43',
+    [T_VESSEL]:  '#b47ffa',
+    [T_MIGRANT]: '#69db7c',
+};
+
+function renderSim(targetCtx, targetW, targetH) {
+    const ctx = targetCtx || simCtx;
+    const W   = targetW   || simCanvas.width;
+    const H_  = targetH   || simCanvas.height;
+    // Scale cell dimensions proportionally for snapshot thumbnails
+    const cw  = W / EPI_LEN;
+    const ch  = H_ / (2 * MAX_Y + 1);
+    // centerY = top edge of row y=0, so cells are centered in their rows
+    const centerY = MAX_Y * ch;
+
+    ctx.fillStyle = '#0a0c12';
+    ctx.fillRect(0, 0, W, H_);
+
+    // Gridlines
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= EPI_LEN; x++) {
+        ctx.beginPath(); ctx.moveTo(x * cw, 0); ctx.lineTo(x * cw, H_); ctx.stroke();
+    }
+
+    // Epithelial line
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(W, centerY); ctx.stroke();
+
+    // Cells
+    const padX = cw * 0.1;
+    const padY = ch * 0.1;
+    for (const k in cells) {
+        const cell = cells[k];
+        if (cell.type === T_EMPTY) continue;
+        const [cx, cy] = k.split(',').map(Number);
+        const px = cx * cw + padX;
+        const py = centerY + cy * ch + padY;
+        const sw = cw - 2 * padX;
+        const sh = ch - 2 * padY;
+
+        ctx.fillStyle = COLORS[cell.type] || '#888';
+
+        if (cell.type === T_DEAD) {
+            ctx.globalAlpha = Math.max(0.1, 1 - cell.age / 15);
+        }
+
+        const r = Math.min(sw, sh) * 0.18;
+        ctx.beginPath();
+        ctx.roundRect(px, py, sw, sh, r);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+// ─────────────────────────────────────────────
+// RENDER PLOTS
+// ─────────────────────────────────────────────
+function drawPlot(canvasId, series, labels, colors, yLabel) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const pad = { top: 18, right: 12, bottom: 30, left: 38 };
+    const pw = W - pad.left - pad.right;
+    const ph = H - pad.top - pad.bottom;
+
+    ctx.fillStyle = '#181c27';
+    ctx.fillRect(0, 0, W, H);
+
+    if (!hist.time.length) return;
+
+    const maxVal = Math.max(1, ...series.flat());
+    const n = hist.time.length;
+
+    // Axes
+    ctx.strokeStyle = '#2a3050';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top);
+    ctx.lineTo(pad.left, pad.top + ph);
+    ctx.lineTo(pad.left + pw, pad.top + ph);
+    ctx.stroke();
+
+    // Grid lines
+    ctx.setLineDash([3,3]);
+    ctx.strokeStyle = '#1e2336';
+    for (let i = 0; i <= 4; i++) {
+        const y = pad.top + ph - (i / 4) * ph;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + pw, y); ctx.stroke();
+        ctx.fillStyle = '#4a5568';
+        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * i / 4), pad.left - 3, y + 3);
+    }
+    ctx.setLineDash([]);
+
+    // X axis labels
+    ctx.fillStyle = '#4a5568';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    const tLast = hist.time[n-1];
+    const tFirst = hist.time[0];
+    ctx.fillText(tFirst, pad.left, pad.top + ph + 14);
+    ctx.fillText(tLast, pad.left + pw, pad.top + ph + 14);
+    ctx.fillText('t', pad.left + pw/2, pad.top + ph + 14);
+
+    // Series
+    for (let s = 0; s < series.length; s++) {
+        const data = series[s];
+        ctx.strokeStyle = colors[s];
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const x = pad.left + (i / Math.max(1, n-1)) * pw;
+            const y = pad.top + ph - (data[i] / maxVal) * ph;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // Legend
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'left';
+    for (let s = 0; s < labels.length; s++) {
+        ctx.fillStyle = colors[s];
+        ctx.fillRect(pad.left + s * 90, 5, 8, 8);
+        ctx.fillText(labels[s], pad.left + s * 90 + 11, 13);
+    }
+}
+
+function renderPlots() {
+    drawPlot('plotPop', [hist.normal, hist.cancer],
+        ['Normal', 'Cancer'], ['#4a7fff', '#ff4d4d']);
+    drawPlot('plotWidth', [hist.width],
+        ['Hyperplasia ht'], ['#ffa94d']);
+    drawPlot('plotFrac', [hist.frac.map(v => v * 100)],
+        ['Cancer %'], ['#da77f2']);
+}
+
+// ─────────────────────────────────────────────
+// HALLMARK METADATA (for badges)
+// ─────────────────────────────────────────────
+const HALLMARK_META = {
+    h1: { label: '① Growth',    color: '#ff6b6b' },
+    h2: { label: '② No Brake',  color: '#ffa94d' },
+    h3: { label: '③ Apoptosis', color: '#ff8787' },
+    h4: { label: '④ Immortal',  color: '#da77f2' },
+    h5: { label: '⑤ Vessels',   color: '#74c0fc' },
+    h6: { label: '⑥ Invasion',  color: '#69db7c' },
+};
+
+// ─────────────────────────────────────────────
+// PER-RUN SNAPSHOT STATE
+// ─────────────────────────────────────────────
+function captureSnapshot() {
+    // Match the sim canvas aspect ratio: GRID_W/GRID_H
+    const sh = 120;
+    const sw = Math.round(sh * (GRID_W / GRID_H));
+    const c = document.createElement('canvas');
+    c.width = sw; c.height = sh;
+    renderSim(c.getContext('2d'), sw, sh);
+    snaps.push({ dataURL: c.toDataURL(), time, sw, sh });
+    refreshLiveSnaps();
+}
+
+function makeSnapImg(dataURL, t, sw, sh) {
+    const item = document.createElement('div');
+    item.className = 'snap-item';
+    const img = document.createElement('img');
+    img.src = dataURL;
+    img.width = sw || 98; img.height = sh || 120;
+    img.style.cssText = 'display:block;border:1px solid var(--border);border-radius:4px;';
+    item.appendChild(img);
+    const lbl = document.createElement('span');
+    lbl.textContent = 't=' + t;
+    item.appendChild(lbl);
+    return item;
+}
+
+function refreshLiveSnaps() {
+    const row = document.getElementById('liveSnapRow');
+    row.innerHTML = '';
+    if (snaps.length === 0) {
+        row.innerHTML = '<span style="font-size:0.65rem;color:var(--text-faint);font-family:\'JetBrains Mono\',monospace;font-style:italic;">Snapshots will appear here as the simulation runs.</span>';
+        return;
+    }
+    for (const s of snaps) {
+        row.appendChild(makeSnapImg(s.dataURL, s.time, s.sw, s.sh));
+    }
+}
+
+// ─────────────────────────────────────────────
+// SIMULATION HISTORY LOG
+// ─────────────────────────────────────────────
+let runCount = 0;
+let runLog   = []; // array of { id, hallmarks, snaps, finalStats }
+
+function commitRunToHistory() {
+    if (snaps.length === 0 && time === 0) return; // nothing to log
+
+    // Capture final snapshot only if it differs from the last one
+    const lastSnapT = snaps.length > 0 ? snaps[snaps.length - 1].time : -1;
+    if (time !== lastSnapT) {
+        const sh = 120;
+        const sw = Math.round(sh * (GRID_W / GRID_H));
+        const fc = document.createElement('canvas');
+        fc.width = sw; fc.height = sh;
+        renderSim(fc.getContext('2d'), sw, sh);
+        snaps.push({ dataURL: fc.toDataURL(), time, sw, sh });
+    }
+
+    // Keep at most 8 snapshots per history entry
+    const histSnaps = snaps.slice(-8);
+    let normal = 0, cancer = 0, migrants = 0;
+    for (const k in cells) {
+        const c = cells[k];
+        if (c.type === T_NORMAL) normal++;
+        else if (c.type === T_CANCER) cancer++;
+        else if (c.type === T_MIGRANT) { cancer++; migrants++; }
+    }
+
+    runCount++;
+    const activeH = Object.keys(H).filter(k => H[k]);
+
+    const entry = {
+        id: runCount,
+        hallmarks: activeH,
+        snaps: histSnaps,
+        finalStats: { normal, cancer, migrants, maxWidth, time },
+    };
+    runLog.unshift(entry); // newest first
+    renderHistory();
+}
+
+function renderHistory() {
+    const log = document.getElementById('historyLog');
+
+    if (runLog.length === 0) {
+        log.innerHTML = '<div class="history-empty">No simulations recorded yet — run a simulation and press Reset to log it here.</div>';
+        return;
+    }
+
+    log.innerHTML = '';
+    runLog.forEach((entry, idx) => {
+        const row = document.createElement('div');
+        row.className = 'run-row';
+
+        // ── meta column ──
+        const meta = document.createElement('div');
+        meta.className = 'run-meta';
+
+        const rid = document.createElement('div');
+        rid.className = 'run-id';
+        rid.innerHTML = `RUN <span>#${entry.id}</span>`;
+        meta.appendChild(rid);
+
+        // Stats mini
+        const st = document.createElement('div');
+        st.className = 'run-stats-mini';
+        st.innerHTML =
+            `t=<b>${entry.finalStats.time}</b><br>` +
+            `cancer=<b style="color:#ff4d4d">${entry.finalStats.cancer}</b><br>` +
+            `height=<b>${entry.finalStats.maxWidth}</b>` +
+            (entry.finalStats.migrants > 0 ? `<br>migrants=<b style="color:#69db7c">${entry.finalStats.migrants}</b>` : '');
+        meta.appendChild(st);
+
+        // Hallmark badges
+        const badges = document.createElement('div');
+        badges.className = 'hallmark-badges';
+        if (entry.hallmarks.length === 0) {
+            const nb = document.createElement('span');
+            nb.className = 'no-hallmarks-badge';
+            nb.textContent = 'no hallmarks';
+            badges.appendChild(nb);
+        } else {
+            entry.hallmarks.forEach(hk => {
+                const m = HALLMARK_META[hk];
+                const b = document.createElement('div');
+                b.className = 'hbadge';
+                b.style.borderColor = m.color;
+                b.style.color = m.color;
+                b.innerHTML = `<div class="hbadge-dot" style="background:${m.color}"></div>${m.label}`;
+                badges.appendChild(b);
+            });
+        }
+        meta.appendChild(badges);
+
+        row.appendChild(meta);
+
+        // ── snapshots column ──
+        const snapsDiv = document.createElement('div');
+        snapsDiv.className = 'run-snaps';
+
+        if (entry.snaps.length === 0) {
+            const ph = document.createElement('span');
+            ph.className = 'snap-placeholder';
+            ph.textContent = 'no snapshots captured';
+            snapsDiv.appendChild(ph);
+        } else {
+            entry.snaps.forEach(s => {
+                snapsDiv.appendChild(makeSnapImg(s.dataURL, s.time, s.sw, s.sh));
+            });
+        }
+
+        row.appendChild(snapsDiv);
+        log.appendChild(row);
+    });
+}
+
+function clearHistory() {
+    runLog = [];
+    runCount = 0;
+    renderHistory();
+}
+
+// ─────────────────────────────────────────────
+// GAME LOOP
+// ─────────────────────────────────────────────
+let lastSnapTime = 0;
+
+function tick() {
+    if (!isRunning) return;
+    step();
+    updateStats();
+    renderSim();
+    renderPlots();
+
+    if (time - lastSnapTime >= SNAP_INTERVAL) {
+        captureSnapshot();
+        lastSnapTime = time;
+    }
+
+    if (time >= SIM_MAX_TIME) {
+        isRunning = false;
+        document.getElementById('runBtn').textContent = '▶ Run';
+        commitRunToHistory();
+        return;
+    }
+
+    animId = requestAnimationFrame(tick);
+}
+
+function stepOnce() {
+    step();
+    updateStats();
+    renderSim();
+    renderPlots();
+    if (snaps.length === 0 || time - lastSnapTime >= SNAP_INTERVAL) {
+        captureSnapshot();
+        lastSnapTime = time;
+    }
+}
+
+function toggleRun() {
+    isRunning = !isRunning;
+    const btn = document.getElementById('runBtn');
+    btn.textContent = isRunning ? '⏸ Pause' : '▶ Run';
+    if (isRunning) tick();
+}
+
+function resetSim() {
+    isRunning = false;
+    if (animId) cancelAnimationFrame(animId);
+    document.getElementById('runBtn').textContent = '▶ Run';
+
+    // Commit current run to history before resetting
+    commitRunToHistory();
+
+    lastSnapTime = 0;
+    initSim();
+}
+
+// ─────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    simCanvas.width  = GRID_W;
+    simCanvas.height = GRID_H;
+    initSim();
+    renderHistory();
+});
+</script>
+
+<div style="max-width:1500px;margin:1.5rem auto 0;padding:1rem 0;border-top:1px solid #2a3050;font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:#4a5568;line-height:1.9;">
+    <strong style="color:#8892aa;">Model citations</strong><br>
+    Hanahan D, Weinberg RA. Hallmarks of Cancer: The Next Generation. <em>Cell.</em> 2011;144(5):646–674.<br>
+    Hanahan D. Hallmarks of Cancer: New Dimensions. <em>Cancer Discov.</em> 2022;12(1):31–46. doi:10.1158/2159-8290.CD-21-1059<br>
+    Valentim CA, Rabi JA, David SA. Cellular-automaton model for tumor growth dynamics. <em>Comput Biol Med.</em> 2023;153:106481.<br>
+    <br>
+    <strong style="color:#8892aa;">AI assistance</strong><br>
+    This simulation was developed with assistance from <strong style="color:#7c85ff;">Claude Sonnet 4.6</strong> (Anthropic, 2025), model string <code style="color:#7c85ff;">claude-sonnet-4-6</code>. The agent-based model logic, hallmark parameter tuning, and visual design were iteratively refined through conversation with the model. Biological parameter values were independently verified against the primary literature cited above.
+</div>
+</body>
+</html>

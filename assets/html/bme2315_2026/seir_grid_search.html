@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEIR 3-Parameter Grid Search</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-box {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .info-box.blue {
+            background: #eff6ff;
+        }
+        
+        .info-box.green {
+            background: #f0fdf4;
+        }
+        
+        .info-box h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            margin-bottom: 30px;
+        }
+        
+        .param-control {
+            margin-bottom: 20px;
+        }
+        
+        .param-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        
+        .result-box {
+            background: #d1fae5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .plot-container {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .plot-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .plot-note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .key-points {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .key-points h3 {
+            margin-bottom: 10px;
+        }
+        
+        .key-points ul {
+            margin-left: 20px;
+        }
+        
+        .key-points li {
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SEIR 3-Parameter Grid Search</h1>
+        <p class="subtitle">Fit β (transmission), σ (incubation), and γ (recovery) simultaneously</p>
+        
+        <div class="grid-2">
+            <div class="info-box blue">
+                <h2>Given Parameter Ranges</h2>
+                <div class="info-row">
+                    <span>β (transmission):</span>
+                    <span style="font-family: monospace;">[0.3, 0.7]</span>
+                </div>
+                <div class="info-row">
+                    <span>σ (incubation):</span>
+                    <span style="font-family: monospace;">[0.1, 0.3]</span>
+                </div>
+                <div class="info-row">
+                    <span>γ (recovery):</span>
+                    <span style="font-family: monospace;">[0.05, 0.25]</span>
+                </div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #bfdbfe;">
+                <div class="info-row">
+                    <span>Grid resolution:</span>
+                    <span style="font-family: monospace;" id="resolution-display">15 points/param</span>
+                </div>
+                <div class="info-row">
+                    <span>Total evaluations:</span>
+                    <span style="font-family: monospace;" id="evals-display">3,375</span>
+                </div>
+            </div>
+            
+            <div class="info-box green">
+                <h2>Current Parameters</h2>
+                <div class="param-control">
+                    <div class="param-header">
+                        <span>β = <span id="beta-val">0.500</span></span>
+                        <span style="font-size: 0.8em; color: #666;">R₀ = <span id="r0-val">5.00</span></span>
+                    </div>
+                    <input type="range" id="beta-slider" min="0.3" max="0.7" step="0.005" value="0.5">
+                </div>
+                <div class="param-control">
+                    <div class="param-header">
+                        <span>σ = <span id="sigma-val">0.200</span></span>
+                        <span style="font-size: 0.8em; color: #666;">Incubation: <span id="incub-val">5.0</span>d</span>
+                    </div>
+                    <input type="range" id="sigma-slider" min="0.1" max="0.3" step="0.005" value="0.2">
+                </div>
+                <div class="param-control">
+                    <div class="param-header">
+                        <span>γ = <span id="gamma-val">0.150</span></span>
+                        <span style="font-size: 0.8em; color: #666;">Recovery: <span id="recov-val">6.7</span>d</span>
+                    </div>
+                    <input type="range" id="gamma-slider" min="0.05" max="0.25" step="0.005" value="0.15">
+                </div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #bbf7d0;">
+                <div class="info-row">
+                    <span style="font-weight: 500;">Current SSE:</span>
+                    <span id="current-sse">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <div>
+                <label style="display: block; font-size: 0.9em; margin-bottom: 8px; font-weight: 500;">Grid Resolution</label>
+                <select id="grid-resolution">
+                    <option value="10">10 (1,000 evals - fast)</option>
+                    <option value="15" selected>15 (3,375 evals - balanced)</option>
+                    <option value="20">20 (8,000 evals - precise)</option>
+                    <option value="25">25 (15,625 evals - slow)</option>
+                </select>
+            </div>
+            <button id="optimize-btn" style="margin-top: 22px;">Compare to Grid Search</button>
+            <div id="progress" style="margin-top: 22px; display: none;">Optimizing... <span id="progress-pct">0</span>%</div>
+        </div>
+        
+        <div id="results" style="display: none;" class="result-box">
+            <h3 style="margin-bottom: 15px;">Comparison: Your Choice vs. Grid Search Optimum</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                <div>
+                    <h4 style="margin-bottom: 10px; color: #0066cc;">Your Manual Selection:</h4>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border: 2px solid #0066cc;">
+                        <div style="margin-bottom: 8px;">
+                            <span style="font-weight: 500;">β = <span id="user-beta">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="user-error-beta">-</span>)</span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <span style="font-weight: 500;">σ = <span id="user-sigma">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="user-error-sigma">-</span>)</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-weight: 500;">γ = <span id="user-gamma">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="user-error-gamma">-</span>)</span>
+                        </div>
+                        <div style="padding-top: 12px; border-top: 1px solid #ddd;">
+                            <span style="font-weight: 500;">SSE: <span id="user-sse">-</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 10px; color: #059669;">Grid Search Optimum:</h4>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border: 2px solid #059669;">
+                        <div style="margin-bottom: 8px;">
+                            <span style="font-weight: 500;">β = <span id="best-beta">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="error-beta">-</span>)</span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <span style="font-weight: 500;">σ = <span id="best-sigma">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="error-sigma">-</span>)</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span style="font-weight: 500;">γ = <span id="best-gamma">-</span></span>
+                            <span style="font-size: 0.85em; color: #666; margin-left: 10px;">(Error: <span id="error-gamma">-</span>)</span>
+                        </div>
+                        <div style="padding-top: 12px; border-top: 1px solid #ddd;">
+                            <span style="font-weight: 500;">SSE: <span id="best-sse">-</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: #fef3c7; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                <div style="font-weight: 500; margin-bottom: 5px;">Performance Comparison:</div>
+                <div style="font-size: 0.95em;">
+                    Grid search improved SSE by <span id="sse-improvement" style="font-weight: 600; color: #059669;">-</span> 
+                    (<span id="sse-improvement-pct" style="font-weight: 600;">-</span>% reduction)
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 0.85em; color: #666; font-style: italic;">
+                True parameters: β = 0.420, σ = 0.180, γ = 0.110
+            </div>
+        </div>
+        
+        <div class="plot-container">
+            <div class="plot-title">Model Fit to Data</div>
+            <div id="fit-plot"></div>
+            <div class="plot-note">Red dots are the observed data used to calculate SSE = Σ(I<sub>obs</sub> - I<sub>model</sub>)²</div>
+        </div>
+        
+        <div class="plot-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="plot-title">2D Parameter Slice (SSE Landscape)</div>
+                <select id="slice-view">
+                    <option value="beta-gamma">β vs γ (fix σ)</option>
+                    <option value="beta-sigma">β vs σ (fix γ)</option>
+                    <option value="sigma-gamma">σ vs γ (fix β)</option>
+                </select>
+            </div>
+            <div id="landscape-plot" style="height: 300px; display: flex; align-items: center; justify-content: center; color: #999;">Run grid search to visualize parameter landscape</div>
+            <div class="plot-note">Red circle highlights the minimum SSE in this slice</div>
+        </div>
+        
+        <div class="key-points">
+            <h3>Key Learning Points:</h3>
+            <ul>
+                <li><strong>Objective:</strong> Minimize SSE = Σ(I<sub>observed</sub> - I<sub>model</sub>)² over 3-parameter space</li>
+                <li><strong>Grid search:</strong> Systematically evaluates all parameter combinations in given ranges</li>
+                <li><strong>Computational cost:</strong> O(n³) for 3 parameters - scales poorly to higher dimensions</li>
+                <li><strong>Clean data advantage:</strong> Clear global minimum, all parameters identifiable</li>
+                <li><strong>Parameter effects:</strong> β controls peak height, σ delays onset, γ extends duration</li>
+                <li><strong>2D slices:</strong> Visualize how SSE varies when fixing one parameter at its optimal value</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Constants
+            const N = 1000;
+            const S0 = 990, E0 = 10, I0 = 0, R0 = 0;
+            const betaTruth = 0.42, sigmaTruth = 0.18, gammaTruth = 0.11;
+            const betaRange = [0.3, 0.7];
+            const sigmaRange = [0.1, 0.3];
+            const gammaRange = [0.05, 0.25];
+            
+            // State - start at middle of ranges
+            let beta = 0.5, sigma = 0.2, gamma = 0.15;
+            let observedData = [];
+            let gridResults = [];
+            let bestParams = null;
+            let userParams = null;
+            let yAxisMax = null;
+            
+            // SEIR model
+            function seirStep(S, E, I, R, beta, sigma, gamma, dt = 0.1) {
+                const dS = -beta * S * I / N;
+                const dE = beta * S * I / N - sigma * E;
+                const dI = sigma * E - gamma * I;
+                const dR = gamma * I;
+                return {
+                    S: S + dS * dt,
+                    E: E + dE * dt,
+                    I: I + dI * dt,
+                    R: R + dR * dt
+                };
+            }
+            
+            function simulate(beta, sigma, gamma, days = 100) {
+                const dt = 0.1;
+                const steps = Math.floor(days / dt);
+                let S = S0, E = E0, I = I0, R = R0;
+                const results = [];
+                
+                for (let i = 0; i <= steps; i++) {
+                    if (i % 10 === 0) {
+                        results.push({ day: i * dt, S, E, I, R });
+                    }
+                    const next = seirStep(S, E, I, R, beta, sigma, gamma, dt);
+                    S = next.S; E = next.E; I = next.I; R = next.R;
+                }
+                return results;
+            }
+            
+            function generateObservedData() {
+                const trueData = simulate(betaTruth, sigmaTruth, gammaTruth);
+                return trueData.map(d => ({
+                    day: d.day,
+                    I_observed: Math.max(0, d.I + (Math.random() - 0.5) * 1)
+                }));
+            }
+            
+            function calculateSSE(b, s, g) {
+                const modelData = simulate(b, s, g);
+                let sse = 0;
+                observedData.forEach((obs, i) => {
+                    if (i < modelData.length) {
+                        const diff = obs.I_observed - modelData[i].I;
+                        sse += diff * diff;
+                    }
+                });
+                return sse;
+            }
+            
+            function getViridisColor(normalized) {
+                const viridis = [
+                    [253, 231, 37],
+                    [94, 201, 98],
+                    [33, 145, 140],
+                    [59, 82, 139],
+                    [68, 1, 84]
+                ];
+                
+                const idx = normalized * (viridis.length - 1);
+                const lower = Math.floor(idx);
+                const upper = Math.min(Math.ceil(idx), viridis.length - 1);
+                const frac = idx - lower;
+                
+                const r = Math.round(viridis[lower][0] * (1 - frac) + viridis[upper][0] * frac);
+                const g = Math.round(viridis[lower][1] * (1 - frac) + viridis[upper][1] * frac);
+                const b = Math.round(viridis[lower][2] * (1 - frac) + viridis[upper][2] * frac);
+                
+                return `rgb(${r},${g},${b})`;
+            }
+            
+            function updateFitPlot() {
+                const modelData = simulate(beta, sigma, gamma);
+                
+                const days = modelData.map(d => d.day);
+                const I_model = modelData.map(d => d.I);
+                const E_model = modelData.map(d => d.E);
+                const I_obs = observedData.map(d => d.I_observed);
+                const obs_days = observedData.map(d => d.day);
+                
+                // Set y-axis max on first call
+                if (yAxisMax === null) {
+                    const maxObserved = Math.max(...I_obs);
+                    yAxisMax = maxObserved * 1.2;
+                }
+                
+                const fitData = [
+                    {
+                        x: days,
+                        y: I_model,
+                        mode: 'lines',
+                        name: 'Model Infected',
+                        line: { color: '#3b82f6', width: 2 }
+                    },
+                    {
+                        x: days,
+                        y: E_model,
+                        mode: 'lines',
+                        name: 'Model Exposed',
+                        line: { color: '#f59e0b', width: 2, dash: 'dash' }
+                    },
+                    {
+                        x: obs_days,
+                        y: I_obs,
+                        mode: 'markers',
+                        name: 'Data Points (for SSE)',
+                        marker: { color: '#ef4444', size: 8 },
+                        type: 'scatter'
+                    }
+                ];
+                
+                Plotly.newPlot('fit-plot', fitData, {
+                    xaxis: { title: 'Days' },
+                    yaxis: { title: 'Count', range: [0, yAxisMax] },
+                    margin: { l: 50, r: 20, t: 20, b: 50 },
+                    height: 300,
+                    width: null,
+                    autosize: true,
+                    showlegend: true
+                }, {displayModeBar: false, responsive: true});
+            }
+            
+            function updateLandscapePlot() {
+                const plotDiv = document.getElementById('landscape-plot');
+                
+                if (gridResults.length === 0 || !bestParams) {
+                    plotDiv.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; color: #999;">Run grid search to visualize parameter landscape</div>';
+                    return;
+                }
+                
+                // Clear the placeholder text
+                plotDiv.innerHTML = '';
+                
+                const sliceView = document.getElementById('slice-view').value;
+                const fixedParam = sliceView === 'beta-gamma' ? 'sigma' :
+                                  sliceView === 'beta-sigma' ? 'gamma' : 'beta';
+                
+                // Use current slider value for the fixed parameter
+                let fixedValue;
+                if (fixedParam === 'beta') {
+                    fixedValue = beta;
+                } else if (fixedParam === 'sigma') {
+                    fixedValue = sigma;
+                } else {
+                    fixedValue = gamma;
+                }
+                
+                const tolerance = 0.02;
+                const sliceData = gridResults.filter(r => 
+                    Math.abs(r[fixedParam] - fixedValue) < tolerance
+                );
+                
+                if (sliceData.length === 0) {
+                    plotDiv.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; color: #999;">No data in this slice</div>';
+                    return;
+                }
+                
+                let x, y, xlabel, ylabel;
+                if (sliceView === 'beta-gamma') {
+                    x = sliceData.map(r => r.beta);
+                    y = sliceData.map(r => r.gamma);
+                    xlabel = 'β'; ylabel = 'γ';
+                } else if (sliceView === 'beta-sigma') {
+                    x = sliceData.map(r => r.beta);
+                    y = sliceData.map(r => r.sigma);
+                    xlabel = 'β'; ylabel = 'σ';
+                } else {
+                    x = sliceData.map(r => r.sigma);
+                    y = sliceData.map(r => r.gamma);
+                    xlabel = 'σ'; ylabel = 'γ';
+                }
+                
+                const sseValues = sliceData.map(r => r.SSE);
+                const minSSE = Math.min(...sseValues);
+                const maxSSE = Math.max(...sseValues);
+                
+                const colors = sseValues.map(sse => {
+                    const normalized = (sse - minSSE) / (maxSSE - minSSE);
+                    return getViridisColor(normalized);
+                });
+                
+                const minIdx = sseValues.indexOf(minSSE);
+                
+                const landscapeData = [{
+                    x: x,
+                    y: y,
+                    mode: 'markers',
+                    marker: {
+                        size: 8,
+                        color: colors
+                    },
+                    text: sseValues.map(sse => `SSE: ${sse.toFixed(2)}`),
+                    hoverinfo: 'text',
+                    showlegend: false,
+                    type: 'scatter'
+                }];
+                
+                // Add red circle for minimum
+                if (minIdx >= 0 && minIdx < x.length) {
+                    landscapeData.push({
+                        x: [x[minIdx]],
+                        y: [y[minIdx]],
+                        mode: 'markers',
+                        marker: {
+                            size: 16,
+                            color: 'rgba(255,0,0,0.3)',
+                            line: { color: '#ff0000', width: 3 }
+                        },
+                        showlegend: false,
+                        hoverinfo: 'skip',
+                        type: 'scatter'
+                    });
+                }
+                
+                Plotly.newPlot('landscape-plot', landscapeData, {
+                    xaxis: { title: xlabel },
+                    yaxis: { title: ylabel },
+                    margin: { l: 60, r: 60, t: 20, b: 50 },
+                    height: 300,
+                    width: 600
+                }, {displayModeBar: false, responsive: false});
+            }
+            
+            function updateUI() {
+                document.getElementById('beta-val').textContent = beta.toFixed(3);
+                document.getElementById('sigma-val').textContent = sigma.toFixed(3);
+                document.getElementById('gamma-val').textContent = gamma.toFixed(3);
+                document.getElementById('r0-val').textContent = (beta/gamma).toFixed(2);
+                document.getElementById('incub-val').textContent = (1/sigma).toFixed(1);
+                document.getElementById('recov-val').textContent = (1/gamma).toFixed(1);
+                
+                const sse = calculateSSE(beta, sigma, gamma);
+                document.getElementById('current-sse').textContent = sse.toFixed(2);
+                
+                updateFitPlot();
+            }
+            
+            async function runGridSearch() {
+                // Save user's current selection
+                const userSSE = calculateSSE(beta, sigma, gamma);
+                userParams = { 
+                    beta: beta, 
+                    sigma: sigma, 
+                    gamma: gamma, 
+                    SSE: userSSE 
+                };
+                
+                const resolution = parseInt(document.getElementById('grid-resolution').value);
+                document.getElementById('optimize-btn').disabled = true;
+                document.getElementById('progress').style.display = 'block';
+                
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                const betaStep = (betaRange[1] - betaRange[0]) / (resolution - 1);
+                const sigmaStep = (sigmaRange[1] - sigmaRange[0]) / (resolution - 1);
+                const gammaStep = (gammaRange[1] - gammaRange[0]) / (resolution - 1);
+                
+                let bestBeta = betaRange[0];
+                let bestSigma = sigmaRange[0];
+                let bestGamma = gammaRange[0];
+                let bestSSE = Infinity;
+                gridResults = [];
+                
+                const totalEvals = resolution ** 3;
+                let evalCount = 0;
+                
+                for (let i = 0; i < resolution; i++) {
+                    const b = betaRange[0] + i * betaStep;
+                    for (let j = 0; j < resolution; j++) {
+                        const s = sigmaRange[0] + j * sigmaStep;
+                        for (let k = 0; k < resolution; k++) {
+                            const g = gammaRange[0] + k * gammaStep;
+                            
+                            const sse = calculateSSE(b, s, g);
+                            gridResults.push({ beta: b, sigma: s, gamma: g, SSE: sse });
+                            
+                            if (sse < bestSSE) {
+                                bestSSE = sse;
+                                bestBeta = b;
+                                bestSigma = s;
+                                bestGamma = g;
+                            }
+                            
+                            evalCount++;
+                            if (evalCount % 100 === 0) {
+                                document.getElementById('progress-pct').textContent = 
+                                    Math.round((evalCount / totalEvals) * 100);
+                                await new Promise(resolve => setTimeout(resolve, 0));
+                            }
+                        }
+                    }
+                }
+                
+                bestParams = { beta: bestBeta, sigma: bestSigma, gamma: bestGamma, SSE: bestSSE };
+                beta = bestBeta;
+                sigma = bestSigma;
+                gamma = bestGamma;
+                
+                document.getElementById('beta-slider').value = beta;
+                document.getElementById('sigma-slider').value = sigma;
+                document.getElementById('gamma-slider').value = gamma;
+                
+                // Update user's manual selection display
+                document.getElementById('user-beta').textContent = userParams.beta.toFixed(3);
+                document.getElementById('user-sigma').textContent = userParams.sigma.toFixed(3);
+                document.getElementById('user-gamma').textContent = userParams.gamma.toFixed(3);
+                document.getElementById('user-sse').textContent = userParams.SSE.toFixed(2);
+                document.getElementById('user-error-beta').textContent = Math.abs(userParams.beta - betaTruth).toFixed(3);
+                document.getElementById('user-error-sigma').textContent = Math.abs(userParams.sigma - sigmaTruth).toFixed(3);
+                document.getElementById('user-error-gamma').textContent = Math.abs(userParams.gamma - gammaTruth).toFixed(3);
+                
+                // Update grid search optimum display
+                document.getElementById('best-beta').textContent = bestBeta.toFixed(3);
+                document.getElementById('best-sigma').textContent = bestSigma.toFixed(3);
+                document.getElementById('best-gamma').textContent = bestGamma.toFixed(3);
+                document.getElementById('best-sse').textContent = bestSSE.toFixed(2);
+                document.getElementById('error-beta').textContent = Math.abs(bestBeta - betaTruth).toFixed(3);
+                document.getElementById('error-sigma').textContent = Math.abs(bestSigma - sigmaTruth).toFixed(3);
+                document.getElementById('error-gamma').textContent = Math.abs(bestGamma - gammaTruth).toFixed(3);
+                
+                // Calculate improvement
+                const improvement = userParams.SSE - bestSSE;
+                const improvementPct = (improvement / userParams.SSE * 100);
+                document.getElementById('sse-improvement').textContent = improvement.toFixed(2);
+                document.getElementById('sse-improvement-pct').textContent = improvementPct.toFixed(1);
+                
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('progress').style.display = 'none';
+                document.getElementById('optimize-btn').disabled = false;
+                
+                updateUI();
+                updateLandscapePlot();
+            }
+            
+            // Event listeners
+            document.getElementById('beta-slider').addEventListener('input', (e) => {
+                beta = parseFloat(e.target.value);
+                updateUI();
+            });
+            
+            document.getElementById('sigma-slider').addEventListener('input', (e) => {
+                sigma = parseFloat(e.target.value);
+                updateUI();
+            });
+            
+            document.getElementById('gamma-slider').addEventListener('input', (e) => {
+                gamma = parseFloat(e.target.value);
+                updateUI();
+            });
+            
+            document.getElementById('grid-resolution').addEventListener('change', (e) => {
+                const res = parseInt(e.target.value);
+                document.getElementById('resolution-display').textContent = `${res} points/param`;
+                document.getElementById('evals-display').textContent = (res**3).toLocaleString();
+            });
+            
+            document.getElementById('slice-view').addEventListener('change', () => {
+                updateLandscapePlot();
+            });
+            
+            document.getElementById('optimize-btn').addEventListener('click', runGridSearch);
+            
+            // Initialize
+            observedData = generateObservedData();
+            updateUI();
+        });
+    </script>
+</body>
+</html>

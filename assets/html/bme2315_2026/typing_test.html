@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Test</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  #app {
+    width: 100%;
+    max-width: 740px;
+  }
+  h1 {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 1.5rem;
+  }
+  #timer-bar-wrap {
+    height: 3px;
+    background: #ddd;
+    border-radius: 2px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  #timer-bar {
+    height: 100%;
+    width: 100%;
+    background: #3b82f6;
+    border-radius: 2px;
+    transition: width 0.25s linear, background 0.5s;
+  }
+  #prompt-box {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px;
+    line-height: 1.9;
+    border: 1px solid #e0ddd6;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 1rem;
+    user-select: none;
+    letter-spacing: 0.01em;
+    height: 130px;
+    overflow: hidden;
+    position: relative;
+  }
+  #prompt-inner {
+    position: absolute;
+    left: 1.5rem;
+    right: 1.5rem;
+    top: 1.25rem;
+    transition: top 0.18s ease;
+    word-break: normal;
+    overflow-wrap: normal;
+    white-space: normal;
+  }
+  .ch { color: #bbb; }
+  .ch.correct { color: #16a34a; }
+  .ch.wrong { color: #dc2626; background: #fee2e2; border-radius: 2px; }
+  .ch.cursor { border-left: 2px solid #1a1a1a; margin-left: -1px; }
+  textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 16px;
+    border: 1px solid #d0cdc6;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    resize: none;
+    height: 80px;
+    transition: border-color 0.15s;
+  }
+  textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+  textarea:disabled { opacity: 0.45; cursor: not-allowed; }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 1rem;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e8e5de;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .stat-val {
+    font-size: 28px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1;
+  }
+  .stat-val.blue { color: #3b82f6; }
+  .stat-val.red { color: #dc2626; }
+  #status-msg {
+    font-size: 13px;
+    color: #888;
+    margin-top: 0.75rem;
+    min-height: 18px;
+    text-align: center;
+  }
+  #btn-row { display: flex; justify-content: flex-end; margin-top: 1rem; }
+  button {
+    padding: 0.5rem 1.25rem;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid #d0cdc6;
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+  }
+  button:hover { background: #f0ede8; }
+  button:active { transform: scale(0.98); }
+  #genome-section {
+    display: none;
+    margin-top: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    background: #fff;
+    border: 1px solid #e8e5de;
+    border-radius: 10px;
+  }
+  #genome-section h2 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 1rem;
+  }
+  .genome-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .genome-card {
+    background: #f5f4f0;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+  }
+  .genome-card .g-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .genome-card .g-val {
+    font-size: 20px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+  .genome-card .g-sub {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Typing Test &mdash; 60 seconds</h1>
+  <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+  <div id="prompt-box" aria-label="text to type"><div id="prompt-inner"></div></div>
+  <textarea id="input-area" placeholder="Start typing here to begin the test…" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+  <div id="status-msg">Type in the box above to start the timer.</div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Time left</div>
+      <div class="stat-val blue" id="stat-time">60s</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Chars / min</div>
+      <div class="stat-val" id="stat-cpm">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Error rate</div>
+      <div class="stat-val red" id="stat-err">—</div>
+      <div style="font-size:12px;color:#999;margin-top:4px;" id="stat-err-frac">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="line-height:1.3;">Proofreading<br>error rate</div>
+      <div class="stat-val red" id="stat-proof">—</div>
+      <div style="font-size:12px;color:#999;margin-top:4px;" id="stat-proof-frac">—</div>
+    </div>
+  </div>
+  <div id="btn-row">
+    <button id="reset-btn">Reset</button>
+  </div>
+  <div id="genome-section">
+    <h2>If you were replicating the human genome&hellip;</h2>
+    <div class="genome-row">
+      <div class="genome-card">
+        <div class="g-label">Time to replicate</div>
+        <div class="g-val" id="genome-time">—</div>
+        <div class="g-sub">at your typing speed</div>
+      </div>
+      <div class="genome-card">
+        <div class="g-label">Errors generated</div>
+        <div class="g-val" id="genome-errors">—</div>
+        <div class="g-sub">before proofreading</div>
+      </div>
+      <div class="genome-card">
+        <div class="g-label">Errors after proofreading</div>
+        <div class="g-val" id="genome-proof">—</div>
+        <div class="g-sub">remaining in the genome</div>
+      </div>
+      <div class="genome-card">
+        <div class="g-label">DNA polymerase (reference)</div>
+        <div class="g-val" style="font-size:15px;line-height:1.6;">~1 hour to replicate<br>~1–3 errors generated</div>
+        <div class="g-sub">at ~1,000 bases/sec across 30,000+ replication forks</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSAGES = [
+  "The lighthouse keeper climbed the spiral stairs every evening, trimmed the wick, and watched the beam sweep across the dark water below.",
+  "Bread baked in a Dutch oven develops a thick, crackly crust because the trapped steam keeps the surface moist during the first stage of baking.",
+  "A single match can start a wildfire, and a single kind word can start a friendship that lasts a lifetime.",
+  "The old map had no legend, so the explorers spent three days arguing about whether the blue lines were rivers or roads before finding out they were neither.",
+  "Penguins are surprisingly fast swimmers, reaching speeds of up to twenty-five miles per hour by flapping their wings like underwater flippers.",
+  "She stacked the books by color rather than subject, which looked beautiful but made finding anything nearly impossible.",
+  "Every thunderstorm begins as a warm column of rising air, invisible and silent, long before any lightning appears.",
+  "The mechanic listened to the engine for ten seconds, nodded once, and quoted a price that made the car owner briefly consider walking everywhere.",
+  "Wolves communicate through howls, body posture, tail position, and scent markings, building up a picture of their territory others can read for days.",
+  "Nobody remembers who invented the eraser, but almost everyone has needed one today.",
+  "The chef reduced the sauce for forty minutes, stirring occasionally, until it coated the back of the spoon and smelled like something worth waiting for.",
+  "A coral reef is built grain by grain over thousands of years, and it can be bleached and dead in a single warm summer.",
+  "The train arrived seven minutes late, which was early by the standards of everyone who regularly took that line.",
+  "There is a small town in Norway where the sun does not set for sixty-nine days each summer, and the residents have strong opinions about blackout curtains.",
+  "Octopuses have three hearts, blue blood, and the ability to unscrew a jar from the inside, which makes them either impressive or deeply unsettling depending on your perspective.",
+  "The letter had been sitting in the wrong drawer for eleven years before anyone found it.",
+  "Concrete is the most widely used construction material on Earth, and yet most people would struggle to explain exactly how it works.",
+  "She practiced the piano piece so many times that her fingers could play it in the dark, which is exactly what happened during the power cut the night before the recital.",
+  "Migratory birds navigate using the stars, the magnetic field of the Earth, and landmarks they memorized as fledglings on their very first journey.",
+  "The librarian could tell from across the room which shelf a book belonged to, a skill she had spent thirty years developing and could not explain to anyone.",
+  "Fog forms when the air near the ground cools to the point where it can no longer hold all of its moisture, and the excess condenses into tiny droplets.",
+  "He ordered the same meal every Friday for twelve years, not out of habit, but because he genuinely thought it was the best thing on the menu.",
+  "The word deadline originally referred to a line drawn around a prison camp, beyond which a prisoner could be shot on sight.",
+  "Hummingbirds beat their wings up to eighty times per second and must eat roughly half their body weight in nectar each day just to survive.",
+  "The painter finished the mural on a Tuesday, stepped back, realized the proportions were wrong, and started over on Wednesday.",
+  "A single bolt of lightning contains enough energy to toast about one hundred thousand slices of bread, though harnessing it remains impractical.",
+  "The river had carved that canyon over five million years, and the tourist who stood at the rim spent about four minutes looking before checking the time.",
+  "Knitting and crocheting were once considered serious masculine pursuits, practiced by sailors and fishermen who needed to repair their own nets at sea.",
+  "The dog slept through the thunderstorm, the doorbell, and the dropped pan, but woke instantly at the quiet crinkle of a cheese wrapper.",
+  "Every year, scientists formally describe and name around eighteen thousand new species, the majority of them insects.",
+];
+
+const DURATION = 60;
+
+// promptText grows as new passages are appended
+let promptText = "";
+let usedIndices = [];
+let startTime = null;
+let timerInterval = null;
+let timeLeft = DURATION;
+let testDone = false;
+
+// Cumulative keystroke tracking (backspace does NOT reduce these)
+let totalKeystrokes = 0;
+let totalErrors = 0;
+let prevLength = 0; // length of textarea value before this keystroke
+
+const promptBox = document.getElementById("prompt-box");
+const inputArea = document.getElementById("input-area");
+const statTime = document.getElementById("stat-time");
+const statCpm = document.getElementById("stat-cpm");
+const statErr = document.getElementById("stat-err");
+const timerBar = document.getElementById("timer-bar");
+const statusMsg = document.getElementById("status-msg");
+
+function pickUnused() {
+  // If all passages used, reset pool
+  if (usedIndices.length >= PASSAGES.length) usedIndices = [];
+  let idx;
+  do { idx = Math.floor(Math.random() * PASSAGES.length); }
+  while (usedIndices.includes(idx));
+  usedIndices.push(idx);
+  return PASSAGES[idx];
+}
+
+function appendPassage() {
+  if (promptText.length > 0) promptText += " ";
+  promptText += pickUnused();
+}
+
+const promptInner = document.getElementById("prompt-inner");
+
+// Word-wrap promptText into lines that fit the prompt box width, without splitting words.
+// Returns array of {startIdx, endIdx} for each line.
+function computeLines() {
+  const boxWidth = promptBox.clientWidth - 48; // subtract left+right padding (1.5rem*2)
+  const canvas = computeLines._canvas || (computeLines._canvas = document.createElement("canvas"));
+  const ctx = canvas.getContext("2d");
+  ctx.font = '18px "Courier New", Courier, monospace';
+
+  const words = promptText.split(" ");
+  const lines = [];
+  let lineStart = 0;
+  let charIdx = 0;
+  let lineWords = [];
+  let lineCharStart = 0;
+
+  for (let w = 0; w < words.length; w++) {
+    const word = words[w];
+    const testLine = lineWords.length ? lineWords.join(" ") + " " + word : word;
+    const width = ctx.measureText(testLine).width;
+    if (width > boxWidth && lineWords.length > 0) {
+      // commit current line
+      const lineText = lineWords.join(" ");
+      lines.push({ text: lineText, start: lineCharStart, end: lineCharStart + lineText.length });
+      lineCharStart += lineText.length + 1; // +1 for the space
+      lineWords = [word];
+    } else {
+      lineWords.push(word);
+    }
+  }
+  if (lineWords.length) {
+    const lineText = lineWords.join(" ");
+    lines.push({ text: lineText, start: lineCharStart, end: lineCharStart + lineText.length });
+  }
+  return lines;
+}
+
+function renderPrompt(typed) {
+  if (typed.length >= promptText.length - 20) appendPassage();
+
+  const lines = computeLines();
+  const lineHeight = 18 * 1.9; // font-size * line-height
+
+  // Find which line the cursor is on
+  let cursorLine = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (typed.length <= lines[i].end + (i < lines.length - 1 ? 0 : 0)) {
+      cursorLine = i;
+      break;
+    }
+    cursorLine = i;
+  }
+  // More precise: cursor is on the line whose range contains typed.length
+  for (let i = 0; i < lines.length; i++) {
+    const lineEnd = lines[i].end + (i < lines.length - 1 ? 1 : 0); // include trailing space
+    if (typed.length <= lineEnd) { cursorLine = i; break; }
+    cursorLine = i;
+  }
+
+  // Scroll so that the cursor line is always on the second visible line (index 1),
+  // keeping one line of context above. But never scroll before line 0.
+  const scrollLine = Math.max(0, cursorLine - 1);
+  const topOffset = 20 - scrollLine * lineHeight; // 20px = 1.25rem top padding
+
+  // Build HTML line by line
+  let html = "";
+  let globalIdx = 0;
+  for (let li = 0; li < lines.length; li++) {
+    const { text } = lines[li];
+    let lineHtml = "";
+    for (let ci = 0; ci < text.length; ci++) {
+      const ch = text[ci] === " " ? "&nbsp;" : text[ci];
+      let cls = "ch";
+      if (globalIdx < typed.length) {
+        cls += typed[globalIdx] === promptText[globalIdx] ? " correct" : " wrong";
+      }
+      if (globalIdx === typed.length) cls += " cursor";
+      lineHtml += `<span class="${cls}">${ch}</span>`;
+      globalIdx++;
+    }
+    // space between lines (not rendered as a span, just advance globalIdx)
+    if (li < lines.length - 1) {
+      // render the inter-word space
+      let cls = "ch";
+      if (globalIdx < typed.length) cls += typed[globalIdx] === promptText[globalIdx] ? " correct" : " wrong";
+      if (globalIdx === typed.length) cls += " cursor";
+      lineHtml += `<span class="${cls}">&nbsp;</span>`;
+      globalIdx++;
+    }
+    html += `<div style="white-space:nowrap;overflow:hidden;">${lineHtml}</div>`;
+  }
+
+  promptInner.style.top = topOffset + "px";
+  promptInner.innerHTML = html;
+}
+
+function countCurrentErrors(typed) {
+  let e = 0;
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i] !== promptText[i]) e++;
+  }
+  return e;
+}
+
+function formatGenomeTime(seconds) {
+  if (seconds < 3600) return Math.round(seconds / 60).toLocaleString() + " minutes";
+  if (seconds < 86400) return (seconds / 3600).toFixed(1) + " hours";
+  if (seconds < 86400 * 30) return Math.round(seconds / 86400).toLocaleString() + " days";
+  if (seconds < 86400 * 365) return (seconds / (86400 * 30)).toFixed(1) + " months";
+  return (seconds / (86400 * 365)).toFixed(1) + " years";
+}
+
+function formatLargeNumber(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + " billion";
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + " million";
+  if (n >= 1e3) return Math.round(n).toLocaleString();
+  return Math.round(n).toString();
+}
+
+function updateStats(elapsed) {
+  const typed = inputArea.value;
+  const mins = elapsed / 60;
+  const cpm = mins > 0 ? Math.round(typed.length / mins) : 0;
+  const rate = totalKeystrokes > 0 ? (totalErrors / totalKeystrokes) : 0;
+  statCpm.textContent = cpm;
+  statErr.textContent = rate.toFixed(2);
+  document.getElementById("stat-err-frac").textContent =
+    totalKeystrokes > 0 ? totalErrors + " / " + totalKeystrokes : "—";
+
+  // Proofreading: current errors remaining vs chars typed
+  const currentErrors = countCurrentErrors(typed);
+  const proofRate = typed.length > 0 ? (currentErrors / typed.length) : 0;
+  document.getElementById("stat-proof").textContent = typed.length > 0 ? proofRate.toFixed(2) : "—";
+  document.getElementById("stat-proof-frac").textContent =
+    typed.length > 0 ? currentErrors + " / " + typed.length : "—";
+}
+
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    timeLeft = Math.max(0, DURATION - elapsed);
+    statTime.textContent = Math.ceil(timeLeft) + "s";
+    const pct = (timeLeft / DURATION) * 100;
+    timerBar.style.width = pct + "%";
+    if (pct < 30) timerBar.style.background = "#dc2626";
+    else if (pct < 60) timerBar.style.background = "#f59e0b";
+    updateStats(elapsed);
+    if (timeLeft <= 0) endTest();
+  }, 100);
+}
+
+function endTest() {
+  clearInterval(timerInterval);
+  testDone = true;
+  inputArea.disabled = true;
+  statTime.textContent = "0s";
+  timerBar.style.width = "0%";
+  const elapsed = Math.min(DURATION, (Date.now() - startTime) / 1000);
+  updateStats(elapsed);
+  statusMsg.textContent = "Time's up! Final: " + statCpm.textContent + " chars/min, error rate " + statErr.textContent + ".";
+
+  // Genome calculation
+  // Human genome: ~3.2 billion base pairs
+  const GENOME_SIZE = 3.2e9;
+  const cpm = parseFloat(statCpm.textContent) || 0;
+  const rawErrorRate = totalKeystrokes > 0 ? (totalErrors / totalKeystrokes) : 0;
+  const typed = inputArea.value;
+  const proofErrorRate = typed.length > 0 ? (countCurrentErrors(typed) / typed.length) : 0;
+
+  if (cpm > 0) {
+    const charsPerSec = cpm / 60;
+    const secondsNeeded = GENOME_SIZE / charsPerSec;
+    document.getElementById("genome-time").textContent = formatGenomeTime(secondsNeeded);
+    document.getElementById("genome-errors").textContent = formatLargeNumber(GENOME_SIZE * rawErrorRate);
+    document.getElementById("genome-proof").textContent = formatLargeNumber(GENOME_SIZE * proofErrorRate);
+    document.getElementById("genome-section").style.display = "block";
+  }
+}
+
+function reset() {
+  clearInterval(timerInterval);
+  testDone = false;
+  startTime = null;
+  timeLeft = DURATION;
+  totalKeystrokes = 0;
+  totalErrors = 0;
+  prevLength = 0;
+  usedIndices = [];
+  promptText = "";
+  appendPassage(); appendPassage(); appendPassage();
+  inputArea.value = "";
+  inputArea.disabled = false;
+  statTime.textContent = "60s";
+  statCpm.textContent = "—";
+  statErr.textContent = "—";
+  timerBar.style.width = "100%";
+  timerBar.style.background = "#3b82f6";
+  statusMsg.textContent = "Type in the box above to start the timer.";
+  document.getElementById("genome-section").style.display = "none";
+  promptInner.innerHTML = "";
+  promptInner.style.top = "1.25rem";
+  // Render after layout so box width is known
+  requestAnimationFrame(() => renderPrompt(""));
+  inputArea.focus();
+}
+
+inputArea.addEventListener("keydown", (e) => {
+  if (testDone) return;
+  // Only count printable character keys as keystrokes (not backspace, arrows, etc.)
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+    const pos = inputArea.selectionStart; // position where char will be inserted
+    totalKeystrokes++;
+    // The character is e.key; the expected character is promptText[pos]
+    if (e.key !== promptText[pos]) totalErrors++;
+  }
+});
+
+inputArea.addEventListener("input", () => {
+  if (testDone) return;
+  if (!startTime) startTimer();
+  renderPrompt(inputArea.value);
+  prevLength = inputArea.value.length;
+});
+
+document.getElementById("reset-btn").addEventListener("click", reset);
+reset();
+</script>
+</body>
+</html>
