@@ -12,15 +12,12 @@ children:
     permalink: /projects/
   - title: Packages
     permalink: /packages/
-display_sections: [active, past]
 display_categories: [research, service, fun]
 ---
 
 <!-- pages/projects.md -->
 <!--
-  Each project in _projects/ is shown here as a blurb, grouped into Active and
-  Past sections. Front matter fields:
-    status: active or past (which section it appears in)
+  Each project in _projects/ is shown here as a blurb. Front matter fields:
     blurb:  the paragraph shown on this page (markdown allowed)
     papers: list of bib keys from _bibliography/papers.bib, listed below the blurb
     links:  optional list of {text, url} links shown below the blurb
@@ -28,14 +25,11 @@ display_categories: [research, service, fun]
   (this ignores `redirect`).
 -->
 <div class="projects">
-  {%- for section in page.display_sections %}
-  <h2 class="category">{{ section | capitalize }}</h2>
-  {%- assign section_projects = site.projects | where: "status", section %}
   {%- for category in page.display_categories %}
-  {%- assign sorted_projects = section_projects | where: "category", category | sort: "importance" %}
+  <h2 class="category">{{ category | capitalize }}</h2>
+  {%- assign sorted_projects = site.projects | where: "category", category | sort: "importance" %}
   {%- for project in sorted_projects %}
   <div class="project-blurb">
-    <span class="project-category">{{ category }}</span>
     <h3>{{ project.title }}</h3>
     {%- if project.img %}
     <img class="project-img rounded z-depth-1" src="{{ project.img | relative_url }}" alt="{{ project.title }}">
@@ -63,7 +57,6 @@ display_categories: [research, service, fun]
     </div>
     {%- endif %}
   </div>
-  {%- endfor %}
   {%- endfor %}
   {% endfor %}
 </div>

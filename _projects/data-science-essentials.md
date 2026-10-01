@@ -6,7 +6,6 @@ img: assets/img/tn_map.png
 redirect: https://nbviewer.org/github/smgroves/data-science-essentials-4/blob/main/project/Final%20Project.ipynb
 importance: 1
 category: fun
-status: past
 # TODO: write your paragraph about this project
 blurb: >
   Final project for the Data Science Essentials course: identifying Tennessee communities that most need expanded access to healthcare.
