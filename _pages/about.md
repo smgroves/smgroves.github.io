@@ -1,6 +1,6 @@
 ---
 layout: about
-title: about
+title: About
 permalink: /
 subtitle: Assistant Professor in the <a href='https://datascience.virginia.edu/'>School of Data Science</a> at the University of Virginia.<br>Computational Biologist. Data Scientist. Multimedia Science Communicator.
 

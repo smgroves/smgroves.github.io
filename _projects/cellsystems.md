@@ -1,25 +1,18 @@
 ---
 layout: page
-title: Groves et al. (2022) Cell Systems
-description: Code associated with my publication in Cell Systems.
+title: GRN inference for dynamics of Small Cell Lung Cancer identity
 img: assets/img/cellsys_graphical_abstract.png
 importance: 3
 category: research
+# TODO: write your paragraph about this project
+blurb: >
+  Write a paragraph about this project here. Markdown works, including
+  [links](https://github.com/smgroves/Groves-CellSys2021).
+links:
+  - text: Code on GitHub
+    url: https://github.com/smgroves/Groves-CellSys2021
+papers:
+  - 10.1016/j.cels.2022.07.006
+  - 10.1371/journal.pcbi.1007343
+  - 10.3389/fnetp.2023.1225736
 ---
-{% assign repo_url =  include.repository | split: '/' %}
-
-{% if site.data.repositories.github_users contains repo_url.first %}
-  {% assign show_owner = false %}
-{% else %}
-  {% assign show_owner = true %}
-{% endif %}
-
-
-<div class="repo p-2 text-center">
-  <a href="https://github.com/smgroves/Groves-CellSys2021">
-    <img class="repo-img-light w-100" alt="Groves-CellSys2021" src="https://github-readme-stats.vercel.app/api/pin/?username=smgroves&repo=Groves-CellSys2021&theme={{ site.repo_theme_light }}&show_owner={{ show_owner }}">
-    <img class="repo-img-dark w-100" alt="Groves-CellSys2021" src="https://github-readme-stats.vercel.app/api/pin/?username=smgroves&repo=Groves-CellSys2021&theme={{ site.repo_theme_dark }}&show_owner={{ show_owner }}">
-  </a>
-</div>
-
-Come back soon; this page is being updated!

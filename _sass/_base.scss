@@ -547,6 +547,52 @@ footer.sticky-bottom {
     }
   }
 
+  .project-blurb {
+    display: flow-root;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .project-img {
+      float: right;
+      max-width: 30%;
+      margin: 0 0 0.5rem 1rem;
+    }
+
+    p a {
+      color: var(--global-theme-color);
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .project-papers {
+      clear: both;
+
+      h4 {
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04rem;
+        color: var(--global-text-color-light);
+        margin-top: 0.5rem;
+      }
+
+      ol.bibliography {
+        margin-bottom: 0;
+      }
+    }
+  }
+
   .grid-sizer,
   .grid-item {
     width: 250px;

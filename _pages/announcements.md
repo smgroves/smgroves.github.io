@@ -1,6 +1,6 @@
 ---
 layout: default
-title: announcements
+title: Announcements
 permalink: /announcements/
 description: "Quick announcements about what I've been working on, presenting, and publishing."
 ---

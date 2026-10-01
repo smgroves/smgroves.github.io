@@ -4,8 +4,35 @@
     {
       "name": "jekyll-dev",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "export PATH=\"/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH\"; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; bundle exec jekyll serve --host 0.0.0.0 --port 4000"],
+      "runtimeArgs": [
+        "-c",
+        "export PATH=\"/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH\"; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; bundle exec jekyll serve --host 0.0.0.0 --port 4000"
+      ],
       "port": 4000
+    },
+    {
+      "name": "ds2003-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "/Users/xpz5km/Library/CloudStorage/Box-Box/_Teaching/DS2003_Communicating_with_data/F26_DS2003_02"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "site-build-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8766",
+        "--directory",
+        "/private/tmp/claude-502/-Users-xpz5km-Documents-GitHub-smgroves-github-io/6e0d32be-903f-4ae9-bd05-f7be28b02973/scratchpad/site"
+      ],
+      "port": 8766
     }
   ]
 }

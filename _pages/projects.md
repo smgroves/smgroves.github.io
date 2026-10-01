@@ -2,7 +2,7 @@
 layout: page
 title: projects
 permalink: /projects/
-description: "A collection of projects I've worked on"
+description: "A collection of projects I've worked on and things I'm currently working on. If you are interested in working with me, please reach out!"
 nav: true
 nav_order: 3
 nav_title: Research
@@ -16,23 +16,47 @@ display_categories: [research, service, fun]
 ---
 
 <!-- pages/projects.md -->
+<!--
+  Each project in _projects/ is shown here as a blurb. Front matter fields:
+    blurb:  the paragraph shown on this page (markdown allowed)
+    papers: list of bib keys from _bibliography/papers.bib, listed below the blurb
+    links:  optional list of {text, url} links shown below the blurb
+  Fun projects also get a "Read more" link to their own page in _projects/
+  (this ignores `redirect`).
+-->
 <div class="projects">
   {%- for category in page.display_categories %}
   <h2 class="category">{{ category | capitalize }}</h2>
   {%- assign sorted_projects = site.projects | where: "category", category | sort: "importance" %}
-  <ul class="project-list">
-    {%- for project in sorted_projects %}
-    <li class="project-list-item">
-      <h3>
-        {%- if project.redirect %}
-        <a href="{{ project.redirect }}">{{ project.title }}</a>
-        {%- else %}
-        <a href="{{ project.url | relative_url }}">{{ project.title }}</a>
-        {%- endif %}
-      </h3>
-      <p>{{ project.description }}</p>
-    </li>
-    {%- endfor %}
-  </ul>
+  {%- for project in sorted_projects %}
+  <div class="project-blurb">
+    <h3>{{ project.title }}</h3>
+    {%- if project.img %}
+    <img class="project-img rounded z-depth-1" src="{{ project.img | relative_url }}" alt="{{ project.title }}">
+    {%- endif %}
+    {{ project.blurb | default: project.description | markdownify }}
+
+    {%- if project.links or category == "fun" %}
+    <p class="project-links">
+      {%- for link in project.links %}
+      <a href="{{ link.url }}">{{ link.text }}</a>{% unless forloop.last %} &middot; {% endunless %}
+      {%- endfor %}
+      {%- if category == "fun" %}
+      {%- if project.links %} &middot; {% endif %}
+      <a href="{{ project.url | relative_url }}">Read more &rarr;</a>
+      {%- endif %}
+    </p>
+    {%- endif %}
+
+    {%- if project.papers %}
+    <div class="publications project-papers">
+      <h4>Related papers</h4>
+      {%- for key in project.papers %}
+      {% bibliography -f papers -q @*[key={{ key }}]* %}
+      {%- endfor %}
+    </div>
+    {%- endif %}
+  </div>
+  {%- endfor %}
   {% endfor %}
 </div>

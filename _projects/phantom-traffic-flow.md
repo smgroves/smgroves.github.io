@@ -5,6 +5,9 @@ description: Writing Project for Partial Differential Equations Course
 img: assets/img/traffic2.gif
 importance: 1
 category: fun
+# TODO: write your paragraph about this project
+blurb: >
+  Writing project for a Partial Differential Equations course on why traffic jams form with no bottleneck at all.
 ---
 
 # Introduction

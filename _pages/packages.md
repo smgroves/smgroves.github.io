@@ -1,6 +1,6 @@
 ---
 layout: page
-title: packages
+title: Packages
 permalink: /packages/
 description: "Packaged tools I've developed for researchers and data enthusiasts"
 display_categories: [packages]

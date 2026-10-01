@@ -6,6 +6,9 @@ img: assets/img/tn_map.png
 redirect: https://nbviewer.org/github/smgroves/data-science-essentials-4/blob/main/project/Final%20Project.ipynb
 importance: 1
 category: fun
+# TODO: write your paragraph about this project
+blurb: >
+  Final project for the Data Science Essentials course: identifying Tennessee communities that most need expanded access to healthcare.
 ---
 
 **TN Med Helper** is a fictional company whose mission is to ensure access to healthcare for all Tennesseans. TN Med Helper has approached your data science consultancy for help identifying communities in Tennessee that need the most help in expanding access to healthcare.
