@@ -5,7 +5,7 @@
 // Typography
 
 body {
-  font-family: "Lato", sans-serif;
+  font-family: "Source Sans 3", sans-serif;
 }
 
 h1,
@@ -16,7 +16,7 @@ h5,
 h6,
 .navbar-brand,
 .post-title {
-  font-family: "Lora", serif;
+  font-family: "Source Serif 4", serif;
 }
 
 p,
@@ -128,7 +128,7 @@ blockquote {
 // About
 
 .desc {
-  font-family: "Lora", serif;
+  font-family: "Source Serif 4", serif;
   font-weight: 700;
 }
 
@@ -603,7 +603,21 @@ footer.sticky-bottom {
       }
 
       ol.bibliography {
-        margin-bottom: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+          margin-bottom: 0.25rem;
+        }
+
+        a {
+          color: var(--global-theme-color);
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
       }
     }
   }

@@ -49,10 +49,10 @@ display_categories: [research, service, fun]
     {%- endif %}
 
     {%- if project.papers %}
-    <div class="publications project-papers">
+    <div class="project-papers">
       <h4>Related papers</h4>
       {%- for key in project.papers %}
-      {% bibliography -f papers -q @*[key={{ key }}]* %}
+      {% bibliography -f papers -q @*[key={{ key }}]* -T bib_simple %}
       {%- endfor %}
     </div>
     {%- endif %}
