@@ -571,6 +571,15 @@ footer.sticky-bottom {
       border-bottom: none;
     }
 
+    .project-category {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+      color: var(--global-text-color-light);
+    }
+
     h3 {
       font-size: 1.25rem;
       margin-bottom: 0.5rem;

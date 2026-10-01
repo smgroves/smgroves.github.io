@@ -5,6 +5,7 @@ description: I am helping to develop a new public transit project with Code for 
 # redirect: https://codeforcville.org/
 importance: 2
 category: service
+status: active
 # TODO: write your paragraph about this project
 blurb: >
   I am helping to develop a new public transit project. Stay tuned!
