@@ -438,6 +438,14 @@ footer.sticky-bottom {
 
       p:not(.post-meta) {
         margin-bottom: 0;
+
+        a {
+          color: var(--global-theme-color);
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
       }
     }
 
