@@ -219,6 +219,20 @@ blockquote {
   }
 }
 
+.dropdown-item-tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+  color: var(--global-card-bg-color);
+  background-color: var(--global-theme-color);
+  border-radius: 1rem;
+  vertical-align: middle;
+}
+
 .navbar.navbar-light {
   a {
     &:hover {
@@ -651,7 +665,8 @@ footer.sticky-bottom {
   }
 
   .grid-item {
-    width: 250px;
+    flex: 1 1 160px;
+    max-width: 250px;
   }
 
   h2.project-section {
@@ -734,7 +749,8 @@ footer.sticky-bottom {
   }
 
   .grid-item {
-    width: 260px;
+    flex: 1 1 170px;
+    max-width: 260px;
   }
 }
 

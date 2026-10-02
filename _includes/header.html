@@ -78,7 +78,9 @@
               {%- if child.title == 'divider' %}
               <div class="dropdown-divider"></div>
               {%- else %}
-              <a class="dropdown-item" href="{{ child.permalink | relative_url }}">{{ child.title }}</a>
+              <a class="dropdown-item" href="{{ child.permalink | relative_url }}">{{ child.title }}
+                {%- if child.tag %}<span class="dropdown-item-tag">{{ child.tag }}</span>{%- endif -%}
+              </a>
               {%- endif -%}
               {% endfor %}
             </div>
