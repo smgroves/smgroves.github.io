@@ -3,6 +3,7 @@ layout: page
 title: BooleaBayes
 description: Boolean Network Inference Toolkit
 img: assets/img/booleabayes_logo.png
+thumb_class: framed-thumb
 redirect: https://pypi.org/project/booleabayes/
 importance: 1
 category: packages

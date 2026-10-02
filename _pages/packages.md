@@ -8,7 +8,7 @@ horizontal: false
 ---
 
 <!-- pages/packages.md -->
-<div class="projects">
+<div class="projects packages">
 {%- for category in page.display_categories %}
   {%- assign categorized_projects = site.projects | where: "category", category -%}
   {%- assign sorted_projects = categorized_projects | sort: "importance" %}
