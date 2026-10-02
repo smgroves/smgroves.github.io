@@ -9,7 +9,7 @@
   'use strict';
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const ACCENT = '#b14a2e';
+  const ACCENT = '#b509ac';
 
   function el(name, attrs, kids) {
     const e = document.createElementNS(SVGNS, name);
@@ -40,7 +40,7 @@
     const host = document.getElementById('viz-standard-error');
     if (!host) return;
 
-    const XBAR_FILL = '#f7c9a6', XBAR_STROKE = '#b5601f';
+    const XBAR_FILL = '#bcd6f3', XBAR_STROKE = '#0076df';
     const THETA = 3.5;
     const SIGMA = Math.sqrt(35 / 12); // ≈ 1.7078
     const R = 250;
@@ -100,16 +100,16 @@
 
       // shaded ±2 SE band (lighter), then ±1 SE band on top (darker)
       const band2x0 = x2px(Math.max(xmin, THETA - 2 * SE)), band2x1 = x2px(Math.min(xmax, THETA + 2 * SE));
-      svg.appendChild(el('rect', { x: band2x0, y: mt, width: Math.max(0, band2x1 - band2x0), height: plotH, fill: '#fde0d2', opacity: 0.35 }));
+      svg.appendChild(el('rect', { x: band2x0, y: mt, width: Math.max(0, band2x1 - band2x0), height: plotH, fill: '#dbe8f8', opacity: 0.35 }));
       const band1x0 = x2px(Math.max(xmin, THETA - SE)), band1x1 = x2px(Math.min(xmax, THETA + SE));
-      svg.appendChild(el('rect', { x: band1x0, y: mt, width: Math.max(0, band1x1 - band1x0), height: plotH, fill: '#fde0d2', opacity: 0.55 }));
+      svg.appendChild(el('rect', { x: band1x0, y: mt, width: Math.max(0, band1x1 - band1x0), height: plotH, fill: '#dbe8f8', opacity: 0.55 }));
 
       // axis
-      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#cfc9bd', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#c9c9cf', 'stroke-width': 1 }));
       for (let v = 1; v <= 6; v++) {
         const px = x2px(v);
-        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#cfc9bd' }));
-        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#c9c9cf' }));
+        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = v; svg.appendChild(t);
       }
 

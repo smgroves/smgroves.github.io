@@ -8,7 +8,7 @@
   'use strict';
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const ACCENT = '#b14a2e';
+  const ACCENT = '#b509ac';
 
   // ---------- tiny DOM/SVG helpers (mirror class-07-kde/viz.js) ----------
   function el(name, attrs, kids) {
@@ -39,7 +39,7 @@
     const host = document.getElementById('viz-unbiased-consistent');
     if (!host) return;
 
-    const XBAR_FILL = '#f7c9a6', XBAR_STROKE = '#b5601f';
+    const XBAR_FILL = '#bcd6f3', XBAR_STROKE = '#0076df';
     const T1_FILL = '#bfe0cd', T1_STROKE = '#4a7a5e';
     const THETA = 3.5;
     const R = 250;
@@ -106,11 +106,11 @@
       const { xbars, t1s } = simulate(n);
       svg.textContent = '';
 
-      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#cfc9bd', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#c9c9cf', 'stroke-width': 1 }));
       for (let v = 1; v <= 6; v++) {
         const px = x2px(v);
-        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#cfc9bd' }));
-        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#c9c9cf' }));
+        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = v;
         svg.appendChild(t);
       }

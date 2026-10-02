@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cosine Similarity Clock</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Lora:wght@400;700&display=swap">
   <style>
     :root {
-      --ink: #19323c;
-      --muted: #61747c;
-      --paper: #fffdf5;
-      --sky: #d9eff5;
-      --coral: #e8664f;
-      --gold: #f2b84b;
-      --blue: #247ba0;
-      --line: #c8d8d8;
+      --ink: #212529;
+      --muted: #5c5f66;
+      --paper: #ffffff;
+      --sky: #e6f0fb;
+      --coral: #b509ac;
+      --gold: #2f9e5a;
+      --blue: #0076df;
+      --line: #d6d8de;
     }
 
     * { box-sizing: border-box; }
@@ -23,49 +24,49 @@
       min-height: 100vh;
       color: var(--ink);
       background:
-        radial-gradient(circle at 9% 8%, #ffe9ad 0 7%, transparent 22%),
-        radial-gradient(circle at 88% 80%, #cce7e4 0 10%, transparent 28%),
+        radial-gradient(circle at 9% 8%, #f3e3f2 0 7%, transparent 22%),
+        radial-gradient(circle at 88% 80%, #dcebf8 0 10%, transparent 28%),
         var(--paper);
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "Lora", Georgia, serif;
     }
 
     main { max-width: 1180px; margin: 0 auto; padding: 38px 24px 48px; }
 
     header { max-width: 740px; margin-bottom: 28px; }
     h1 { margin: 0; font-size: clamp(2.1rem, 6vw, 4.5rem); letter-spacing: -0.06em; line-height: .93; }
-    .subtitle { color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: 1.05rem; line-height: 1.55; }
+    .subtitle { color: var(--muted); font-family: "Lato", sans-serif; font-size: 1.05rem; line-height: 1.55; }
 
     .stage { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(340px, 1.25fr); gap: 24px; }
-    .panel { background: rgba(255,255,255,.72); border: 1px solid rgba(25,50,60,.14); border-radius: 24px; box-shadow: 0 14px 40px rgba(37,78,86,.10); overflow: hidden; }
+    .panel { background: rgba(255,255,255,.72); border: 1px solid rgba(33,37,41,.12); border-radius: 24px; box-shadow: 0 14px 40px rgba(33,37,41,.08); overflow: hidden; }
     .panel h2 { margin: 0; padding: 18px 22px 8px; font-size: 1.15rem; letter-spacing: .02em; }
-    .panel p { margin: 0; padding: 0 22px 12px; color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: .9rem; line-height: 1.4; }
+    .panel p { margin: 0; padding: 0 22px 12px; color: var(--muted); font-family: "Lato", sans-serif; font-size: .9rem; line-height: 1.4; }
 
     svg { width: 100%; display: block; overflow: visible; }
     .circle { fill: #f5fbfb; stroke: var(--line); stroke-width: 2; }
-    .tick { stroke: #a8c2c6; stroke-width: 1.2; }
-    .axis { stroke: #a8c2c6; stroke-width: 1.5; }
+    .tick { stroke: #b4b8c0; stroke-width: 1.2; }
+    .axis { stroke: #b4b8c0; stroke-width: 1.5; }
     .x-vector { stroke: var(--blue); stroke-width: 6; stroke-linecap: round; }
     .y-vector { stroke: var(--coral); stroke-width: 6; stroke-linecap: round; }
     .arc { fill: none; stroke: var(--gold); stroke-width: 4; stroke-linecap: round; }
     .curve { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
     .guide { stroke: var(--coral); stroke-width: 2; stroke-dasharray: 5 6; }
     .dot { fill: var(--coral); stroke: var(--paper); stroke-width: 4; }
-    .svg-label { fill: var(--ink); font-family: "Trebuchet MS", sans-serif; font-size: 13px; font-weight: 700; }
-    .small-label { fill: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: 11px; }
+    .svg-label { fill: var(--ink); font-family: "Lato", sans-serif; font-size: 13px; font-weight: 700; }
+    .small-label { fill: var(--muted); font-family: "Lato", sans-serif; font-size: 11px; }
 
-    .equation { margin: 2px 22px 18px; padding: 16px; border-radius: 15px; background: var(--sky); font-family: "Trebuchet MS", sans-serif; font-size: 1.05rem; line-height: 1.6; }
+    .equation { margin: 2px 22px 18px; padding: 16px; border-radius: 15px; background: var(--sky); font-family: "Lato", sans-serif; font-size: 1.05rem; line-height: 1.6; }
     .equation strong { color: var(--coral); font-size: 1.55rem; }
     .fraction { display: inline-block; vertical-align: middle; text-align: center; line-height: 1.1; }
     .fraction span { display: block; padding: 0 5px; }
     .fraction span:first-child { border-bottom: 1px solid currentColor; }
 
-    .controls { margin-top: 24px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 15px 18px; border-radius: 18px; background: var(--ink); color: white; font-family: "Trebuchet MS", sans-serif; }
+    .controls { margin-top: 24px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 15px 18px; border-radius: 18px; background: var(--ink); color: white; font-family: "Lato", sans-serif; }
     button { border: 0; border-radius: 999px; padding: 10px 15px; color: white; background: var(--coral); font: inherit; font-weight: 700; cursor: pointer; }
     button:hover { transform: translateY(-1px); filter: brightness(1.05); }
     button.secondary { color: var(--ink); background: var(--gold); }
     input[type="range"] { accent-color: var(--gold); width: 100%; cursor: pointer; }
     .step { min-width: 85px; text-align: right; font-variant-numeric: tabular-nums; }
-    .hint { margin: 16px 4px 0; color: var(--muted); font-family: "Trebuchet MS", sans-serif; font-size: .9rem; }
+    .hint { margin: 16px 4px 0; color: var(--muted); font-family: "Lato", sans-serif; font-size: .9rem; }
 
     @media (max-width: 760px) {
       main { padding: 26px 15px 34px; }

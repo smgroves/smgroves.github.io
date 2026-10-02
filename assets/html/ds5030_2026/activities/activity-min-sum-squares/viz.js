@@ -9,7 +9,7 @@
   'use strict';
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const ACCENT = '#b14a2e';
+  const ACCENT = '#b509ac';
 
   function el(name, attrs, kids) {
     const e = document.createElementNS(SVGNS, name);
@@ -39,7 +39,7 @@
     const host = document.getElementById('viz-min-ss');
     if (!host) return;
 
-    const XBAR_COLOR = '#b5601f';
+    const XBAR_COLOR = '#0076df';
     const SAMPLE = [2, 6, 4, 3, 5];
     const N = SAMPLE.length;
     const SUM = SAMPLE.reduce((a, b) => a + b, 0);         // 20
@@ -77,23 +77,23 @@
       cSlider.out.textContent = 'c = ' + fmt(c, 2);
       svg.textContent = '';
 
-      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#cfc9bd', 'stroke-width': 1 }));
-      svg.appendChild(el('line', { x1: ml, y1: mt, x2: ml, y2: mt + plotH, stroke: '#cfc9bd', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#c9c9cf', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: mt, x2: ml, y2: mt + plotH, stroke: '#c9c9cf', 'stroke-width': 1 }));
       for (let v = 1; v <= 6; v++) {
         const px = x2px(v);
-        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#cfc9bd' }));
-        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#c9c9cf' }));
+        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = v; svg.appendChild(t);
       }
       [0, 10, 20, 30, 40, 50, 60].forEach(yv => {
         const py = y2px(yv);
-        svg.appendChild(el('line', { x1: ml - 4, y1: py, x2: ml, y2: py, stroke: '#cfc9bd' }));
-        const t = el('text', { x: ml - 8, y: py + 3, 'text-anchor': 'end', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: ml - 4, y1: py, x2: ml, y2: py, stroke: '#c9c9cf' }));
+        const t = el('text', { x: ml - 8, y: py + 3, 'text-anchor': 'end', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = yv; svg.appendChild(t);
       });
 
       SAMPLE.forEach(v => {
-        svg.appendChild(el('line', { x1: x2px(v), y1: mt + plotH, x2: x2px(v), y2: mt + plotH - 7, stroke: '#8a857d', 'stroke-width': 1.5, opacity: 0.6 }));
+        svg.appendChild(el('line', { x1: x2px(v), y1: mt + plotH, x2: x2px(v), y2: mt + plotH - 7, stroke: '#828282', 'stroke-width': 1.5, opacity: 0.6 }));
       });
 
       const NPTS = 100; let d = '';
@@ -102,7 +102,7 @@
         const y = SS(x);
         d += (i === 0 ? 'M ' : ' L ') + fmt(x2px(x), 1) + ' ' + fmt(y2px(y), 1);
       }
-      svg.appendChild(el('path', { d, fill: 'none', stroke: '#8a8577', 'stroke-width': 2 }));
+      svg.appendChild(el('path', { d, fill: 'none', stroke: '#828282', 'stroke-width': 2 }));
 
       const xbarPx = x2px(XBAR);
       svg.appendChild(el('line', { x1: xbarPx, y1: mt, x2: xbarPx, y2: mt + plotH, stroke: XBAR_COLOR, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }));
@@ -117,8 +117,8 @@
       svg.appendChild(thetaLabel);
 
       const cx = x2px(c), cy = y2px(SS(c));
-      svg.appendChild(el('line', { x1: cx, y1: cy, x2: cx, y2: mt + plotH, stroke: '#1f1d1a', 'stroke-width': 1, 'stroke-dasharray': '2 2', opacity: 0.6 }));
-      svg.appendChild(el('circle', { cx, cy, r: 5, fill: '#1f1d1a' }));
+      svg.appendChild(el('line', { x1: cx, y1: cy, x2: cx, y2: mt + plotH, stroke: '#212529', 'stroke-width': 1, 'stroke-dasharray': '2 2', opacity: 0.6 }));
+      svg.appendChild(el('circle', { cx, cy, r: 5, fill: '#212529' }));
 
       readout.innerHTML = 'SS(c) = Σ(xᵢ − c)² at c = ' + fmt(c, 2) + ' is <strong>' + fmt(SS(c), 2) + '</strong>. ' +
         'The minimum over every possible c sits at c = X̄ = 4, where SS = <strong>10</strong> — strictly less than SS(θ) = <strong>' + fmt(SS(THETA), 2) + '</strong> at the true mean θ = 3.5.';

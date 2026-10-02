@@ -13,9 +13,9 @@
   'use strict';
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const ACCENT = '#b14a2e';
-  const XBAR_FILL = '#f7c9a6', XBAR_STROKE = '#b5601f';
-  const INK = '#1f1d1a';
+  const ACCENT = '#b509ac';
+  const XBAR_FILL = '#bcd6f3', XBAR_STROKE = '#0076df';
+  const INK = '#212529';
 
   function el(name, attrs, kids) {
     const e = document.createElementNS(SVGNS, name);
@@ -134,12 +134,12 @@
           x: cx - barW / 2, y: topBaseline - h, width: barW, height: h,
           fill: XBAR_FILL, stroke: XBAR_STROKE, 'stroke-width': 1,
         }));
-        const t = el('text', { x: cx, y: topBaseline + 14, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        const t = el('text', { x: cx, y: topBaseline + 14, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = face;
         svg.appendChild(t);
       }
-      svg.appendChild(el('line', { x1: ml, y1: topBaseline, x2: ml + plotW, y2: topBaseline, stroke: '#cfc9bd', 'stroke-width': 1 }));
-      const topLabel = el('text', { x: ml, y: topMt - 2, 'text-anchor': 'start', fill: '#5b564c', 'font-family': 'var(--sans)', 'font-size': 11, 'font-weight': 700 });
+      svg.appendChild(el('line', { x1: ml, y1: topBaseline, x2: ml + plotW, y2: topBaseline, stroke: '#c9c9cf', 'stroke-width': 1 }));
+      const topLabel = el('text', { x: ml, y: topMt - 2, 'text-anchor': 'start', fill: '#55585f', 'font-family': 'var(--sans)', 'font-size': 11, 'font-weight': 700 });
       topLabel.textContent = 'This sample: ' + n + ' events (die-face units)';
       svg.appendChild(topLabel);
 
@@ -155,14 +155,14 @@
       const sigmaHatPx = botX2px(Math.min(botXmax, sigmaHat));
       svg.appendChild(el('line', { x1: sigmaHatPx, y1: botMt, x2: sigmaHatPx, y2: botBaseline, stroke: INK, 'stroke-width': 1.5 }));
 
-      svg.appendChild(el('line', { x1: ml, y1: botBaseline, x2: ml + plotW, y2: botBaseline, stroke: '#cfc9bd', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: botBaseline, x2: ml + plotW, y2: botBaseline, stroke: '#c9c9cf', 'stroke-width': 1 }));
       for (let xv = 0; xv <= botXmax; xv += 2) {
         const px = botX2px(xv);
-        svg.appendChild(el('line', { x1: px, y1: botBaseline, x2: px, y2: botBaseline + 4, stroke: '#cfc9bd' }));
-        const t = el('text', { x: px, y: botBaseline + 16, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: px, y1: botBaseline, x2: px, y2: botBaseline + 4, stroke: '#c9c9cf' }));
+        const t = el('text', { x: px, y: botBaseline + 16, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = xv; svg.appendChild(t);
       }
-      const botAxisLabel = el('text', { x: ml, y: botBaseline + 32, 'text-anchor': 'start', fill: '#5b564c', 'font-family': 'var(--sans)', 'font-size': 10.5 });
+      const botAxisLabel = el('text', { x: ml, y: botBaseline + 32, 'text-anchor': 'start', fill: '#55585f', 'font-family': 'var(--sans)', 'font-size': 10.5 });
       botAxisLabel.textContent = 'S²ₙ (squared-deviation units) — a different scale from the panel above';
       svg.appendChild(botAxisLabel);
       const sigmaHatLabel = el('text', { x: sigmaHatPx, y: botBaseline + 48, 'text-anchor': 'middle', fill: INK, 'font-family': 'var(--mono)', 'font-size': 11, 'font-weight': 700 });

@@ -9,7 +9,7 @@
   'use strict';
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const ACCENT = '#b14a2e';
+  const ACCENT = '#b509ac';
 
   function el(name, attrs, kids) {
     const e = document.createElementNS(SVGNS, name);
@@ -98,11 +98,11 @@
       const avg = ests.reduce((a, b) => a + b, 0) / ests.length;
 
       svg.textContent = '';
-      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#cfc9bd', 'stroke-width': 1 }));
+      svg.appendChild(el('line', { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: '#c9c9cf', 'stroke-width': 1 }));
       for (let xv = 0; xv <= xmax; xv += 2) {
         const px = x2px(xv);
-        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#cfc9bd' }));
-        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#8a857d', 'font-family': 'var(--sans)', 'font-size': 10 });
+        svg.appendChild(el('line', { x1: px, y1: mt + plotH, x2: px, y2: mt + plotH + 4, stroke: '#c9c9cf' }));
+        const t = el('text', { x: px, y: mt + plotH + 16, 'text-anchor': 'middle', fill: '#828282', 'font-family': 'var(--sans)', 'font-size': 10 });
         t.textContent = xv; svg.appendChild(t);
       }
 
@@ -114,7 +114,7 @@
       counts.forEach((c, b) => {
         if (!c) return;
         const x0 = x2px(xmin + b * bw), x1 = x2px(xmin + (b + 1) * bw);
-        svg.appendChild(el('rect', { x: x0 + 0.5, y: y2px(c), width: Math.max(0, x1 - x0 - 1), height: (mt + plotH) - y2px(c), fill: '#efe9dc', stroke: '#e0d8c6' }));
+        svg.appendChild(el('rect', { x: x0 + 0.5, y: y2px(c), width: Math.max(0, x1 - x0 - 1), height: (mt + plotH) - y2px(c), fill: '#eeeef2', stroke: '#dcdce2' }));
       });
 
       const truePx = x2px(Math.min(TRUE_VAR, xmax));
@@ -124,8 +124,8 @@
       svg.appendChild(trueLabel);
 
       const avgPx = x2px(Math.min(avg, xmax));
-      svg.appendChild(el('line', { x1: avgPx, y1: mt, x2: avgPx, y2: mt + plotH, stroke: '#1f1d1a', 'stroke-width': 1.5 }));
-      const avgLabel = el('text', { x: avgPx, y: 34, 'text-anchor': 'middle', fill: '#1f1d1a', 'font-family': 'var(--mono)', 'font-size': 11, 'font-weight': 700 });
+      svg.appendChild(el('line', { x1: avgPx, y1: mt, x2: avgPx, y2: mt + plotH, stroke: '#212529', 'stroke-width': 1.5 }));
+      const avgLabel = el('text', { x: avgPx, y: 34, 'text-anchor': 'middle', fill: '#212529', 'font-family': 'var(--mono)', 'font-size': 11, 'font-weight': 700 });
       avgLabel.textContent = 'avg ' + fmt(avg, 2);
       svg.appendChild(avgLabel);
 

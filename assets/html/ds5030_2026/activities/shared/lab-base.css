@@ -1,5 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Lora:wght@400;500;600;700&display=swap');
 /* ============================================================ */
-/*  DS 6042 — shared lab stylesheet                              */
+/*  DS 5030 — shared lab stylesheet                              */
 /*  Every lab page MUST link this file BEFORE its own styles.css */
 /*    <link rel="stylesheet" href="../shared/lab-base.css?v=N"> */
 /*    <link rel="stylesheet" href="styles.css?v=N">              */
@@ -13,25 +14,25 @@
 /* ============================================================ */
 
 :root {
-  --bg: #fbfaf7;
+  --bg: #ffffff;
   --bg-elev: #ffffff;
-  --bg-code: #f4f1ea;
-  --bg-viz: #fbf8f2;
-  --ink: #1f1d1a;
-  --ink-soft: #4a4742;
-  --ink-mute: #8a857d;
-  --rule: #e6e1d6;
-  --accent: #b14a2e;
-  --accent-soft: #e6c7bd;
-  --link: #8e3a22;
-  --highlight: #fff3d6;
-  --pos: #fde0d2;
-  --pos-stroke: #d8a48a;
+  --bg-code: #f5f5f7;
+  --bg-viz: #f8f8fa;
+  --ink: #212529;
+  --ink-soft: #4a4d55;
+  --ink-mute: #828282;
+  --rule: #e3e3e8;
+  --accent: #b509ac;
+  --accent-soft: #ecc3e8;
+  --link: #8f0788;
+  --highlight: #f6e7f5;
+  --pos: #dbe8f8;
+  --pos-stroke: #8fb3dd;
   --neg: #d5e6dc;
   --neg-stroke: #9ec3ae;
-  --zero: #f0eee5;
-  --serif: "Iowan Old Style", "Charter", Georgia, "Hoefler Text", Cambria, serif;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  --zero: #efeff2;
+  --serif: "Lora", Georgia, Cambria, serif;
+  --sans: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
 }
 
@@ -41,8 +42,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--serif);
-  font-size: 18px;
+  font-family: var(--sans);
+  font-size: 17px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -284,12 +285,12 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   border: 1px solid var(--rule);
 }
 .callout.insight {
-  background: #fffaef;
+  background: #f9f3fa;
   border-left: 3px solid var(--accent);
 }
 .callout.note {
   background: var(--bg-elev);
-  border-left: 3px solid #cfdbf2;
+  border-left: 3px solid #b9cfee;
 }
 .callout .label {
   display: block;
@@ -362,10 +363,10 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
 /* actually solved, so "argmin" is a familiar verb long before the   */
 /* optimization unit formalizes it. Same three rows every time.      */
 .callout.optview {
-  background: #f5f2fa;
-  border-left: 3px solid #7a6aa8;
+  background: #f4f4f7;
+  border-left: 3px solid #6b7280;
 }
-.callout.optview .label { color: #5d4f85; }
+.callout.optview .label { color: #4a4d55; }
 .optview-rows {
   list-style: none;
   margin: 0;
@@ -386,7 +387,7 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #5d4f85;
+  color: #4a4d55;
 }
 /* How the argmin is actually found. Three kinds, all semester:      */
 /* a closed form, a search over a grid, or an iterative solver.      */
@@ -401,8 +402,8 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   margin-right: 7px;
   white-space: nowrap;
 }
-.optview-how.how-formula   { background: var(--pos); color: #8a4a26; }
-.optview-how.how-grid      { background: var(--zero); color: #6b6558; }
+.optview-how.how-formula   { background: var(--pos); color: #1d4f8c; }
+.optview-how.how-grid      { background: var(--zero); color: #5c5f66; }
 .optview-how.how-iterative { background: var(--neg); color: #2f6b4c; }
 
 @media (max-width: 620px) {
@@ -413,9 +414,9 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
 .exercise {
   margin: 18px 0;
   padding: 14px 18px;
-  background: #fffdf5;
-  border: 1px solid #ead990;
-  border-left: 3px solid #c89b1f;
+  background: #f4f8fd;
+  border: 1px solid #c4d7f0;
+  border-left: 3px solid #0076df;
   border-radius: 6px;
 }
 .exercise .ex-label {
@@ -424,7 +425,7 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8a6f1a;
+  color: #00539c;
   margin-bottom: 8px;
 }
 .exercise details { margin-top: 8px; font-size: 14px; color: var(--ink-soft); }
@@ -444,7 +445,7 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   cursor: pointer;
   transition: background 0.08s, border-color 0.08s, opacity 0.08s;
 }
-.btn:hover { background: #f0eee5; border-color: var(--ink-mute); }
+.btn:hover { background: #efeff2; border-color: var(--ink-mute); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
 .btn.primary:hover { filter: brightness(1.08); }
@@ -480,7 +481,7 @@ aside.toc li.toc-sub a { padding-left: 20px; font-size: 12px; }
   transition: background 0.08s, border-color 0.08s, color 0.08s;
 }
 .chat-dl-btn:hover {
-  background: #fff3d6;
+  background: #f6e7f5;
   border-color: var(--accent);
   color: var(--ink);
 }
@@ -528,7 +529,7 @@ footer {
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
-.present-toggle:hover { background: #fff3d6; color: var(--ink); border-color: var(--accent); }
+.present-toggle:hover { background: #f6e7f5; color: var(--ink); border-color: var(--accent); }
 .present-toggle:active { transform: translateY(1px); }
 .present-toggle .present-icon { font-size: 16px; line-height: 1; }
 
@@ -611,11 +612,11 @@ body.presentation-mode .lab-index-link {
 .lab-prev-next-card.lab-prev-next-home {
   text-align: center;
   align-items: center;
-  background: #fff8e8;
-  border-color: #e7d9a8;
+  background: #f9f3fa;
+  border-color: #e3c6e1;
 }
 .lab-prev-next-card.lab-prev-next-home:hover {
-  background: #fff0c8;
+  background: #f3e3f2;
   border-color: var(--accent);
 }
 .lab-prev-next-dir {
@@ -736,7 +737,7 @@ body.presentation-mode table { font-size: 17px; }
 
 .glossary-panel {
   position: relative;
-  background: #fffaef;
+  background: #f9f3fa;
   border: 1px solid var(--rule);
   border-left: 3px solid var(--accent);
   border-radius: 0 6px 6px 0;
