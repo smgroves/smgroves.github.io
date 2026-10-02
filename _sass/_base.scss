@@ -533,14 +533,30 @@ footer.sticky-bottom {
     }
   }
 
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 10px;
+  }
+
   .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
     img {
       width: 100%;
+      height: 160px;
+      object-fit: cover;
     }
   }
 
   .card-body {
     padding: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
   }
 
   .card-title {
@@ -630,10 +646,12 @@ footer.sticky-bottom {
     }
   }
 
-  .grid-sizer,
+  .grid-sizer {
+    display: none;
+  }
+
   .grid-item {
     width: 250px;
-    margin-bottom: 10px;
   }
 
   h2.project-section {
@@ -715,7 +733,6 @@ footer.sticky-bottom {
     margin-bottom: 0.5rem;
   }
 
-  .grid-sizer,
   .grid-item {
     width: 260px;
   }
