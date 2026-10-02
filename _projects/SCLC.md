@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Epigenetic heterogeneity and plasticity of Small Cell Lung Cancer
-img: assets/img/cellsys_graphical_abstract.png
+img: assets/img/network.png
 importance: 3
 category: research
 status: active

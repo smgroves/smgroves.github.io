@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Building computational tools for phenotype identification and perturbation prediction
-img: assets/img/condensation.gif
+img: assets/img/cellsys_graphical_abstract.png
 importance: 3
 category: research
 status: active
@@ -11,4 +11,6 @@ blurb: >
 
 papers:
   - 10.1371/journal.pcbi.1007343
+  - 10.1016/j.cels.2022.07.006
+
 ---
