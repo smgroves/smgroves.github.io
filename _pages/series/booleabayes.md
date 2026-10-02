@@ -1,6 +1,6 @@
 ---
 layout: page
-title: BooleaBayes
+title: GRN Inference Overview
 permalink: /series/booleabayes/
 description: "BooleaBayes is a Bayesian-inspired boolean network inference algorithm for transcription factor networks."
 ---
@@ -9,7 +9,7 @@ This series goes through why network inference is important in biology. Cell ide
 
 ## Posts in this series
 
-1. [BooleaBayes Overview](/blog/2021/booleabayes-overview/) — Overview of this series
+1. [GRN Inference Overview](/blog/2021/booleabayes-overview/) — Overview of this series
 2. [Part 1: The Why](/blog/2021/booleabayes1/) — Why are GRNs relevant?
 3. [Part 2: Network Structure and Dynamics](/blog/2021/booleabayes2/) — How do we interpret the structure and dynamics of a GRN?
 4. [Part 3: Using Data to Build a Network for Small Cell Lung Cancer](/blog/2021/booleabayes3/) — How do we build a GRN?
