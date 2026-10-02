@@ -2,7 +2,7 @@
 layout: page
 title: Epigenetic heterogeneity and plasticity of Small Cell Lung Cancer
 img: assets/img/network.png
-importance: 3
+importance: 2
 category: research
 status: active
 # TODO: write your paragraph about this project
