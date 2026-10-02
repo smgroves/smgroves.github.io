@@ -10,7 +10,9 @@
           <img class="preview z-depth-1 rounded" src="{{ entry.preview | prepend: '/assets/img/publication_preview/' | relative_url }}">
           {%- endif -%}
         {%- elsif entry.abbr -%}
-          {%- if site.data.venues[entry.abbr] -%}
+          {%- if entry.journal == "bioRxiv" -%}
+            <abbr class="badge" style="background-color: var(--global-text-color-light) !important;">{{entry.abbr}}</abbr>
+          {%- elsif site.data.venues[entry.abbr] -%}
             {%- assign venue_style = nil -%}
             {%- if site.data.venues[entry.abbr].color != blank -%}
               {%- assign venue_style = site.data.venues[entry.abbr].color | prepend: 'style="background-color:' | append: '"' -%}
