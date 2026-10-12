@@ -70,6 +70,8 @@ code { font-family: var(--mono); font-size: .86em; background: var(--code-bg); p
 .pitfall { background: var(--pitfall-bg); }
 .pitfall .tag { color: var(--accent); }
 .slide { background: var(--slide-bg); border: 1px dashed var(--rule); }
+.case { background: var(--panel); border-left: 4px solid var(--accent); }
+.case .tag { color: var(--accent); }
 .slide .tag { color: var(--muted); }
 :root[data-theme="dark"] .analogy .tag { color: #8fd0b4; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .analogy .tag { color: #8fd0b4; } }
@@ -77,6 +79,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--code-bg); p
 table { border-collapse: collapse; font-family: var(--sans); font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
 th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 th { font-weight: 600; color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+th mjx-container { text-transform: none; }
 ul, ol.list { padding-left: 1.3em; margin: 0 0 14px; }
 li { margin: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
@@ -116,7 +119,6 @@ details.q .trap { color: var(--muted); font-style: italic; }
 .deeper a { display: inline-block; padding: 6px 12px; border: 1px solid var(--accent); border-radius: 4px; text-decoration: none; }
 .deeper a:hover, .deeper a:focus-visible { background: var(--accent); color: var(--bg); outline: none; }
 @media print { .deeper { display: none; } }
-mjx-container:not([display="true"]) { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
 </style>
 <script>
 window.MathJax = {
@@ -204,7 +206,7 @@ window.MathJax = {
 </header>
 
 <h2 id="how" style="border-top:0;margin-top:0">How to use this guide</h2>
-<p class="lede">Every section follows the same pattern: the idea in plain words, the formal statement with its book reference, then an analogy, a story proof, a worked example, and a note on how it could become a slide. Read the plain words and the analogy first; the formal box is there when you need to be exact.</p>
+<p class="lede">Every section follows the same pattern: the idea in plain words, the formal statement with its book reference, then an analogy, a story proof, a worked example, a real-world case, and a note on how it could become a slide. Read the plain words and the analogy first; the formal box is there when you need to be exact.</p>
 
 <div class="legend" aria-label="Box types">
   <span class="formal">Formal statement</span>
@@ -214,10 +216,13 @@ window.MathJax = {
   <span class="board">On the board</span>
   <span class="pitfall">Pitfall</span>
   <span class="slide">For the slides</span>
+  <span class="case">Why it matters</span>
   <span style="background:var(--panel);border:1px solid var(--rule)">Ask the class / Check yourself</span>
 </div>
 
 <p style="margin-top:16px">Book references look like <span class="src">AoS Thm 6.16</span> (Wasserman's numbered result) or <span class="src">CASI (10.6)</span> (Efron &amp; Hastie's equation number). Results that appear in neither book but are standard, or that come from this course's own simulations, are marked <span class="src">standard</span> or <span class="src">course</span>. The text paraphrases both books; it never quotes them at length.</p>
+
+<p><strong>Worked examples</strong> are meant to be done with a pencil and a normal or t table; where a constant like \(\log 40\) is needed, its rounded value is given. Boxes tagged <strong>From the books</strong> report published results to quote, not to recompute. <strong>Why it matters</strong> boxes connect a section to a real case where the idea cost someone money, a decision, or worse, or to a <em>scenario</em> from data-science work with illustrative numbers (always labelled as such).</p>
 
 <p>Two kinds of collapsible questions run through the guide. <strong>Ask the class</strong> questions are ones students think they can answer, paired with the answer you'll usually hear and the real answer. <strong>Check yourself</strong> questions are things a sharp student might ask you, so you can test yourself before class. Try each one before revealing it.</p>
 <div class="qtools"><button type="button" id="q-open">Reveal all answers</button><button type="button" id="q-close">Hide all answers</button></div>
@@ -332,6 +337,14 @@ $$V(\bar X) = \frac{n\sigma^2}{n^2} = \frac{\sigma^2}{n}, \qquad \text{se}(\bar 
 <p>With \(\sigma^2 = \frac83\): \(V(\bar X) = \frac{8/3}{2} = \frac43\) and \(\text{se} = \sqrt{8/3}\,/\sqrt 2 = 1.633/1.414 = 1.15\). ✓ Same number as the table.</p>
 <p>Two SDs are in play. The population SD \(\sigma = 1.63\) is the spread of single draws; the SE, 1.15, is the spread of averages of two draws. Averaging shrinks the spread by \(\sqrt 2\).</p>
 <p>The formula still needs \(\sigma\), which in practice you don't know. From one sample, say \((3, 5)\), you estimate it: \(\bar x = 4\), \(s^2 = \frac{(3-4)^2 + (5-4)^2}{2 - 1} = 2\), so \(\widehat{\text{se}} = \sqrt{s^2/n} = \sqrt{2/2} = 1\). The true se is 1.15; this sample's estimate of it is 1. A different sample gives a different \(\widehat{\text{se}}\) (from \((3, 3)\) it is 0), which is the question <a href="#uncertain">Section 4</a> takes up.</p>
+<p><strong>Why divide by \(n - 1\).</strong> Not just because \(\sigma\) is estimated, but because the deviations are measured from \(\bar x\), which was fit to these same data and so sits closer to them than \(\mu\) does. For \((3, 5)\): squared deviations from \(\bar x = 4\) sum to \(1 + 1 = 2\); from the true \(\mu = 3\) they would sum to \(0 + 4 = 4\). In general \(\sum(x_i - \bar x)^2 = \sum(x_i - \mu)^2 - n(\bar x - \mu)^2\), whose expectation is \(n\sigma^2 - \sigma^2 = (n-1)\sigma^2\). Dividing by \(n - 1\) makes \(s^2\) unbiased: averaged over the nine samples, \(s^2\) comes out to exactly \(\frac83 = \sigma^2\). (With \(\mu\) known, you would divide by \(n\). Each estimated center costs one degree of freedom, which is where \(n - k\) comes from in regression.)</p>
+<p><strong>But \(\widehat{\text{se}}\) is still biased low.</strong> \(s^2\) is unbiased for \(\sigma^2\); its square root is not unbiased for \(\sigma\). With \(n = 2\), \(s^2 = (x_1 - x_2)^2/2\), so \(\widehat{\text{se}} = \sqrt{s^2/2} = |x_1 - x_2|/2\):</p>
+<div class="tablewrap"><table><thead><tr><th>\(|x_1 - x_2|\)</th><th>0</th><th>2</th><th>4</th><th>average</th></tr></thead>
+<tbody><tr><td>samples (of 9)</td><td>3</td><td>4</td><td>2</td><td></td></tr>
+<tr><td>\(s^2\)</td><td>0</td><td>2</td><td>8</td><td>\(\frac{0 + 8 + 16}{9} = \frac83\) ✓ unbiased</td></tr>
+<tr><td>\(\widehat{\text{se}}\)</td><td>0</td><td>1</td><td>2</td><td>\(\frac{0 + 4 + 4}{9} = \frac89 = 0.89\), not 1.15</td></tr>
+</tbody></table></div>
+<p>The square root pulls the average down: the average of square roots is smaller than the square root of the average (Jensen's inequality). So the \(n - 1\) fixes the variance, not the SE. The gap shrinks as \(n\) grows, and it's one more way the SE is itself uncertain at small \(n\).</p>
 
 </div>
 <div class="board box"><span class="tag">On the board · the board dataset</span>
@@ -358,6 +371,13 @@ $$\widehat{\text{se}} = \Big[\sum_{i=1}^n (x_i - \bar x)^2 \big/ \big(n(n-1)\big
 <div class="example box"><span class="tag">Worked example · course and CASI</span>
 <p><strong>Car prices</strong> (92 Charlottesville listings, in $1000s): \(s = 8.17\), \(\widehat{\text{se}} = 8.17/\sqrt{92} = 0.85\). <strong>CASI's gfr data</strong> (211 kidney patients): \(54.25 \pm 0.95\) <span class="src">CASI (2.1)</span>. CASI's reading: don't trust the ".25", and even the "4" is shaky. Working backwards, \(s \approx 0.95\sqrt{211} \approx 13.8\).</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · the small-schools bet</span>
+<p>Around 2000 the Gates Foundation acted on data showing that small high schools were overrepresented among the top scorers on state tests. It funded the creation of small schools and the splitting of large ones: hundreds of millions of dollars, and by some counts well over a billion. Wainer pointed out that small schools are also overrepresented among the <em>worst</em> scorers. Size wasn't improving teaching; small schools simply have noisier averages. He called \(\sigma/\sqrt n\) "the most dangerous equation" for this reason, and the foundation later dropped the strategy. <span class="src">Wainer, <em>American Scientist</em> 2007</span></p>
+<p><strong>By hand.</strong> Suppose individual scores have SD 100. A school testing 25 students has \(\text{se} = 100/5 = 20\); a school testing 400 has \(\text{se} = 100/20 = 5\). A school average 40 points above the state's is 2 SEs, ordinary luck, for the small school, and 8 SEs, essentially impossible by luck, for the large one. Rank schools by raw average and both ends of the list fill up with small schools.</p>
+<p><strong>In data work:</strong> any leaderboard of averages over groups of unequal size. Stores by conversion rate, sales reps by close rate, hospitals by mortality, products by star rating.</p>
+</div>
+
 
 <div class="slide box"><span class="tag">For the slides</span>
 <p>Show "54.25 ± 0.95" and ask which digits are meaningful. Then put "8.59 ± 8.17" next to "8.59 ± 0.85" and ask which is the SE. Both take one minute and set up everything else.</p>
@@ -394,6 +414,20 @@ $$\text{MSE} = E_\theta\big[(\hat\theta_n - \theta)^2\big] = \text{bias}^2(\hat\
 <div class="analogy box"><span class="tag">Analogy · archery</span>
 <p>Bias is how far the center of your arrow cluster sits from the bullseye. Variance is how spread out the cluster is. A tight cluster in the wrong place and a loose cluster centered on the bullseye can have the same MSE.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · 2.4 million wrong answers</span>
+<p>In 1936 the <em>Literary Digest</em> mailed straw-poll ballots to millions of people, drawn largely from telephone directories, automobile registrations and its own subscriber lists. About 2.4 million came back, and the poll predicted that Alf Landon would beat Franklin Roosevelt with about 57% of the vote. Roosevelt won with about 61%; Landon got about 37%. George Gallup, with a far smaller sample, called the election correctly.</p>
+<p><strong>By hand.</strong> The SE of a proportion from 2.4 million responses is \(\sqrt{0.25/2{,}400{,}000} \approx 0.0003\): three hundredths of a percentage point. The miss on Landon's share was about 20 points. In MSE terms, \(\text{bias}^2 = 0.2^2 = 0.04\) against \(\text{se}^2 \approx 10^{-7}\): the bias term is hundreds of thousands of times larger. Collecting more responses the same way shrinks the SE and leaves the bias exactly where it was.</p>
+<p><strong>In data work:</strong> a survey of active users, a churn model trained only on customers who stayed long enough to be logged, an A/B test run only on desktop. A tiny SE on any of them describes the noise, not whether the sample resembles the population you will act on.</p>
+</div>
+
+<div class="case box"><span class="tag">Why it matters · real case and everyday version · biased estimates that predict better</span>
+<p>Efron and Morris took the batting averages of 18 major-league players after their first 45 at-bats of the 1970 season and asked how well each predicted that player's average for the rest of the season. Shrinking every player's average part of the way toward the group mean (the James–Stein estimator, CASI Ch 7) predicted better overall than each player's own average. The shrunken estimates are biased; they win on MSE because they cut variance by more than they add in bias. <span class="src">Efron &amp; Morris 1975; CASI Table 7.1</span></p>
+<p><strong>Everyday version, illustrative numbers.</strong> Rank products by star rating. Product A has one review, 5 stars. Product B has 200 reviews averaging 4.7. The site-wide average is 4.0. Raw averages put A first. A common fix treats every product as if it also had \(k = 10\) reviews at the site average:</p>
+$$\text{estimate} = 4.0 + \frac{n}{n + 10}\,(\text{raw average} - 4.0).$$
+<p>A: \(4.0 + \frac{1}{11}(1.0) = 4.09\). B: \(4.0 + \frac{200}{210}(0.7) = 4.67\). B now ranks first. The estimate for A is biased toward 4.0 and is much closer to where A's average will end up after 200 reviews.</p>
+</div>
+
 
 <div class="story box"><span class="tag">Story proof · why the cross term vanishes</span>
 <p>Split every miss into two legs: from the bullseye to the center of the cluster (always the same leg, the bias) and from the center of the cluster to this arrow (the scatter). The scatter leg points in every direction equally often, since by definition the cluster's center is its average. So on average it is perpendicular to the fixed bias leg, and Pythagoras applies: squared miss = squared bias + squared scatter.</p>
@@ -449,6 +483,77 @@ $$\text{MSE} = E_\theta\big[(\hat\theta_n - \theta)^2\big] = \text{bias}^2(\hat\
 <p>Convergence in probability is about the <em>values</em> getting close: the darts land near the bullseye. Convergence in distribution is only about the <em>histogram</em> of where darts land matching a target histogram, even if no individual dart is close to anything. The CLT is a statement of the second kind.</p>
 </div>
 
+<h4 id="conv-plain">What each kind of convergence says, in words</h4>
+<p>In all three, the target \(X\) is often a constant: "\(\bar X_n\) converges to \(\mu\)." Read each one as an answer to a different question.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Kind</th><th>The question it answers</th><th>Typical use</th></tr></thead>
+<tbody>
+<tr><td>in quadratic mean</td><td>Does the <em>average squared miss</em> go to zero?</td><td>MSE → 0, the easy route to consistency (AoS Thm 6.10)</td></tr>
+<tr><td>in probability</td><td>For any tolerance \(\epsilon\), does the <em>chance of missing by more than \(\epsilon\)</em> go to zero?</td><td>the LLN; consistency of an estimator</td></tr>
+<tr><td>in distribution</td><td>Does the <em>histogram</em> (the CDF) approach a target shape?</td><td>the CLT; approximate intervals and p-values</td></tr>
+</tbody></table></div>
+<p>The first two are about the random variable's <em>values</em> getting close to the target. The third is only about the <em>shape of its distribution</em>, which is why the CLT needs the rescaling \(\sqrt n(\bar X_n - \mu)\): without it, \(\bar X_n - \mu\) just shrinks to 0 and the "shape" is a spike.</p>
+
+<div class="board box"><span class="tag">On the board · all three at once for \(X_n \sim N(0, 1/n)\) (AoS Ex 5.3)</span>
+<p><strong>In probability.</strong> \(P(|X_n| > \epsilon) = 2\Phi(-\epsilon\sqrt n)\). With \(\epsilon = 0.1\):</p>
+<div class="tablewrap"><table><thead><tr><th>\(n\)</th><th>1</th><th>100</th><th>400</th><th>10,000</th></tr></thead>
+<tbody><tr><td>\(P(|X_n| > 0.1)\)</td><td>\(2\Phi(-0.1) = 0.92\)</td><td>\(2\Phi(-1) = 0.32\)</td><td>\(2\Phi(-2) = 0.046\)</td><td>\(2\Phi(-10) \approx 0\)</td></tr></tbody></table></div>
+<p><strong>In quadratic mean.</strong> \(E[X_n^2] = V(X_n) = 1/n \to 0\).</p>
+<p><strong>In distribution.</strong> \(F_n(t) = \Phi(t\sqrt n)\), which tends to 0 for \(t &lt; 0\) and to 1 for \(t > 0\): the CDF of a point mass at 0. But at \(t = 0\) itself, \(F_n(0) = \Phi(0) = \tfrac12\) for every \(n\), while the limit's CDF is \(F(0) = 1\). They never agree at 0. That's exactly why the definition says "at every \(t\) where \(F\) is continuous": the limit's CDF jumps at 0, and the definition forgives that one point.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · the counterexamples AoS uses</span>
+<p><strong>Probability without quadratic mean.</strong> \(U \sim \text{Uniform}(0, 1)\), \(X_n = \sqrt n\) if \(U &lt; 1/n\), else 0. \(P(|X_n| > \epsilon) = 1/n \to 0\), so \(X_n \xrightarrow{P} 0\). But \(E[X_n^2] = n \cdot \tfrac1n = 1\) for every \(n\): the average squared miss never shrinks.</p>
+<p><strong>Distribution without probability.</strong> \(X \sim N(0, 1)\) and \(X_n = -X\) for every \(n\). Every \(X_n\) has exactly the distribution of \(X\), so \(X_n \rightsquigarrow X\) trivially. But \(|X_n - X| = 2|X|\), which never gets small. Same histogram, different values. (A simpler version: flip a fresh fair coin at every \(n\). The distribution never changes; the value never settles.)</p>
+<p><strong>Converging in probability doesn't make the mean converge.</strong> \(X_n = n^2\) with probability \(1/n\), else 0. \(X_n \xrightarrow{P} 0\), yet \(E[X_n] = n \to \infty\). One rare, enormous value keeps the expectation alive.</p>
+</div>
+
+<div class="story box"><span class="tag">Story proof · why the arrows point the way they do (AoS Thm 5.4)</span>
+<p><strong>Quadratic mean ⇒ probability.</strong> A miss bigger than \(\epsilon\) contributes at least \(\epsilon^2\) to the squared error. So if misses like that happened with probability \(p\), the average squared miss would be at least \(p\epsilon^2\). That's Markov's inequality: \(P(|X_n - X| > \epsilon) \le E(X_n - X)^2/\epsilon^2\). If the right side goes to 0, so does the left.</p>
+<p><strong>Probability ⇒ distribution.</strong> If \(X_n\) is within \(\epsilon\) of \(X\) except with a tiny probability, then "\(X_n \le t\)" almost forces "\(X \le t + \epsilon\)", and "\(X \le t - \epsilon\)" almost forces "\(X_n \le t\)". So \(F(t - \epsilon) - \text{small} \le F_n(t) \le F(t + \epsilon) + \text{small}\). Shrink \(\epsilon\); if \(F\) is continuous at \(t\), both bounds close in on \(F(t)\).</p>
+<p><strong>The one reverse arrow: distribution to a constant ⇒ probability.</strong> If the limit is a point mass at \(c\), then \(P(|X_n - c| > \epsilon) \le F_n(c - \epsilon) + 1 - F_n(c + \epsilon) \to 0 + 1 - 1 = 0\). When the target is a single number, "the histogram becomes a spike at \(c\)" and "the values get close to \(c\)" are the same statement.</p>
+</div>
+
+<h4 id="slutsky">Combining limits: the continuous mapping theorem and Slutsky</h4>
+<div class="formal box"><span class="tag">Formal · AoS Thm 5.5</span>
+<p>Let \(g\) be continuous.</p>
+<ul>
+<li>If \(X_n \xrightarrow{P} X\) and \(Y_n \xrightarrow{P} Y\), then \(X_n + Y_n \xrightarrow{P} X + Y\) and \(X_nY_n \xrightarrow{P} XY\).</li>
+<li><strong>Continuous mapping:</strong> \(X_n \xrightarrow{P} X \Rightarrow g(X_n) \xrightarrow{P} g(X)\), and \(X_n \rightsquigarrow X \Rightarrow g(X_n) \rightsquigarrow g(X)\).</li>
+<li><strong>Slutsky:</strong> if \(X_n \rightsquigarrow X\) and \(Y_n \rightsquigarrow c\) (a constant), then \(X_n + Y_n \rightsquigarrow X + c\) and \(X_nY_n \rightsquigarrow cX\).</li>
+</ul>
+<p>Warning (AoS): \(X_n \rightsquigarrow X\) and \(Y_n \rightsquigarrow Y\) do <em>not</em> in general give \(X_n + Y_n \rightsquigarrow X + Y\). Slutsky needs one of the two limits to be a constant.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · why the CLT still works with \(s\) in place of \(\sigma\) (AoS Thm 5.10)</span>
+$$\frac{\sqrt n(\bar X_n - \mu)}{S_n} = \underbrace{\frac{\sqrt n(\bar X_n - \mu)}{\sigma}}_{\rightsquigarrow\ N(0,1)\ \text{(CLT)}} \times \underbrace{\frac{\sigma}{S_n}}_{\xrightarrow{P}\ 1}$$
+<p>The right factor: \(S_n^2 \xrightarrow{P} \sigma^2\) by the LLN (applied to the \(X_i^2\) and to \(\bar X_n\)), and \(g(v) = \sigma/\sqrt v\) is continuous, so \(\sigma/S_n \xrightarrow{P} 1\) by continuous mapping. Slutsky multiplies the limits: \(N(0,1) \times 1 = N(0,1)\). This one line licenses every "estimate ± 1.96 SE" interval in the course, and it also says what it doesn't promise: nothing about how fast \(\sigma/S_n\) gets close to 1, which is the small-\(n\) problem of <a href="#uncertain">Section 4</a>.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · Slutsky's warning, in one line</span>
+<p>Let \(X_n \sim N(0,1)\) and \(Y_n = -X_n\). Each is \(\rightsquigarrow N(0,1)\), so you might expect \(X_n + Y_n \rightsquigarrow N(0, 2)\). But \(X_n + Y_n = 0\) exactly. Convergence in distribution says nothing about how two sequences move <em>together</em>, which is why Slutsky insists one limit be a constant.</p>
+</div>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Result in this guide</th><th>Kind of convergence</th></tr></thead>
+<tbody>
+<tr><td>MSE → 0 (bias → 0 and se → 0)</td><td>quadratic mean, which gives consistency</td></tr>
+<tr><td>Weak LLN, \(\bar X_n \to \mu\)</td><td>probability</td></tr>
+<tr><td>Consistency of an estimator; the MLE</td><td>probability</td></tr>
+<tr><td>CLT, \(\sqrt n(\bar X_n - \mu)/\sigma\)</td><td>distribution</td></tr>
+<tr><td>CLT with \(S_n\) (Thm 5.10)</td><td>distribution, via Slutsky</td></tr>
+<tr><td>Delta method</td><td>distribution, via a Taylor step plus Slutsky</td></tr>
+<tr><td>MLE asymptotic normality</td><td>distribution (CLT on the score, LLN on the curvature, Slutsky to combine)</td></tr>
+</tbody></table></div>
+
+<details class="q ask"><summary><span class="qtag">Ask the class</span>The CLT is only convergence in distribution. So can we still say \(\bar X_n\) gets close to \(\mu\)?</summary>
+<p class="trap"><strong>The answer you'll hear:</strong> No, the CLT only talks about the shape.</p>
+<p><strong>The real answer:</strong> Yes, and the CLT even implies it. \(\sqrt n(\bar X_n - \mu) \rightsquigarrow N(0, \sigma^2)\) and \(1/\sqrt n \to 0\), so by Slutsky \(\bar X_n - \mu = \frac{1}{\sqrt n}\cdot\sqrt n(\bar X_n - \mu) \rightsquigarrow 0 \cdot N(0, \sigma^2) = 0\). Convergence in distribution to a constant is convergence in probability (AoS Thm 5.4(c)). The CLT says more than the LLN: not just that the miss goes to 0, but that it does so at rate \(1/\sqrt n\) with a bell shape.</p>
+</details>
+<details class="q self"><summary><span class="qtag">Check yourself</span>Why does it matter that the definition of convergence in distribution skips discontinuity points?</summary>
+<p>Because limits are often constants, whose CDFs jump. For \(X_n \sim N(0, 1/n)\), \(F_n(0) = \tfrac12\) forever while the limit's \(F(0) = 1\). Requiring agreement at every point would say this obviously-converging sequence doesn't converge. An even simpler case: the constants \(X_n = 1/n\) obviously converge to 0, yet \(F_n(0) = P(1/n \le 0) = 0\) for every \(n\) while \(F(0) = 1\). Which side of the jump the sequence approaches from shouldn't decide whether it converges, so the jump point is excluded.</p>
+</details>
+
 <h3 id="lln">The law of large numbers</h3>
 <div class="formal box"><span class="tag">Formal · AoS Thm 5.6 (WLLN)</span>
 <p>If \(X_1, \dots, X_n\) are iid with finite mean \(\mu\), then \(\bar X_n \xrightarrow{P} \mu\).</p>
@@ -467,6 +572,14 @@ $$\text{MSE} = E_\theta\big[(\hat\theta_n - \theta)^2\big] = \text{bias}^2(\hat\
 <p>Think of each observation as truth plus its own error. The sum of \(n\) errors is a random walk: each new error is a step left or right, independent of the others. Steps that agree add up, steps that disagree cancel, and independent steps agree and disagree equally often. A random walk of \(n\) steps of size \(\sigma\) typically ends about \(\sigma\sqrt n\) from where it started (the variances of independent steps add, so the total variance is \(n\sigma^2\)). Dividing the sum by \(n\) to get the mean shrinks that to \(\sigma\sqrt n / n = \sigma/\sqrt n\).</p>
 <p>The algebra is three lines: \(V(\bar X_n) = \frac{1}{n^2}V(\sum X_i) = \frac{1}{n^2}\sum V(X_i) = \sigma^2/n\). The middle step is the one that uses independence, and it is the step that fails for correlated data (Section 9).</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · pooling that didn't diversify</span>
+<p>A mortgage-backed security pools thousands of home loans. If defaults were independent, the LLN would make the pool's default rate nearly predictable, and that predictability is what made the safest slices of these pools look safe. Before 2007, many rating and pricing models treated defaults in different regions as only weakly correlated. When house prices fell across the country at once, defaults moved together, and pooled losses were far larger than those models allowed.</p>
+<p><strong>By hand.</strong> For \(n\) draws with SD \(\sigma\) and the same correlation \(\rho\) between every pair,</p>
+$$V(\bar X) = \frac{1}{n^2}\Big[n\sigma^2 + n(n-1)\rho\sigma^2\Big] = \sigma^2\Big[\frac1n + \rho\Big(1 - \frac1n\Big)\Big].$$
+<p>With \(n = 10{,}000\) and \(\rho = 0\), the SD of the average is \(\sigma/100\). With \(\rho = 0.1\) it is about \(\sqrt{0.1}\,\sigma = 0.32\sigma\): 32 times larger, and no number of extra loans brings it below \(0.32\sigma\). The middle step of the three-line proof above, the one that uses independence, is the step that broke.</p>
+</div>
+
 
 <details class="q ask"><summary><span class="qtag">Ask the class</span>The law of large numbers says that if a coin has come up heads 10 times in a row, tails is now "due." True?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Yes, things have to even out.</p>
@@ -505,6 +618,38 @@ $$Z_n = \frac{\bar X_n - \mu}{\sqrt{V(\bar X_n)}} = \frac{\sqrt n(\bar X_n - \mu
 <div class="pitfall box"><span class="tag">Pitfall</span>
 <p>The CLT needs finite variance. For Cauchy data (a t with 1 degree of freedom, AoS §2.4) the sample mean never settles and has the same Cauchy distribution for every \(n\). The course simulation shows \(s/\sqrt n\) bouncing between 0.47 and 0.92 as \(n\) grows from 100 to 100,000 <span class="src">course</span>.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · scenario · one customer moves the mean</span>
+<p><strong>Illustrative numbers.</strong> An A/B test on revenue per user has 1,000 users per arm. Almost everyone spends about $5, and one user in the whole experiment spends $10,000. Without that user, each arm averages $5. The arm that gets the big spender averages \((999 \times 5 + 10{,}000)/1{,}000 \approx \$15\). The "treatment effect" is plus or minus $10 per user depending on which arm one person was randomized into.</p>
+<p>Revenue is heavy-tailed. The CLT still applies eventually, but the Berry–Esseen error term grows with the third moment, so "eventually" can mean far more users than the test has. Experimentation teams usually cap (winsorize) revenue at a high percentile, test a less heavy-tailed metric, or check the result with a bootstrap, and they say in the report which of these they did.</p>
+</div>
+
+<h4 id="clt-fails">When the CLT fails</h4>
+<p>The CLT needs an average of many independent pieces, none of which dominates. It fails when the pieces are linked, when one piece can dominate, or when the estimate isn't an average at all. A useful check for any estimate: is there really a sum of iid pieces underneath it?</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Missing ingredient</th><th>Example</th><th>What goes wrong</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><strong>Independence</strong></td><td>time series; repeated measures; many rows per person</td><td>covariances don't vanish, so \(\sigma/\sqrt n\) is too small. Lag-1 correlation 0.7, \(n = 100\): true SE ≈ 2.4 × \(s/\sqrt n\); "95%" covers about 59%</td><td>model the dependence; bootstrap blocks or clusters</td></tr>
+<tr><td><strong>Finite variance</strong></td><td>Cauchy; Pareto-type tails (incomes, losses, views)</td><td>the mean of \(n\) Cauchy draws is Cauchy for every \(n\); with very heavy tails one value can move the mean arbitrarily</td><td>robust statistics (median, trimmed mean); model the tail</td></tr>
+<tr><td><strong>Enough data for the skew</strong></td><td>car prices at small \(n\); rare events</td><td>Berry–Esseen error grows with skew. Cars, \(n = 5\), estimated SE: 21% of "95%" intervals miss low, 1% high</td><td>more data; transform (log); bootstrap-t or BCa</td></tr>
+<tr><td><strong>A sum underneath</strong></td><td>sample max or min; Uniform(0, θ) via the max; parameters at a boundary</td><td>maxima of normals tend to a Gumbel, not a normal; the max's error shrinks like \(1/n\) with an exponential limit</td><td>extreme-value theory; exact or likelihood methods</td></tr>
+<tr><td><strong>A correct SE</strong></td><td>small \(n\); a failing bootstrap; classical regression SE under unequal variance</td><td>standardizing by a wrong or noisy SE: t-like tails (Section 4); Ames area SE a third of the truth (Section 8)</td><td>t or bootstrap-t; robust SE; block bootstrap</td></tr>
+<tr><td><strong>Random sampling</strong></td><td>convenience samples; selecting the largest of many estimates</td><td>the CLT controls variance, not bias: a precise normal interval around the wrong number (CASI's winner's curse: 5.29 vs ≈ 4.1)</td><td>better design; shrinkage</td></tr>
+</tbody></table></div>
+
+<div class="board box"><span class="tag">On the board · a rare event breaks the normal interval</span>
+<p>\(p = 0.01\), \(n = 100\). The expected number of successes is 1. The chance of seeing none is \(0.99^{100} = 0.37\). In that case \(\hat p = 0\), \(\widehat{\text{se}} = \sqrt{0 \times 1/100} = 0\), and the "95%" interval \(\hat p \pm 1.96\,\widehat{\text{se}}\) is \([0, 0]\): zero width, around an estimate that is certainly wrong. The sum of 100 Bernoulli(0.01) draws is closer to Poisson(1) than to normal. Use an exact (Clopper–Pearson) or Wilson interval; for zero successes the "rule of three" gives an approximate 95% upper bound of \(3/n = 0.03\).</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · a statistic that isn't a sum</span>
+<p>Data Uniform(0, θ); estimate θ by the sample max \(M\). \(P(M \le m) = (m/\theta)^n\), so \(P\big(n(\theta - M)/\theta > t\big) = (1 - t/n)^n \to e^{-t}\). The scaled error is exponential (one-sided, never negative), and it shrinks like \(1/n\) rather than \(1/\sqrt n\). With \(n = 20\) and \(\theta = 10\), the typical miss is about \(\theta/n = 0.5\), always below the truth. A symmetric \(M \pm 1.96\,\widehat{\text{se}}\) interval is the wrong shape entirely.</p>
+</div>
+
+<div class="story box"><span class="tag">Story proof · why "none of the pieces dominates" is the real condition</span>
+<p>The bell shape comes from many small, independent nudges canceling and compounding. If one nudge is as big as all the others combined (a single $38k truck in a sample of five cars, one Cauchy draw of size 10,000), the total looks like that one nudge, whatever its shape. If the nudges move together (dependence), they don't cancel, so there are effectively far fewer of them. And a maximum isn't built from nudges at all: it's decided by a single observation. The CLT is a statement about crowds, and each failure is a crowd that isn't really one.</p>
+</div>
+
+
 
 <details class="q ask"><summary><span class="qtag">Ask the class</span>The CLT says that with enough data, the data become normally distributed. True?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Yes, that's why everything is a bell curve.</p>
@@ -546,6 +691,12 @@ $$\frac{\sqrt n\,\big(g(Y_n) - g(\mu)\big)}{|g'(\mu)|\,\sigma} \rightsquigarrow 
 
 <p>CASI's teaching point: the delta method is a plug-in at the end. You derive \(|g'(\theta)|\sigma/\sqrt n\) with theory, then substitute \(\hat\theta\) for \(\theta\) and \(s\) for \(\sigma\). Keep that in mind for the table in Section 3.</p>
 
+<div class="case box"><span class="tag">Why it matters · real case · ratio metrics in A/B tests</span>
+<p>Click-through rate is total clicks divided by total page views. Online experiments randomize <em>users</em>, not page views, and one user's page views are correlated: the same person tends to click a lot or a little. Treating every page view as an independent Bernoulli trial gives an SE that is too small, so tests "find" effects too often. Deng, Knoblich and Lu at Microsoft describe the standard fix: write the metric as a ratio of two per-user averages, \(R = \bar Y/\bar X\) (clicks per user over views per user), and get its SE from the two-variable delta method. <span class="src">Deng et al., KDD 2018</span></p>
+$$V(R) \approx \frac{1}{n\,\mu_X^2}\Big(\sigma_Y^2 - 2R\,\sigma_{XY} + R^2\sigma_X^2\Big).$$
+<p>Every quantity in it is a per-user mean, variance or covariance, so the unit of analysis matches the unit of randomization. It is the same move as the paired comparison in Section 6: compute the SE at the level where the observations are independent.</p>
+</div>
+
 <!-- ============================================================ 3 -->
 <details class="q ask"><summary><span class="qtag">Ask the class</span>The car prices have \(\bar x = 8.59\) with SE 0.85. What's the SE of \(2\bar x + 3\)? Of \(\bar x^2\)?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Both are 0.85, or both are complicated.</p>
@@ -584,14 +735,14 @@ $$\hat F_n(x) = \frac{1}{n}\sum_{i=1}^n I(X_i \le x).$$
 <p>Board data \(\{2, 4, 5, 6, 8\}\). \(\hat F_5(x)\) jumps by \(1/5\) at each point: 0.2 at 2, 0.4 at 4, 0.6 at 5, 0.8 at 6, 1.0 at 8.</p>
 <ul>
 <li><strong>Thm 7.3 at \(x = 5\):</strong> \(\hat F(5) = 3/5 = 0.6\) (three points are \(\le 5\)), with \(\widehat{\text{se}} = \sqrt{0.6 \times 0.4/5} = 0.22\). It's just a proportion.</li>
-<li><strong>DKW band:</strong> \(\epsilon_5 = \sqrt{\log 40/10} = 0.61\). With five points, the 95% band for the whole CDF is ±0.61, nearly useless. For ±0.05 you need \(n = \log 40/(2 \times 0.05^2) \approx 738\).</li>
+<li><strong>DKW band:</strong> with \(\log 40 \approx 3.7\) (natural log), \(\epsilon_5 = \sqrt{\log 40/10} \approx \sqrt{0.37} = 0.61\). With five points, the 95% band for the whole CDF is ±0.61, nearly useless. For ±0.05 you need \(n = \log 40/(2 \times 0.05^2) \approx 3.7/0.005 = 740\).</li>
 </ul>
 
 </div>
 
 
 <div class="example box"><span class="tag">Worked example · DKW band for the cars</span>
-<p>\(n = 92\), \(\alpha = 0.05\): \(\epsilon_n = \sqrt{\log 40 / 184} = \sqrt{3.689/184} = 0.142\). The true CDF of car prices lies within ±0.14 of the ECDF, everywhere at once, with 95% confidence. (AoS Ex 7.6 does this for the 799 nerve-pulse waiting times.)</p>
+<p>\(n = 92\), \(\alpha = 0.05\): \(\epsilon_n = \sqrt{\log 40 / 184} \approx \sqrt{3.7/184} \approx \sqrt{0.020} = 0.14\). The true CDF of car prices lies within ±0.14 of the ECDF, everywhere at once, with 95% confidence. (AoS Ex 7.6 does this for the 799 nerve-pulse waiting times.)</p>
 </div>
 
 <div class="formal box"><span class="tag">Formal · AoS Defs 7.7–7.8, Thm 7.9</span>
@@ -713,6 +864,53 @@ $$\frac{\hat\theta_n - \theta}{\text{se}} \rightsquigarrow N(0,1), \quad \text{s
 <p>You can't cook a hundred pots of soup to see how much the saltiness varies from batch to batch. But you have one pot. Ladle out a bowl, taste it, pour it back, stir, ladle again. Because each ladle draws from the same pot with replacement, the bowls vary the way bowls from that pot vary. The bootstrap assumes your pot is a fair stand-in for every pot the recipe could have produced.</p>
 </div>
 
+<h4 id="boot-vs-sampling">Sampling distribution vs. bootstrap distribution</h4>
+<p>They're the same kind of object built from different sources. The sampling distribution draws new samples from the population; the bootstrap distribution re-draws from your one sample. The bootstrap copies the sampling distribution's <em>spread and shape</em>, never its <em>location</em>, and even the spread is only as good as your sample is representative.</p>
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>Sampling distribution</th><th>Bootstrap distribution</th></tr></thead>
+<tbody>
+<tr><td>Samples come from</td><td>the population \(F\) (unknown)</td><td>your sample, treated as the population (\(\hat F_n\))</td></tr>
+<tr><td>How many exist</td><td>one, fixed by \(F\) and \(n\)</td><td>one per dataset: every student's is different</td></tr>
+<tr><td>Centered at</td><td>the true \(\theta\) (if unbiased)</td><td>your estimate \(\hat\theta\)</td></tr>
+<tr><td>Spread</td><td>the true SE</td><td>an estimate of the SE</td></tr>
+<tr><td>Values it can take</td><td>anything the population can produce</td><td>only combinations of your data points</td></tr>
+<tr><td>Error</td><td>none: it is the truth</td><td>statistical (\(\hat F_n \ne F\), shrinks with \(n\)) plus Monte Carlo (finite \(B\), shrinks with \(B\))</td></tr>
+</tbody></table></div>
+<p><strong>What's the same.</strong> The bootstrap bets that the bootstrap miss \(\hat\theta^* - \hat\theta\) behaves like the real miss \(\hat\theta - \theta\). That's why its SD estimates the SE and its shape estimates the shape of your error (the basis of the <a href="#ci-boot">pivotal interval</a>). It never tells you where \(\theta\) is: recentering on \(\hat\theta\) does not move your estimate toward the truth.</p>
+
+<div class="board box"><span class="tag">On the board · one sampling distribution, three bootstrap distributions</span>
+<p>Population \(\{1, 3, 5\}\), samples of size 3. The <strong>sampling distribution</strong> of the mean is fixed: the 27 equally likely samples give means 1, 5/3, 7/3, 3, 11/3, 13/3, 5 with counts 1, 3, 6, 7, 6, 3, 1, centered at 3 with SE \(\sqrt{8/9} = 0.94\).</p>
+<p>Three students each draw one sample and bootstrap it. For the mean, the ideal bootstrap SE is the plug-in \(\hat\sigma/\sqrt n\) of their own sample:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>student's sample</th><th>bootstrap center \(\bar x\)</th><th>plug-in \(\hat\sigma^2\)</th><th>bootstrap SE</th><th>vs. truth (3, 0.94)</th></tr></thead>
+<tbody>
+<tr><td>\(\{1, 3, 5\}\)</td><td>3</td><td>\((4 + 0 + 4)/3 = 8/3\)</td><td>\(\sqrt{8/9} = 0.94\)</td><td>exact match</td></tr>
+<tr><td>\(\{3, 5, 5\}\)</td><td>13/3 = 4.33</td><td>\((16/9 + 4/9 + 4/9)/3 = 8/9\)</td><td>\(\sqrt{8/27} = 0.54\)</td><td>center off by 1.33; SE 40% too small</td></tr>
+<tr><td>\(\{3, 3, 3\}\)</td><td>3</td><td>0</td><td>0</td><td>every resample is \(\{3, 3, 3\}\): a single spike</td></tr>
+</tbody></table></div>
+<p>Each bootstrap distribution estimates the one sampling distribution; how well depends on how representative the sample is. The \(\{3, 3, 3\}\) row is the one students remember.</p>
+</div>
+
+<div class="pitfall box"><span class="tag">Pitfall · where the two come apart</span>
+<ul>
+<li><strong>Small \(n\):</strong> \(\hat F_n\) is a rough copy of \(F\), so the bootstrap SE is itself noisy (<a href="#uncertain">Section 4</a>).</li>
+<li><strong>Missing tails:</strong> if your sample lacks the rare $38k truck, no resample will ever contain it.</li>
+<li><strong>Extremes:</strong> the bootstrap distribution of the maximum can't exceed your largest data point, so it piles up there and fails.</li>
+<li><strong>Dependence:</strong> resampling single points destroys correlation that the sampling distribution has; resample blocks instead (<a href="#resampling">moving blocks</a>).</li>
+<li><strong>Divisor \(n\):</strong> for the mean, the bootstrap SE is \(\hat\sigma/\sqrt n\), slightly small at small \(n\): 0.89 vs. 1 on the board data.</li>
+</ul>
+</div>
+
+<div class="analogy box"><span class="tag">Analogy · many pots vs. many ladles</span>
+<p>The sampling distribution is cooking a thousand pots from the same recipe and tasting each. The bootstrap is tasting many ladles from the one pot you made. If your pot is typical, ladles vary the way pots vary. If you oversalted your pot, every ladle is oversalted, and no amount of ladling reveals it.</p>
+</div>
+
+<details class="q ask"><summary><span class="qtag">Ask the class</span>Two students bootstrap the mean of their own samples from the same population. One gets SE 0.94, the other 0.54. Did one of them make a mistake?</summary>
+<p class="trap"><strong>The answer you'll hear:</strong> Yes, the bootstrap should give the same answer for the same population.</p>
+<p><strong>The real answer:</strong> Neither. Each bootstrap distribution is built from that student's sample, so it is an <em>estimate</em> of the one true sampling distribution, and estimates vary. Here the population is \(\{1, 3, 5\}\): the sample \(\{1, 3, 5\}\) gives 0.94 (exactly right), and \(\{3, 5, 5\}\) gives 0.54 (too small, because it happens to be less spread out). The disagreement is the bootstrap's own sampling variability.</p>
+</details>
+
+
 <div class="story box"><span class="tag">Story proof · each resample leaves out about 37% of the data</span>
 <p>Fix one data point. On each of the \(n\) draws, the chance of <em>not</em> picking it is \(1 - 1/n\). The draws are independent, so the chance it is never picked is \((1 - 1/n)^n\), which tends to \(e^{-1} \approx 0.368\). For the 92 cars, \((1 - 1/92)^{92} = 0.366\). So every bootstrap sample is missing about a third of the original points, with others appearing two or three times. That is exactly why resamples vary, and why they vary by about the right amount. (CASI (10.34): the count \(N_i\) of copies of point \(i\) is Binomial\((n, 1/n)\), mean 1, variance \((n-1)/n\).)</p>
 </div>
@@ -721,7 +919,7 @@ $$\frac{\hat\theta_n - \theta}{\text{se}} \rightsquigarrow N(0,1), \quad \text{s
 <p>A bootstrap sample is determined by how many copies of each of the \(n\) points it contains: \(n\) indistinguishable draws placed into \(n\) labeled bins. Stars and bars: \(\binom{2n-1}{n}\) ways. For \(n = 3\) that's 10 (CASI Fig 10.3); for \(n = 10\), 92,378; for \(n = 20\), \(6.9 \times 10^{10}\) <span class="src">CASI (10.38)</span>. You could never enumerate them, which is why we sample \(B\) of them at random. For \(n = 3\), the resample \(\{x_1, x_2, x_3\}\) itself has probability \(3!/3^3 = 6/27\), each "all one point" resample has \(1/27\), and the six mixed ones \(3/27\) each.</p>
 </div>
 
-<div class="example box"><span class="tag">Worked examples from the books</span>
+<div class="example box"><span class="tag">From the books · results to quote</span>
 <ul>
 <li><strong>Law school (AoS Ex 8.6, Efron's original example):</strong> 15 schools, correlation of LSAT and GPA \(\hat\theta = 0.776\); bootstrap \(\widehat{\text{se}} = 0.137\) (\(B = 1000\)). Normal interval \(0.78 \pm 2(0.137) = (0.51, 1.00)\); percentile interval \((0.46, 0.96)\).</li>
 <li><strong>Nerve data skewness (AoS Ex 8.2):</strong> bootstrap \(\widehat{\text{se}} = 0.16\) for the plug-in skewness.</li>
@@ -736,6 +934,13 @@ $$\frac{\hat\theta_n - \theta}{\text{se}} \rightsquigarrow N(0,1), \quad \text{s
 <div class="pitfall box"><span class="tag">Pitfall · what the bootstrap can't fix</span>
 <p>The bootstrap inherits every flaw of \(\hat F_n\). If the sample isn't representative, resampling it faithfully reproduces the bias. If the data are dependent, resampling individual points destroys the dependence and understates the SE (see <a href="#resampling">moving blocks</a>). It also fails for statistics that depend on extreme order statistics, such as the sample maximum.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · scenario · an SLA on the 95th percentile</span>
+<p><strong>Illustrative numbers.</strong> A service promises that 95% of requests finish within 300 ms. From 200 logged requests, the 95th percentile (the 190th smallest value) is 280 ms. Is that comfortably under target? No textbook SE formula for a sample percentile avoids the unknown density, the same problem as the median in Section 2. The bootstrap gives an SE directly: resample the 200 requests, recompute the 190th value, repeat.</p>
+<p><strong>By hand, the intuition.</strong> The 190th value has only 10 requests above it, so the estimate is governed by a handful of slow requests. A resample that happens to include two extra copies of one slow outlier moves it a lot. That is why tail percentiles need far more data than means for the same precision.</p>
+<p><strong>And the limit.</strong> If all 200 requests came from a quiet Sunday, resampling them reproduces Sunday faithfully. The bootstrap measures sampling noise, not whether Monday looks like Sunday.</p>
+</div>
+
 
 <details class="q ask"><summary><span class="qtag">Ask the class</span>Why does the bootstrap sample <em>with</em> replacement? What would happen without it?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> To get more data.</p>
@@ -915,6 +1120,13 @@ $$T = \frac{\sqrt n\,(\bar X_n - \mu_0)}{S_n} \sim t_{n-1} \text{ under } H_0: \
 <p>\(n = 9\), \(\bar x = 54\), \(s = 6\), \(H_0: \mu = 50\). \(\widehat{\text{se}} = 6/3 = 2\), \(t = 2.0\). Normal: \(2.0 > 1.96\), reject (p = 0.046). \(t_8\): \(2.0 &lt; 2.306\), fail to reject (p = 0.081). With 9 points the SE is itself uncertain by about ±25%, and the t answer accounts for it.</p>
 </div>
 
+<div class="case box"><span class="tag">Why it matters · real case · why the t-distribution exists</span>
+<p>William Sealy Gosset worked at the Guinness brewery in Dublin, where experiments on barley and brewing came in tiny batches: a handful of measurements, not hundreds. The large-sample normal tables gave misleading answers at those sizes. He worked out the distribution of \((\bar x - \mu)/(s/\sqrt n)\) for normal data and published it in 1908 under the name "Student," because Guinness restricted what its employees could publish.</p>
+<p><strong>By hand.</strong> With \(n = 4\), the 95% critical value is \(t_{3,.025} = 3.182\) instead of 1.96, so the honest interval is \(3.182/1.96 = 1.62\) times as wide. A rule built on 1.96 would have been overconfident on every small batch.</p>
+<p><strong>In data work:</strong> an experiment across 5 regions, 8 stores or 6 hospitals is a Guinness problem even when each unit contributes millions of rows. The number of independent units sets the degrees of freedom.</p>
+</div>
+
+
 <details class="q ask"><summary><span class="qtag">Ask the class</span>If the SE is estimated, why doesn't the t-test have the same problem as the z-test?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Because t is more conservative.</p>
 <p><strong>The real answer:</strong> Because its critical value is computed knowing the SE is estimated. For normal data, \(T = (\bar X - \mu)/(S/\sqrt n)\) has exactly the \(t_{n-1}\) distribution, with the randomness of \(S\) built in. The z-test pretends \(S = \sigma\). Being wider isn't the point; being correctly calibrated is.</p>
@@ -937,7 +1149,7 @@ $$\hat\theta_t[\alpha] = \hat\theta - \widehat{\text{se}}\cdot t^{*(1-\alpha)}.$
 
 </div>
 
-<div class="example box"><span class="tag">Worked example · CASI §11.5</span>
+<div class="example box"><span class="tag">From the books · CASI §11.5</span>
 <p>AML minus ALL means, \(n_x = 47\), \(n_y = 25\): Student's 95% interval \((0.062, 0.314)\); bootstrap-t \((0.072, 0.323)\). The \(t^*\) distribution was close to \(t_{70}\), which supports the original normality assumption. Course version: the "is the SE uncertain?" effect is exactly what \(t^*\) captures, because each resample brings its own SE.</p>
 </div>
 
@@ -966,6 +1178,12 @@ $$P_\theta(\theta \in C_n) \ge 1 - \alpha \quad \text{for all } \theta.$$
 <div class="analogy box"><span class="tag">Analogy · ring toss</span>
 <p>The peg (\(\theta\)) is bolted to the floor. You throw rings (intervals). A "95% ring" is a ring size and throwing method that lands around the peg 95% of the time. After a throw, the ring either circles the peg or it doesn't; there's no 95% about that one ring. The 95% belongs to your arm.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · experts misread intervals too</span>
+<p>Hoekstra, Morey, Rouder and Wagenmakers gave researchers and students a reported 95% interval, (0.1, 0.4), and six statements to mark true or false, including "there is a 95% probability that the true mean lies between 0.1 and 0.4." By the authors' standard all six were false, and most respondents, researchers included, endorsed at least one. Experience did not reliably protect against it. <span class="src">Psychonomic Bulletin &amp; Review 2014</span></p>
+<p><strong>In data work:</strong> when a report or dashboard shows an interval, put the sentence next to it: "intervals built this way contain the true value in 95% of samples." Readers will otherwise supply the probability-about-\(\theta\) reading, and plan budgets as if it were true.</p>
+</div>
+
 
 <div class="example box"><span class="tag">Worked example · AoS Ex 6.14 (Berger &amp; Wolpert)</span>
 <p>\(\theta\) is fixed; \(X_1, X_2\) are independent ±1 with probability 1/2 each; you observe \(Y_i = \theta + X_i\). Let \(C = \{Y_1 - 1\}\) if \(Y_1 = Y_2\), and \(C = \{(Y_1+Y_2)/2\}\) if they differ. Whatever \(\theta\) is, \(P(\theta \in C) = 3/4\), so \(C\) is a 75% confidence set. Now observe \(Y_1 = 15\), \(Y_2 = 17\): \(C = \{16\}\), and you are <em>certain</em> \(\theta = 16\). Nothing is wrong with calling \(\{16\}\) a 75% interval; it just isn't a probability statement about \(\theta\). This is the best two-minute demonstration that coverage and belief are different things.</p>
@@ -1009,7 +1227,7 @@ $$P(\hat\theta_n - z_{\alpha/2}\widehat{\text{se}} &lt; \theta &lt; \hat\theta_n
 
 <div class="example box"><span class="tag">Worked examples</span>
 <p><strong>AoS Ex 6.17 (Bernoulli):</strong> \(V(\hat p_n) = p(1-p)/n\), so the interval is \(\hat p_n \pm z_{\alpha/2}\sqrt{\hat p_n(1-\hat p_n)/n}\).</p>
-<p><strong>AoS Ex 6.15 (Hoeffding, exact but wider):</strong> \(\hat p_n \pm \epsilon_n\) with \(\epsilon_n^2 = \log(2/\alpha)/(2n)\) has coverage at least \(1-\alpha\) for <em>every</em> \(n\). At \(n = 100\), \(\alpha = 0.05\): \(\epsilon_n = 0.136\), versus the normal half-width \(1.96(0.05) = 0.098\) at \(\hat p = 0.5\). Exactness costs width. AoS: the normal interval "is shorter but it only has approximately (large sample) correct coverage."</p>
+<p><strong>AoS Ex 6.15 (Hoeffding, exact but wider):</strong> \(\hat p_n \pm \epsilon_n\) with \(\epsilon_n^2 = \log(2/\alpha)/(2n)\) has coverage at least \(1-\alpha\) for <em>every</em> \(n\). At \(n = 100\), \(\alpha = 0.05\): \(\epsilon_n = \sqrt{3.7/200} \approx \sqrt{0.0185} \approx 0.136\), versus the normal half-width \(1.96(0.05) = 0.098\) at \(\hat p = 0.5\). Exactness costs width. AoS: the normal interval "is shorter but it only has approximately (large sample) correct coverage."</p>
 <p><strong>Course, car prices:</strong> \(8.59 \pm 1.645(0.852) = (7.19, 9.99)\) and \(8.59 \pm 1.96(0.852) = (6.92, 10.26)\).</p>
 </div>
 
@@ -1051,7 +1269,7 @@ $$C_n = \big(2\hat\theta_n - \theta^*_{1-\alpha/2},\ 2\hat\theta_n - \theta^*_{\
 <p>Suppose some unknown monotone transformation \(\phi = m(\theta)\) makes the estimator exactly normal with constant spread. On that scale the right interval is the obvious symmetric one, and it coincides with the percentiles of the transformed replicates. Monotone transformations carry percentiles along with them: the 2.5th percentile of \(m(\hat\theta^*)\) is \(m\) of the 2.5th percentile of \(\hat\theta^*\). So transforming back, the percentile interval on the original scale is the right interval, even though you never learned \(m\). The bootstrap histogram does the transformation for you <span class="src">CASI §11.2</span>.</p>
 </div>
 
-<div class="example box"><span class="tag">Worked examples · AoS Ex 8.4, 8.5</span>
+<div class="example box"><span class="tag">From the books · AoS Ex 8.4, 8.5</span>
 <div class="tablewrap"><table>
 <thead><tr><th>Method</th><th>Nerve-data skewness</th><th>Cholesterol median difference (est. 18.5, se 7.42)</th></tr></thead>
 <tbody>
@@ -1086,7 +1304,7 @@ $$\hat\theta_{BCa}[\alpha] = \hat G^{-1}\Big(\Phi\Big(z_0 + \frac{z_0 + z^{(\alp
 </div>
 
 
-<div class="example box"><span class="tag">Worked example · CASI §11.2–11.3 (student score correlation)</span>
+<div class="example box"><span class="tag">From the books · CASI §11.2–11.3 (student score correlation)</span>
 <p>\(n = 22\), \(\hat\theta = 0.498\). The histogram of \(B = 2000\) bootstrap correlations is long-tailed to the left, so asymptotic normality hasn't set in. Percentile 95% interval: \((0.118, 0.758)\). For the parametric version, \(p_0 = 0.478\) gives \(z_0 = -0.055\), shifting the BC limits slightly downward.</p>
 </div>
 
@@ -1162,9 +1380,21 @@ $$1 - \Phi\Big(\frac{\theta_0 - \theta_*}{\widehat{\text{se}}} + z_{\alpha/2}\Bi
 <li><strong>Same test set (paired):</strong> the samples are no longer independent. Let \(D_i = X_i - Y_i\) (1 if only algorithm 1 is right on case \(i\), −1 if only algorithm 2, 0 otherwise); then \(\hat\delta = \bar D\), \(\widehat{\text{se}} = s_D/\sqrt n\). Using the unpaired formula here would be the dependence failure.</li>
 <li><strong>Two means:</strong> \(W = (\bar X - \bar Y)/\sqrt{s_1^2/m + s_2^2/n}\).</li>
 <li><strong>Two medians:</strong> \(\hat\delta = \hat\nu_1 - \hat\nu_2\), SE from the bootstrap, \(W = \hat\delta/\widehat{\text{se}}\). A Wald test for a statistic with no formula SE.</li>
-<li><strong>Cholesterol (Ex 10.15):</strong> \(W = (216.2 - 195.3)/\sqrt{5^2 + 2.4^2} = 20.9/5.55 = 3.78\); p-value \(2\Phi(-3.78) \approx 0.0002\).</li>
+<li><strong>Cholesterol (Ex 10.15):</strong> \(W = (216.2 - 195.3)/\sqrt{5^2 + 2.4^2}\). The numerator is 20.9 and the denominator is \(\sqrt{25 + 5.76} = 5.55\), so \(W \approx 3.8\); p-value \(2\Phi(-3.8) \approx 0.0002\) (AoS reports 3.78).</li>
 </ul>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · scenario · comparing two models on one test set</span>
+<p><strong>Illustrative numbers.</strong> Model A is right on 85 of 100 test cases, model B on 80. The unpaired formula gives \(\widehat{\text{se}} = \sqrt{0.85(0.15)/100 + 0.80(0.20)/100} = \sqrt{0.002875} \approx 0.054\), so \(z = 0.05/0.054 \approx 0.93\).</p>
+<p>But both models saw the same 100 cases. Suppose A alone is right on 8 cases, B alone on 3, and they agree on the other 89. The per-case differences \(D_i\) are eight 1s, three −1s and 89 zeros:</p>
+<ul>
+<li>\(\bar D = (8 - 3)/100 = 0.05\), the same 5-point gap.</li>
+<li>\(\sum(D_i - \bar D)^2 = \sum D_i^2 - n\bar D^2 = 11 - 0.25 = 10.75\), so \(s_D^2 = 10.75/99 \approx 0.109\) and \(s_D \approx 0.33\).</li>
+<li>\(\widehat{\text{se}} = 0.33/10 = 0.033\), so \(z = 0.05/0.033 \approx 1.5\).</li>
+</ul>
+<p>The paired SE is 40% smaller because the 89 cases both models get right or both get wrong cancel out. Neither \(z\) clears 1.96 at \(n = 100\). With 300 test cases at the same rates, both \(z\)'s grow by \(\sqrt 3 = 1.73\): paired \(z \approx 2.6\) (significant), unpaired \(z \approx 1.6\) (not). The unpaired analysis would tell a team their better model isn't better. McNemar's test is the exact version of this paired comparison.</p>
+</div>
+
 
 <details class="q ask"><summary><span class="qtag">Ask the class</span>Two research groups compare two algorithms on the <em>same</em> test set and use the two-sample SE formula. What's wrong?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Nothing, it's two samples.</p>
@@ -1174,6 +1404,12 @@ $$1 - \Phi\Big(\frac{\theta_0 - \theta_*}{\widehat{\text{se}}} + z_{\alpha/2}\Bi
 <p class="trap"><strong>The answer you'll hear:</strong> 95%, because the effect is real.</p>
 <p><strong>The real answer:</strong> About 50%. The replication's estimate is centered on the true effect (1.96 SEs out) and wobbles ±1 SE, so it lands past 1.96 about half the time (AoS Thm 10.6 gives 0.50). Barely significant results fail to replicate half the time even when they're true.</p>
 </details>
+
+<div class="case box"><span class="tag">Why it matters · real case · drug programs built on findings that didn't replicate</span>
+<p>Drug companies choose which biological targets to pursue partly from published results. When Bayer scientists reviewed 67 in-house projects that tried to confirm published drug targets, only about a fifth to a quarter matched the literature <span class="src">Prinz et al. 2011</span>. Amgen scientists tried to reproduce 53 landmark cancer-biology papers and confirmed 6 <span class="src">Begley &amp; Ellis 2012</span>. Lab methods and selective reporting contribute, but the arithmetic above is part of it: a real effect that barely cleared \(p = 0.05\) replicates only about half the time, and some published effects had no real effect behind them at all. Each failed confirmation costs months of work before a program is dropped.</p>
+<p><strong>In data work:</strong> the same arithmetic produces the "winner's curse" in A/B testing. The experiments that cleared the significance bar are, on average, the ones whose estimates came out high by luck, so the lift measured in the test usually overstates the lift you see after launch.</p>
+</div>
+
 <h3 id="duality">Tests and intervals are the same thing</h3>
 <div class="formal box"><span class="tag">Formal · AoS Thm 10.10</span>
 <p>The size-\(\alpha\) Wald test rejects \(H_0: \theta = \theta_0\) if and only if \(\theta_0 \notin C = (\hat\theta - z_{\alpha/2}\widehat{\text{se}},\ \hat\theta + z_{\alpha/2}\widehat{\text{se}})\).</p>
@@ -1193,6 +1429,13 @@ $$1 - \Phi\Big(\frac{\theta_0 - \theta_*}{\widehat{\text{se}}} + z_{\alpha/2}\Bi
 <div class="pitfall box"><span class="tag">Pitfall · statistical vs. scientific significance (AoS Fig 10.2)</span>
 <p>A result can be statistically significant and scientifically trivial. Two intervals can both exclude \(\theta_0\), one hugging it and one far away; both "reject," but only the second matters. AoS's conclusion: significance doesn't imply importance, and confidence intervals are often more informative than tests.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · small changes, big money (and the reverse)</span>
+<p>Kohavi and Thomke describe a Bing change to how ad headlines were displayed. It was shelved for months as low priority, and when finally tested it raised revenue about 12%, worth more than $100 million a year in the US. The effect was so large that it first triggered an alert for a likely bug. <span class="src">Harvard Business Review 2017</span></p>
+<p>At that scale the reverse also happens: with millions of users per arm, an effect of a hundredth of a percent can be "highly significant" and not worth the engineering time to maintain.</p>
+<p><strong>By hand, illustrative numbers.</strong> With an SE of 0.02% on a lift, an observed lift of 0.1% has \(z = 0.1/0.02 = 5\). Whether 0.1% matters depends on what it multiplies: on a $1 billion revenue line it is $1 million a year; on a $1 million product it is $1,000. The \(z\) is the same in both cases; the decision isn't. Report the interval in dollars.</p>
+</div>
+
 
 <details class="q self"><summary><span class="qtag">Check yourself</span>A student asks: if a test rejects at 0.05, does a 95% confidence interval necessarily exclude \(\theta_0\)?</summary>
 <p>Yes, when the test and interval use the same estimate, SE, and critical value (AoS Thm 10.10). They can disagree if they're built differently, for example a percentile bootstrap interval paired with a Wald test, or a test using the SE computed under \(H_0\) (AoS Remark 10.5) paired with an interval using \(\widehat{\text{se}}\) at \(\hat\theta\). The course's Ames 2Story coefficient is a case where classical and bootstrap methods disagree.</p>
@@ -1249,6 +1492,12 @@ $$\text{p-value} = P_{\theta_0}(|W| > |w|) \approx P(|Z| > |w|) = 2\Phi(-|w|).$$
 <p class="trap"><strong>The answer you'll hear:</strong> 3%.</p>
 <p><strong>The real answer:</strong> The p-value can't tell you. It's \(P(\text{data this extreme} \mid H_0)\), not \(P(H_0 \mid \text{data})\). The second needs a prior: if almost every hypothesis tested in a field is null, most \(p = 0.03\) results are still false positives (CASI Ch 15's large-scale testing makes this precise).</p>
 </details>
+
+<div class="case box"><span class="tag">Why it matters · real case · the prosecutor's fallacy</span>
+<p>In 1999 Sally Clark was convicted in England of murdering her two infant sons. A pediatrician testified that the chance of two sudden infant deaths in a family like hers was 1 in 73 million, obtained by squaring 1 in 8,543 (\(8{,}543^2 \approx 73\) million). The number had two errors. Squaring assumes the two deaths are independent, which ignores shared genetic and environmental risk. And it invited the jury to hear a small \(P(\text{evidence} \mid \text{innocent})\) as a small \(P(\text{innocent} \mid \text{evidence})\). A double infant murder is also extremely rare, so the real question was which of two rare explanations was more likely. The Royal Statistical Society publicly criticized the statistic, and the conviction was quashed on appeal in 2003 (the successful appeal turned mainly on medical evidence that had been withheld).</p>
+<p>A p-value is the same kind of number as that 1 in 73 million: \(P(\text{data this extreme} \mid H_0)\), not \(P(H_0 \mid \text{data})\).</p>
+</div>
+
 <details class="q ask"><summary><span class="qtag">Ask the class</span>Study A finds \(p = 0.04\); study B, on the same question, finds \(p = 0.06\). Do they contradict each other?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Yes: one found an effect and one didn't.</p>
 <p><strong>The real answer:</strong> No. They correspond to \(z = 2.05\) and \(z = 1.88\), nearly the same evidence. The difference between "significant" and "not significant" is not itself significant. Compare the estimates and intervals, not which side of 0.05 they fell on.</p>
@@ -1304,12 +1553,18 @@ $$\text{p-value} = P_{\theta_0}(|W| > |w|) \approx P(|Z| > |w|) = 2\Phi(-|w|).$$
 <p><strong>Likelihood ratio tests and χ² tests</strong> <span class="src">AoS §10.3–10.4, §10.6</span>. For nested models, \(\lambda = 2\log\big(\mathcal L(\hat\theta)/\mathcal L(\hat\theta_0)\big) \rightsquigarrow \chi^2_{r-q}\), where \(r - q\) is the number of parameters fixed by the null (Thm 10.22). Pearson's \(\chi^2 = \sum (X_j - np_{0j})^2/(np_{0j})\) is approximately \(\chi^2_{k-1}\) for multinomial data (Thm 10.17; Mendel's peas, Ex 10.18). These generalize the Wald test to several parameters at once; the overall F-statistic at the top of a regression table is a relative.</p>
 
 <h3 id="peeking">Peeking: how the stopping rule changes the p-value</h3>
-<div class="example box"><span class="tag">Worked example · CASI §3.3</span>
+<div class="example box"><span class="tag">From the books · CASI §3.3</span>
 <p>Each month you observe \(x_i \sim N(\mu, 1)\) and plan to test \(H_0: \mu = 0\) after 30 months, using \(Z_i = \sum_{j\le i}x_j/\sqrt i\). At month 30, \(Z_{30} = 1.66 > 1.645\): significant at 0.05. But the team peeked at month 20 (\(Z_{20} = 0.79\)) and would have stopped if it had been significant. The rule actually used, "declare significance if \(Z_{20}\) or \(Z_{30}\) exceeds 1.645," has false-positive rate <strong>0.074</strong>, not 0.05.</p>
 </div>
 <div class="analogy box"><span class="tag">Analogy · checking the oven</span>
 <p>If you open the oven every five minutes and take the cake out the first time it looks done, you will take out more underdone cakes than if you checked once at the recipe's time. Each look is another chance to be fooled.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · dashboards that invite peeking</span>
+<p>Online testing tools show live p-values, and users watch them and stop a test when "significant" appears. Optimizely, a large A/B testing platform, reported that continuous peeking, combined with many goals and variations, could raise the chance of a false winner more than fivefold under classical statistics. In January 2015 it switched its results engine to sequential methods designed to stay valid under continuous monitoring, developed with Stanford statisticians (Johari, Pekelis and Walsh). A false winner shipped to production costs whatever the change costs, and delivers none of the promised lift.</p>
+<p><strong>By hand, a bracket for two looks.</strong> Each look alone has a 5% false-positive rate. If the two looks used independent data, the chance that at least one fires would be \(1 - 0.95^2 = 9.75\%\). They share data (month 30 includes months 1–20), so they agree more often than independent tests would, and the true rate falls in between: 7.4% in CASI's example. Each additional look pushes it higher.</p>
+</div>
+
 <p>CASI uses this to show a Bayesian/frequentist difference: the Bayesian posterior depends only on the data observed and is unaffected by the peek, while the frequentist p-value depends on what <em>could</em> have happened. CASI's "meter reader" story (§3.3) makes the same point: an engineer's unbiased average stops being unbiased when she learns her voltmeter would have capped any reading above 100, even though none of her readings was capped.</p>
 
 <!-- ============================================================ 7 -->
@@ -1328,6 +1583,13 @@ $$\text{p-value} = P_{\theta_0}(|W| > |w|) \approx P(|Z| > |w|) = 2\Phi(-|w|).$$
 <div class="analogy box"><span class="tag">Analogy · the Texas sharpshooter</span>
 <p>A man fires at the side of a barn, then paints a target around the tightest cluster of holes and claims to be a marksman. Testing many hypotheses and reporting the one that came out significant is painting the target after shooting.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real cases · the dead salmon, and genome-wide significance</span>
+<p>Bennett and colleagues put a dead Atlantic salmon in an fMRI scanner, showed it photographs of people in social situations, and ran a standard voxel-by-voxel analysis without correcting for multiple comparisons. Several voxels "responded." With thousands of voxels each tested separately, some had to. After correction, nothing survived. Their 2009 poster became a standard teaching example and pushed the field toward routine correction.</p>
+<p>Genetics learned the lesson at industrial scale. Genome-wide association studies test on the order of a million genetic variants, and the field's standard threshold is \(p &lt; 5 \times 10^{-8}\), which is Bonferroni by hand: \(0.05/1{,}000{,}000 = 5 \times 10^{-8}\).</p>
+<p><strong>In data work:</strong> slicing an experiment into hundreds of segments until one is significant ("the effect is real for Android users in Ohio") is the salmon experiment with a business label.</p>
+</div>
+
 
 <h4>Controlling the family-wise error rate (FWER)</h4>
 <div class="formal box"><span class="tag">Formal · AoS Thm 10.24; CASI (15.7)–(15.10)</span>
@@ -1441,7 +1703,7 @@ $$V(\hat\beta \mid X) = \frac{\sigma^2}{n s_X^2}\begin{pmatrix}\frac1n\sum X_i^2
 <p>Buchanan votes regressed on Bush votes across Florida counties: \(\hat\beta_1 = 0.7303\), \(\widehat{\text{se}} = 0.0358\). 95% interval: \(0.7303 \pm 2(0.0358) = (0.66, 0.80)\). Wald statistic: \(|0.7303 - 0|/0.0358 = 20.4\), p-value ≈ 0.</p>
 </div>
 
-<div class="example box"><span class="tag">Worked example · CASI §1.1 (kidney function)</span>
+<div class="example box"><span class="tag">From the books · CASI §1.1 (kidney function)</span>
 <p>157 volunteers, kidney score "tot" on age: \(\hat\beta_0 = 2.86\), \(\hat\beta_1 = -0.079\) per year. The fitted value's SE is 0.21 at age 20, 0.15 at ages 30–40, and 0.42 at age 80, smallest near the middle of the ages and growing at the ends. CASI draws ±2 SE bars and notes that their roughly 95% coverage depends on the linear model being right. A lowess fit has no SE formula at all; its bootstrap SEs are about double (0.71 at age 20).</p>
 </div>
 <div class="story box"><span class="tag">Story proof · the bow-tie</span>
@@ -1459,11 +1721,17 @@ $$V(\hat\beta \mid X) = \frac{\sigma^2}{n s_X^2}\begin{pmatrix}\frac1n\sum X_i^2
 </div>
 
 <div class="example box"><span class="tag">Worked example · AoS Ex 13.12 (Palm Beach)</span>
-<p>Predicted log Buchanan votes: \(-2.3298 + 0.7303(11.93789) = 6.388\), with \(\hat\xi_n = 0.0938\). Interval \((6.200, 6.578)\), or 493 to 717 votes. Palm Beach's actual log vote was 8.151 (3,467 votes), nearly 20 standard errors above the prediction.</p>
+<p>Predicted log Buchanan votes, rounded for hand work: \(-2.33 + 0.73(11.94) \approx 6.39\) (AoS: 6.388), with \(\hat\xi_n = 0.0938\). Interval \((6.200, 6.578)\), or 493 to 717 votes. Palm Beach's actual log vote was 8.151 (3,467 votes), nearly 20 standard errors above the prediction.</p>
 </div>
 <div class="analogy box"><span class="tag">Analogy · the average height vs. the next person</span>
 <p>With enough data you can pin down the average height of adults to within a millimeter. You still can't predict the next person through the door to within a millimeter. Confidence intervals are about the average; prediction intervals are about the next person.</p>
 </div>
+
+<div class="case box"><span class="tag">Why it matters · real case · a point forecast treated as a guarantee</span>
+<p>In spring 1997 the National Weather Service forecast that the Red River would crest at 49 feet at Grand Forks, North Dakota. The levees stood at about 51 feet, and the city prepared for 52. The river crested at about 54 feet, the levees failed, and much of the city flooded and was evacuated. The forecasts carried no numerical statement of uncertainty, and the 49-foot number was read as nearly exact, partly because a 49-foot forecast in 1979 had been off by only a few inches. <span class="src">National Research Council 2003</span></p>
+<p><strong>The statistical lesson.</strong> A 2-foot margin between forecast and levee is safe only if the forecast's <em>prediction</em> interval is narrower than 2 feet. A prediction interval for one future outcome includes that outcome's own noise (\(\hat\sigma^2\) in Thm 13.11), so it is much wider than a confidence interval for the mean, which is the interval that is easy to compute and to quote.</p>
+</div>
+
 
 <details class="q ask"><summary><span class="qtag">Ask the class</span>With 10 times as many houses, will the prediction interval for one new house shrink toward zero?</summary>
 <p class="trap"><strong>The answer you'll hear:</strong> Yes, more data shrinks every interval.</p>
@@ -1585,6 +1853,17 @@ $$(X^\top X)^{-1}\Big(\sum_i \hat\epsilon_i^2\,x_ix_i^\top\Big)(X^\top X)^{-1}$$
 <p>Ask 100 people who all read the same newspaper for their opinion and you have far fewer than 100 independent opinions. The formula \(s/\sqrt n\) counts all 100 as fresh information, so it is too confident.</p>
 </div>
 
+<div class="case box"><span class="tag">Why it matters · scenario · 1,000 rows, 50 people</span>
+<p><strong>Illustrative numbers.</strong> An experiment logs 1,000 sessions from 50 users, 20 each, and the analysis treats the sessions as independent. Sessions from the same user resemble each other. With \(m\) observations per cluster and within-cluster correlation \(\rho\), the variance of the mean is multiplied by the <em>design effect</em> \(1 + (m - 1)\rho\) <span class="src">standard</span>.</p>
+<ul>
+<li>\(m = 20\), \(\rho = 0.5\): design effect \(1 + 19(0.5) = 10.5\).</li>
+<li>The true SE is \(\sqrt{10.5} \approx 3.2\) times the naive \(s/\sqrt{1000}\).</li>
+<li>The data carry about as much information as \(1000/10.5 \approx 95\) independent sessions: closer to the 50 users than to the 1,000 rows.</li>
+</ul>
+<p>Fixes: analyze per-user averages, use cluster-robust SEs, or bootstrap whole users rather than rows.</p>
+</div>
+
+
 <!-- ============================================================ 10 -->
 <h2 id="sheet">10 · Formula sheet</h2>
 <div class="tablewrap"><table>
@@ -1669,6 +1948,29 @@ $$(X^\top X)^{-1}\Big(\sum_i \hat\epsilon_i^2\,x_ix_i^\top\Big)(X^\top X)^{-1}$$
 <tr><td>Bonferroni</td><td>the union bound: alarms' chances add at most</td><td><a href="#multiple">7</a></td></tr>
 <tr><td>Slope SE</td><td>a long lever tilts less</td><td><a href="#reg-se">8</a></td></tr>
 <tr><td>Bow-tie of fitted SEs</td><td>the line pivots at \(\bar x\)</td><td><a href="#reg-se">8</a></td></tr>
+</tbody></table></div>
+
+<h4>Why it matters: real cases and scenarios</h4>
+<div class="tablewrap"><table>
+<thead><tr><th>Idea</th><th>Case</th><th>Kind</th><th>Section</th></tr></thead>
+<tbody>
+<tr><td>SE depends on \(n\)</td><td>Gates Foundation small schools</td><td>real</td><td><a href="#se-def">1</a></td></tr>
+<tr><td>Bias doesn't shrink with \(n\)</td><td><em>Literary Digest</em> 1936 poll</td><td>real</td><td><a href="#mse">1</a></td></tr>
+<tr><td>Biased can beat unbiased</td><td>Efron–Morris batting averages; star ratings</td><td>real + scenario</td><td><a href="#mse">1</a></td></tr>
+<tr><td>Independence in σ²/n</td><td>mortgage pools before 2007–08</td><td>real</td><td><a href="#lln">2</a></td></tr>
+<tr><td>CLT and heavy tails</td><td>one big spender in an A/B test</td><td>scenario</td><td><a href="#clt">2</a></td></tr>
+<tr><td>Delta method</td><td>click-through-rate SEs (Microsoft)</td><td>real</td><td><a href="#delta">2</a></td></tr>
+<tr><td>Bootstrap a percentile</td><td>p95 latency SLA</td><td>scenario</td><td><a href="#bootstrap">3</a></td></tr>
+<tr><td>Small-sample t</td><td>Gosset at Guinness</td><td>real</td><td><a href="#tdist">4</a></td></tr>
+<tr><td>Reading an interval</td><td>Hoekstra et al. survey</td><td>real</td><td><a href="#ci-def">5</a></td></tr>
+<tr><td>Power and replication</td><td>Amgen and Bayer replication audits</td><td>real</td><td><a href="#wald">6</a></td></tr>
+<tr><td>Paired comparisons</td><td>two models, one test set</td><td>scenario</td><td><a href="#wald">6</a></td></tr>
+<tr><td>Significant vs. important</td><td>Bing ad-headline test</td><td>real</td><td><a href="#duality">6</a></td></tr>
+<tr><td>p is not P(H₀ | data)</td><td>Sally Clark</td><td>real</td><td><a href="#pvalues">6</a></td></tr>
+<tr><td>Peeking</td><td>Optimizely's 2015 switch to sequential tests</td><td>real</td><td><a href="#peeking">6</a></td></tr>
+<tr><td>Multiple testing</td><td>dead salmon fMRI; GWAS threshold</td><td>real</td><td><a href="#multiple">7</a></td></tr>
+<tr><td>Prediction intervals</td><td>1997 Red River flood forecast</td><td>real</td><td><a href="#reg-pred">8</a></td></tr>
+<tr><td>Clustered data</td><td>sessions vs. users</td><td>scenario</td><td><a href="#failures">9</a></td></tr>
 </tbody></table></div>
 
 <p>The guide also contains 29 "Ask the class" and 16 "Check yourself" questions, placed at the end of the topic each one tests.</p>

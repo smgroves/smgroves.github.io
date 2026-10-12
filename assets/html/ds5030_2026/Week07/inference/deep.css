@@ -63,6 +63,7 @@ nav.mini li { margin: 2px 0; }
 table { border-collapse: collapse; font-family: var(--sans); font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
 th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 th { font-weight: 600; color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+th mjx-container { text-transform: none; }
 ul, ol { padding-left: 1.3em; margin: 0 0 14px; }
 li { margin: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
@@ -103,6 +104,5 @@ footer { margin-top: 24px; font-family: var(--sans); font-size: 12.5px; color: v
 @media (max-width: 600px) { body { font-size: 17px; } h1 { font-size: 1.7rem; } .controls input[type="range"] { width: 120px; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 /* phone widths: long inline formulas scroll inside themselves instead of widening the page */
-mjx-container:not([display="true"]) { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
 .controls label { flex-wrap: wrap; max-width: 100%; }
 .controls input[type="text"] { max-width: 100%; }
