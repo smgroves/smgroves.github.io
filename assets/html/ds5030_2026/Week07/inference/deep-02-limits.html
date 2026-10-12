@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LLN, CLT, Delta Method</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#limits">← Back to the study guide, §2</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §2</p>
+<h1>The LLN, the CLT, and the delta method</h1>
+<p class="sub">Why averages settle, why their wobble is bell-shaped, and what happens when you transform them.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#conv">Three kinds of "getting close"</a></li>
+<li><a href="#lln">The law of large numbers, watched</a></li>
+<li><a href="#var">Why the variance of a mean is σ²/n</a></li>
+<li><a href="#clt">The central limit theorem, built</a></li>
+<li><a href="#how">How large is large enough?</a></li>
+<li><a href="#delta">The delta method</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="conv">Three kinds of "getting close"</h2>
+<p>AoS Ch 5 uses three notions of convergence. The distinction matters because the LLN is a statement about values (convergence in probability) and the CLT is a statement about histograms (convergence in distribution).</p>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>Means</th><th>Used for</th></tr></thead><tbody>
+<tr><td>in quadratic mean</td><td>\(E(X_n - X)^2 \to 0\)</td><td>proving consistency via MSE → 0</td></tr>
+<tr><td>in probability</td><td>\(P(|X_n - X| > \epsilon) \to 0\) for every \(\epsilon\)</td><td>LLN, consistency</td></tr>
+<tr><td>in distribution</td><td>\(P(X_n \le t) \to P(X \le t)\) at continuity points</td><td>CLT, approximate intervals</td></tr>
+</tbody></table></div>
+<p>Quadratic mean ⇒ probability ⇒ distribution (AoS Thm 5.4). None of the reverse arrows hold.</p>
+
+<div class="board box"><span class="tag">On the board · a sequence that converges in probability but not in mean square</span>
+<p>Let \(Y_n = n\) with probability \(1/n\), else 0.</p>
+<ul>
+<li>\(P(|Y_n| > \epsilon) = 1/n \to 0\): \(Y_n \to 0\) in probability.</li>
+<li>\(E[Y_n] = n \cdot \frac1n = 1\) for every \(n\), and \(E[Y_n^2] = n \to \infty\): no convergence in mean square.</li>
+</ul>
+<p>The variable is almost always 0, but a rare enormous value keeps its mean at 1 forever. Heavy-tailed data behave like this, which is why the Cauchy distribution breaks averages.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · convergence in distribution without convergence in probability</span>
+<p>Let \(X \sim N(0,1)\) and \(X_n = -X\) for every \(n\). Each \(X_n\) is also \(N(0,1)\), so \(X_n \rightsquigarrow X\) trivially. But \(|X_n - X| = 2|X|\) never shrinks. Same histogram, different values: that's all the CLT promises.</p>
+</div>
+
+<h2 id="lln">The law of large numbers, watched</h2>
+<div class="widget" id="w-lln">
+<p class="wtitle">Running averages</p>
+<p class="wlead">Each line is one person's running average \(\bar X_n\) as they keep sampling. The shaded band is \(\mu \pm 2\sigma/\sqrt n\). For the Cauchy, there is no \(\sigma\) and no band: watch what happens.</p>
+<div class="controls">
+<label>Distribution <select id="l-dist"><option value="die">fair die (μ = 3.5)</option><option value="coin">coin, P(heads) (μ = 0.5)</option><option value="cars">car prices (μ = 8.59)</option><option value="cauchy">Cauchy (no mean)</option></select></label>
+<label>paths <input type="range" id="l-k" min="1" max="20" value="5"><output for="l-k"></output></label>
+<button class="btn" id="l-new">New paths</button>
+</div>
+<svg id="l-plot"></svg>
+<p class="note">The x-axis is the number of draws on a log scale, from 1 to 5,000.</p>
+</div>
+
+<div class="formal box"><span class="tag">Formal · AoS Thm 5.6 (WLLN)</span>
+<p>If \(X_1,\dots,X_n\) are iid with \(E|X_1| &lt; \infty\), then \(\bar X_n \xrightarrow{P} \mu\). With finite variance the proof is Chebyshev: \(P(|\bar X_n - \mu| > \epsilon) \le \sigma^2/(n\epsilon^2)\).</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · Chebyshev versus reality</span>
+<p>Fair die, \(\sigma^2 = 35/12 = 2.92\), \(n = 100\), \(\epsilon = 0.5\). Chebyshev: \(P(|\bar X - 3.5| > 0.5) \le 2.92/25 = 0.117\). The CLT: \(\text{se} = 0.171\), so \(0.5/0.171 = 2.93\) SEs and \(P \approx 2\Phi(-2.93) = 0.003\). Chebyshev is about 35 times too pessimistic here. It's a guarantee for every distribution, so it has to cover the worst one.</p>
+</div>
+
+<h2 id="var">Why the variance of a mean is σ²/n</h2>
+<div class="story box"><span class="tag">Story proof · the random walk of errors</span>
+<p>Each observation is truth plus an error. The sum of \(n\) independent errors is a random walk: steps that agree pile up, steps that disagree cancel, and independent steps agree and disagree equally often. After \(n\) steps of typical size \(\sigma\), the walk is typically about \(\sigma\sqrt n\) from home (not \(\sigma n\), which is what you'd get if every step agreed). Divide the sum by \(n\) and the typical error of the mean is \(\sigma\sqrt n/n = \sigma/\sqrt n\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · the algebra, with covariances shown</span>
+$$V\Big(\sum_{i=1}^n X_i\Big) = \sum_{i=1}^n\sum_{j=1}^n \text{Cov}(X_i, X_j) = \underbrace{n\sigma^2}_{i = j} + \underbrace{\sum_{i\ne j}\text{Cov}(X_i, X_j)}_{=\,0 \text{ if independent}}$$
+<p>So \(V(\bar X) = n\sigma^2/n^2 = \sigma^2/n\). Write out the \(3\times 3\) grid of covariances for \(n = 3\): three diagonal cells of \(\sigma^2\) and six off-diagonal cells that independence sets to zero. If every pair had correlation \(\rho\), the six cells would each be \(\rho\sigma^2\) and \(V(\bar X) = \frac{\sigma^2}{3}(1 + 2\rho)\). With \(\rho = 0.5\), that's double. This grid is the whole dependence failure in one picture.</p>
+</div>
+
+<h2 id="clt">The central limit theorem, built</h2>
+<div class="widget" id="w-clt">
+<p class="wtitle">Standardized averages</p>
+<p class="wlead">4,000 samples of size \(n\) from the chosen population. The histogram shows \(Z = \sqrt n(\bar X - \mu)/\sigma\); the curve is \(N(0,1)\). The readouts show how far the shape is from normal.</p>
+<div class="controls">
+<label>Population <select id="c-pop"><option value="unif">uniform</option><option value="expo">exponential (skewed)</option><option value="cars">car prices (skewed, heavy)</option><option value="bern">Bernoulli(0.1)</option><option value="bimodal">two bumps</option><option value="cauchy">Cauchy (no variance)</option></select></label>
+<label>\(n\) <input type="range" id="c-n" min="1" max="200" value="5"><output for="c-n"></output></label>
+<label><input type="checkbox" id="c-s"> divide by \(s\) instead of \(\sigma\)</label>
+</div>
+<svg id="c-plot"></svg>
+<div class="readout" id="c-read"></div>
+</div>
+
+<div class="formal box"><span class="tag">Formal · AoS Thms 5.8, 5.10, 5.11</span>
+<p>iid, mean \(\mu\), variance \(\sigma^2 &lt; \infty\): \(\sqrt n(\bar X_n - \mu)/\sigma \rightsquigarrow N(0,1)\), and also with \(S_n\) for \(\sigma\). Berry–Esseen: the largest gap between the CDF of the standardized mean and \(\Phi\) is at most a constant times \(E|X - \mu|^3/(\sigma^3\sqrt n)\).</p>
+</div>
+
+<div class="story box"><span class="tag">Story proof · repeated smearing</span>
+<p>The distribution of a sum of independent pieces is built by convolution: smear the current distribution by the shape of the next piece. Each smear averages away fine detail. After many smears only two numbers survive, the total center and the total spread, and the one shape that reproduces itself under smearing (normal plus normal is normal) is where everything ends up. Try "two bumps" with \(n = 1, 2, 3, 10\) in the widget: the bumps merge, then the hump rounds into a bell.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · the CLT on three dice-like problems</span>
+<ul>
+<li><strong>100 coin flips, \(P(\ge 60\) heads\()\):</strong> se of \(\hat p\) = 0.05; \((0.6 - 0.5)/0.05 = 2\); \(P(Z \ge 2) = 0.023\). Exact: 0.028.</li>
+<li><strong>AoS Ex 5.9:</strong> Poisson(5) errors in 125 programs; \(P(\bar X &lt; 5.5) \approx \Phi(\sqrt{125/5}\times 0.5) = \Phi(2.5) = 0.994\).</li>
+<li><strong>Sum of 12 dice:</strong> mean 42, variance \(12 \times 35/12 = 35\), SD 5.92. \(P(\text{sum} \ge 50) \approx P(Z \ge 8/5.92 = 1.35) = 0.088\); with the continuity correction (use 49.5) it is 0.102, against an exact 0.104.</li>
+</ul>
+</div>
+
+<h2 id="how">How large is large enough?</h2>
+<p>There is no universal \(n\). Berry–Esseen says the error scales with the third absolute moment over \(\sigma^3\), which is large for skewed or heavy-tailed data. Use the widget: uniform data look normal at \(n = 5\); Bernoulli(0.1) is still lumpy and skewed at \(n = 30\); car prices need around 100; Cauchy never converges, because there is no \(\sigma\) to standardize by.</p>
+<div class="example box"><span class="tag">Worked example · reading the widget's tail readout (car prices)</span>
+<p>The readout "P(|Z| &gt; 1.96)" is the miss rate of a nominal 95% interval, and the two tails should each be 0.025. Car prices, with the true \(\sigma\):</p>
+<div class="tablewrap"><table><thead><tr><th>\(n\)</th><th>divide by \(\sigma\): low / high misses</th><th>divide by \(s\): low / high misses</th></tr></thead><tbody>
+<tr><td>5</td><td>0.000 / 0.039</td><td>0.210 / 0.012</td></tr>
+<tr><td>30</td><td>0.015 / 0.035</td><td>0.078 / 0.010</td></tr>
+<tr><td>100</td><td>0.021 / 0.035</td><td>0.051 / 0.014</td></tr>
+</tbody></table></div>
+<p>With the true \(\sigma\), the total is near 5% even at \(n = 5\), but the misses are all on the high side: skew in the data survives in the sampling distribution. Replace \(\sigma\) by \(s\) and the misses flip to the <em>low</em> side and multiply, because samples that miss the expensive cars have both a low mean and a small \(s\). Even at \(n = 100\) the low tail is twice its target. This is page 4's subject.</p>
+</div>
+
+<h2 id="delta">The delta method</h2>
+<div class="widget" id="w-delta">
+<p class="wtitle">Pushing a wobble through a function</p>
+<p class="wlead">The estimate \(\bar X\) wobbles around \(\mu\) with SE \(\sigma/\sqrt n\) (shaded on the x-axis). The function maps that wobble onto the y-axis (shaded there). The dashed tangent line is the delta method's approximation; the readout compares it with a simulation.</p>
+<div class="controls">
+<label>\(g\) <select id="t-g"><option value="sq">x²</option><option value="sqrt">√x</option><option value="log">log x</option><option value="inv">1/x</option><option value="exp">eˣ</option></select></label>
+<label>\(\mu\) <input type="range" id="t-mu" min="1" max="10" step="0.1" value="5" data-dec="1"><output for="t-mu"></output></label>
+<label>SE <input type="range" id="t-se" min="0.05" max="2" step="0.05" value="1" data-dec="2"><output for="t-se"></output></label>
+</div>
+<svg id="t-plot"></svg>
+<div class="readout" id="t-read"></div>
+</div>
+
+<div class="formal box"><span class="tag">Formal · AoS Thm 5.13, Thm 9.24</span>
+<p>If \(\sqrt n(Y_n - \mu)/\sigma \rightsquigarrow N(0,1)\) and \(g'(\mu) \ne 0\), then \(g(Y_n) \approx N\big(g(\mu), g'(\mu)^2\sigma^2/n\big)\). In practice \(\widehat{\text{se}}(g(\hat\theta)) = |g'(\hat\theta)|\,\widehat{\text{se}}(\hat\theta)\).</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · delta method four ways on \(\bar x = 5\), se = 1</span>
+<div class="tablewrap"><table><thead><tr><th>\(g\)</th><th>\(g'(5)\)</th><th>se of \(g(\bar x)\)</th></tr></thead><tbody>
+<tr><td>\(x^2\)</td><td>10</td><td>10</td></tr><tr><td>\(\sqrt x\)</td><td>0.224</td><td>0.22</td></tr><tr><td>\(\log x\)</td><td>0.2</td><td>0.20</td></tr><tr><td>\(1/x\)</td><td>−0.04</td><td>0.04</td></tr></tbody></table></div>
+<p>Then set the widget to \(g = x^2\), \(\mu = 5\), SE = 1: the simulation agrees with 10 to within a few percent. Raise SE to 2 and it doesn't: the tangent line is a bad stand-in for the curve over that wide a range.</p>
+</div>
+
+<div class="board box"><span class="tag">On the board · log-odds (AoS Ex 9.25)</span>
+<p>\(\hat p = 0.6\), \(n = 100\). \(\hat\psi = \log(0.6/0.4) = 0.405\). \(g'(p) = 1/(p(1-p)) = 1/0.24 = 4.17\); \(\widehat{\text{se}}(\hat p) = \sqrt{0.24/100} = 0.049\). So \(\widehat{\text{se}}(\hat\psi) = 4.17 \times 0.049 = 0.204 = 1/\sqrt{n\hat p(1-\hat p)}\). A 95% interval for the log-odds is \(0.405 \pm 0.40 = (0.005, 0.805)\); exponentiate for the odds: \((1.01, 2.24)\). That's how logistic-regression intervals for odds ratios are made.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the CLT widget with car prices, does the histogram of standardized means at \(n = 200\) mean that car prices are now normal?</summary>
+<p>No. The population is unchanged; it's the distribution of <em>averages of 200 cars</em> that's close to normal. A single car's price is as skewed as ever.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>Why does checking "divide by s" make small-\(n\) histograms wider in the tails?</summary>
+<p>Because \(s\) is itself random. Samples where \(s\) comes out small produce large \(|Z|\). That's the effect the t-distribution corrects (page 4). With skewed data the effect is lopsided: low means come with low \(s\), so the left tail stretches more.</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>The delta method needs \(g'(\mu) \ne 0\). What goes wrong for \(g(x) = x^2\) at \(\mu = 0\)?</summary>
+<p>The tangent is flat, so the first-order approximation says the SE is 0, which is false. The wobble of \(\bar X^2\) near 0 is second order: \(n\bar X^2/\sigma^2 \rightsquigarrow \chi^2_1\), not a normal. Set \(\mu\) to the slider's minimum with \(g = x^2\) and a large SE to see the approximation fail.</p></details>
+
+<script>
+(function () {
+  const C = UU.CARS;
+  const D = { die: { draw: r => 1 + Math.floor(6 * r()), mu: 3.5, sd: Math.sqrt(35 / 12), lo: 1, hi: 6 },
+              coin: { draw: r => r() < 0.5 ? 1 : 0, mu: 0.5, sd: 0.5, lo: 0, hi: 1 },
+              cars: { draw: r => UU.pick(C, r), mu: UU.mean(C), sd: UU.sd(C, 0), lo: 0, hi: 25 },
+              cauchy: { draw: r => Math.tan(Math.PI * (r() - 0.5)), mu: 0, sd: null, lo: -6, hi: 6 } };
+  let seed = 11;
+  function draw() {
+    const d = D[document.getElementById("l-dist").value], k = UU.val("l-k"); document.querySelector('output[for="l-k"]').textContent = k;
+    const N = 5000, r = UU.rng(seed), lx = Math.log10;
+    const f = UU.frame(document.getElementById("l-plot"), { W: 640, H: 260, x: [0, lx(N)], y: [d.lo, d.hi], xt: [0, 1, 2, 3], xfmt: v => Math.pow(10, v), xlabel: "number of draws n (log scale)", ylabel: "running mean" });
+    if (d.sd) { const up = [], dn = []; for (let n = 1; n <= N; n = Math.ceil(n * 1.05)) { const b = 2 * d.sd / Math.sqrt(n); up.push([lx(n), Math.min(d.hi, d.mu + b)]); dn.push([lx(n), Math.max(d.lo, d.mu - b)]); }
+      const pts = up.concat(dn.reverse()); UU.el("path", { d: pts.map((p, i) => (i ? "L" : "M") + f.x(p[0]) + "," + f.y(p[1])).join("") + "Z", style: "fill:var(--tint-pos);opacity:.7" }, f.g); }
+    UU.el("line", { x1: f.x(0), x2: f.x(lx(N)), y1: f.y(d.mu), y2: f.y(d.mu), style: "stroke:var(--ink);stroke-dasharray:4 3" }, f.g);
+    const cols = ["--c1", "--c2", "--c3", "--c4"];
+    for (let p = 0; p < k; p++) { let s = 0; const pts = []; for (let n = 1; n <= N; n++) { s += d.draw(r); if (n < 50 || n % 10 === 0) pts.push([lx(n), Math.max(d.lo, Math.min(d.hi, s / n))]); } UU.path(f, pts, { style: `stroke:var(${cols[p % 4]});stroke-width:1.3;opacity:.85` }); }
+  }
+  document.getElementById("l-dist").addEventListener("input", draw); document.getElementById("l-k").addEventListener("input", draw);
+  document.getElementById("l-new").onclick = () => { seed++; draw(); }; draw();
+})();
+
+(function () {
+  const C = UU.CARS, cm = UU.mean(C), cs = UU.sd(C, 0);
+  const P = { unif: { draw: r => r(), mu: 0.5, sd: Math.sqrt(1 / 12) }, expo: { draw: r => -Math.log(1 - r()), mu: 1, sd: 1 },
+              cars: { draw: r => UU.pick(C, r), mu: cm, sd: cs }, bern: { draw: r => r() < 0.1 ? 1 : 0, mu: 0.1, sd: 0.3 },
+              bimodal: { draw: r => (r() < 0.5 ? -2 : 2) + 0.4 * UU.randn(r), mu: 0, sd: Math.sqrt(4 + 0.16) },
+              cauchy: { draw: r => Math.tan(Math.PI * (r() - 0.5)), mu: 0, sd: 1 } };
+  function update() {
+    const p = P[document.getElementById("c-pop").value], n = UU.val("c-n"), useS = document.getElementById("c-s").checked;
+    document.querySelector('output[for="c-n"]').textContent = n;
+    const r = UU.rng(2024), Z = [];
+    for (let j = 0; j < 4000; j++) { const x = Array.from({ length: n }, () => p.draw(r)); const m = UU.mean(x); const s = useS && n > 1 ? UU.sd(x) : p.sd; Z.push(s > 0 ? Math.sqrt(n) * (m - p.mu) / s : 0); }
+    const bins = UU.hist(Z, -5, 5, 60), ymax = Math.max(0.45, ...bins.map(b => b.d)) * 1.08;
+    const f = UU.frame(document.getElementById("c-plot"), { W: 640, H: 240, x: [-5, 5], y: [0, ymax], xlabel: useS ? "Z = √n (x̄ − μ) / s" : "Z = √n (x̄ − μ) / σ", yfmt: v => v.toFixed(1) });
+    UU.bars(f, bins, { style: "fill:var(--c1);opacity:.55" });
+    const xs = Array.from({ length: 200 }, (_, i) => -5 + i / 19.9);
+    UU.path(f, xs.map(x => [x, UU.normPdf(x)]), { style: "stroke:var(--ink);stroke-width:1.8" });
+    const fin = Z.filter(Number.isFinite), m = UU.mean(fin), sd = UU.sd(fin), sk = UU.mean(fin.map(z => ((z - m) / sd) ** 3));
+    const out = fin.filter(z => Math.abs(z) > 1.96).length / fin.length, lo = fin.filter(z => z < -1.96).length / fin.length;
+    document.getElementById("c-read").innerHTML = `<div><span>P(|Z| &gt; 1.96), target 0.05</span><b>${out.toFixed(3)}</b></div><div><span>left / right tail, target 0.025 each</span><b>${lo.toFixed(3)} / ${(out - lo).toFixed(3)}</b></div><div><span>skewness of Z, target 0</span><b>${sk.toFixed(2)}</b></div>`;
+  }
+  ["c-pop", "c-n", "c-s"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  const G = { sq: [x => x * x, x => 2 * x], sqrt: [x => Math.sqrt(Math.max(x, 0)), x => 0.5 / Math.sqrt(x)], log: [x => Math.log(Math.max(x, 1e-9)), x => 1 / x], inv: [x => 1 / x, x => -1 / (x * x)], exp: [x => Math.exp(x), x => Math.exp(x)] };
+  const r0 = UU.rng(9), Zs = Array.from({ length: 6000 }, () => UU.randn(r0));
+  function update() {
+    const [g, gp] = G[document.getElementById("t-g").value], mu = UU.val("t-mu"), se = UU.val("t-se");
+    ["t-mu", "t-se"].forEach(id => { const el = document.getElementById(id); document.querySelector(`output[for="${id}"]`).textContent = (+el.value).toFixed(+el.dataset.dec); });
+    const lo = Math.max(0.05, mu - 3.2 * se), hi = mu + 3.2 * se, xs = Array.from({ length: 200 }, (_, i) => lo + (hi - lo) * i / 199);
+    const ys = xs.map(g), ylo = Math.min(...ys), yhi = Math.max(...ys), pad = (yhi - ylo) * 0.08 || 1;
+    const f = UU.frame(document.getElementById("t-plot"), { W: 640, H: 280, x: [lo, hi], y: [ylo - pad, yhi + pad], xlabel: "x̄", ylabel: "g(x̄)", yfmt: v => (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toFixed(2)) });
+    UU.el("rect", { x: f.x(Math.max(lo, mu - se)), y: f.y(ylo - pad) - 8, width: f.x(Math.min(hi, mu + se)) - f.x(Math.max(lo, mu - se)), height: 8, style: "fill:var(--c3);opacity:.6" }, f.g);
+    const sims = Zs.map(z => mu + se * z).filter(v => v > 0).map(g), simSE = UU.sd(sims), dSE = Math.abs(gp(mu)) * se;
+    UU.el("rect", { x: f.m.l, y: f.y(g(mu) + dSE), width: 8, height: f.y(g(mu) - dSE) - f.y(g(mu) + dSE), style: "fill:var(--c1);opacity:.6" }, f.g);
+    UU.path(f, xs.map((x, i) => [x, ys[i]]), { style: "stroke:var(--c1);stroke-width:2.5" });
+    UU.path(f, [[lo, g(mu) + gp(mu) * (lo - mu)], [hi, g(mu) + gp(mu) * (hi - mu)]].map(p => [p[0], Math.max(ylo - pad, Math.min(yhi + pad, p[1]))]), { style: "stroke:var(--ink);stroke-dasharray:6 4;stroke-width:1.4" });
+    UU.el("circle", { cx: f.x(mu), cy: f.y(g(mu)), r: 4, style: "fill:var(--ink)" }, f.g);
+    document.getElementById("t-read").innerHTML = `<div><span>slope g′(μ)</span><b>${gp(mu).toFixed(3)}</b></div><div><span>delta-method SE |g′(μ)|·SE</span><b>${dSE.toFixed(3)}</b></div><div><span>simulated SE of g(x̄)</span><b>${simSE.toFixed(3)}</b></div><div><span>ratio simulated / delta</span><b>${(simSE / dSE).toFixed(2)}</b></div>`;
+  }
+  ["t-g", "t-mu", "t-se"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-01-sampling.html">← §01 Sampling distributions, bias, and the standard error</a><a href="deep-03-se-routes.html">§03 Five ways to get a standard error →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

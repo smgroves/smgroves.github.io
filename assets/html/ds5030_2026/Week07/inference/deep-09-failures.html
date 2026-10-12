@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>When Inference Breaks</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#failures">← Back to the study guide, §9</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §9</p>
+<h1>When the machinery breaks</h1>
+<p class="sub">Dependence, peeking, heavy tails, and the other ways an interval quietly lies.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#map">Three things that can break</a></li>
+<li><a href="#dep">Dependence (widget)</a></li>
+<li><a href="#peek">Peeking (widget)</a></li>
+<li><a href="#heavy">Heavy tails (widget)</a></li>
+<li><a href="#others">The rest of the catalog, worked</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="map">Three things that can break</h2>
+<p>Every interval is \(\hat\theta \pm c\cdot\widehat{\text{se}}\), and every test compares \(\hat\theta/\widehat{\text{se}}\) to \(c\). A failure breaks one of three things: the <strong>SE</strong> is wrong (dependence, unequal variance, no finite variance), the <strong>critical value</strong> \(c\) is wrong (small samples, skew, many tests, peeking), or the result is <strong>read</strong> wrong (coverage read as belief, significance read as importance). This page puts the first two kinds in widgets.</p>
+
+<h2 id="dep">Dependence</h2>
+<p>\(V(\bar X) = \sigma^2/n\) used independence to drop every covariance term. With positive correlation those terms are positive, and \(s/\sqrt n\) is too small. For a series where each value is \(\rho\) times the previous plus fresh noise (AR(1)), the variance of the mean is roughly \(\frac{\sigma^2}{n}\cdot\frac{1+\rho}{1-\rho}\) for large \(n\).</p>
+<div class="widget" id="w-dep">
+<p class="wtitle">Correlated data, independent-data formula</p>
+<p class="wlead">Top: one simulated series of length \(n\) with lag-1 correlation \(\rho\). Bottom readouts: from 3,000 series, the true SD of the mean, the average \(s/\sqrt n\), and the coverage of "\(\bar x \pm 1.96\,s/\sqrt n\)."</p>
+<div class="controls">
+<label>\(\rho\) <input type="range" id="a-r" min="-0.5" max="0.95" step="0.05" value="0.7" data-dec="2"><output for="a-r"></output></label>
+<label>\(n\) <input type="range" id="a-n" min="20" max="400" step="10" value="100"><output for="a-n"></output></label>
+</div>
+<svg id="a-plot"></svg>
+<div class="readout" id="a-read"></div>
+</div>
+<div class="board box"><span class="tag">On the board · the effective sample size</span>
+<p>With \(\rho = 0.7\): \((1 + 0.7)/(1 - 0.7) = 5.67\). So the real variance of the mean is 5.67 times what \(s/\sqrt n\) assumes, and the real SE is \(\sqrt{5.67} = 2.4\) times larger. 100 correlated observations carry about as much information as \(100/5.67 \approx 18\) independent ones. A "95%" interval built with the naive SE is really \(\pm 1.96/2.4 = \pm 0.82\) true SEs, covering about 59%. (The course simulation: true SD 0.33, naive 0.14, coverage 59%.)</p>
+</div>
+<div class="board box"><span class="tag">On the board · equicorrelated pairs</span>
+<p>Twins: 50 pairs, each pair's two measurements correlated 0.5. \(V(\bar X) = \frac{\sigma^2}{100}(1 + \rho) = 1.5\,\sigma^2/100\). The naive SE is too small by a factor \(\sqrt{1.5} = 1.22\). Treating 100 correlated people as 100 independent ones overstates the evidence; the effective sample size is 67.</p>
+</div>
+
+<h2 id="peek">Peeking</h2>
+<p>If you test after every batch of data and stop the first time \(p &lt; 0.05\), the overall false-positive rate climbs with every look (CASI §3.3).</p>
+<div class="widget" id="w-peek">
+<p class="wtitle">How many looks before you're fooled?</p>
+<p class="wlead">Data with no real effect. You check a z-test after each of \(k\) equally spaced looks and stop at the first "significant" one. Bars: the share of 20,000 null studies that ever declare significance.</p>
+<div class="controls">
+<label>number of looks \(k\) <input type="range" id="k-k" min="1" max="50" value="2"><output for="k-k"></output></label>
+<label>threshold <select id="k-c"><option value="1.96">|z| &gt; 1.96 each time</option><option value="pocock">Pocock-style stricter constant</option></select></label>
+</div>
+<svg id="k-plot"></svg>
+<div class="readout" id="k-read"></div>
+</div>
+<div class="board box"><span class="tag">On the board · two looks (CASI's example)</span>
+<p>One-sided at 1.645, looks at months 20 and 30. If the looks were independent, the false-positive rate would be \(1 - 0.95^2 = 0.0975\). They're positively correlated (month 30 includes months 1–20, correlation \(\sqrt{20/30} = 0.82\)), so it's less: 0.074. Still half again over the promised 0.05.</p>
+</div>
+
+<h2 id="heavy">Heavy tails</h2>
+<div class="widget" id="w-heavy">
+<p class="wtitle">When the SE doesn't exist</p>
+<p class="wlead">Running mean and running \(s/\sqrt n\) for data from a t-distribution with \(k\) degrees of freedom. For \(k \le 2\) the variance is infinite (and for \(k = 1\), the Cauchy, the mean doesn't exist): \(s/\sqrt n\) doesn't settle, and occasional huge values yank the mean.</p>
+<div class="controls">
+<label>degrees of freedom \(k\) <input type="range" id="h-k" min="1" max="30" value="1"><output for="h-k"></output></label>
+<button class="btn" id="h-new">New series</button>
+</div>
+<svg id="h-mean"></svg>
+<svg id="h-se"></svg>
+</div>
+
+<h2 id="others">The rest of the catalog, worked</h2>
+<div class="board box"><span class="tag">On the board · SD reported as SE</span>
+<p>"Average price $8.59k ± $8.17k" (SD) vs "± $0.85k" (SE). The first says individual cars vary; the second says the average is pinned down. As a 95% statement about the mean, the first is 9.6 times too wide.</p>
+</div>
+<div class="board box"><span class="tag">On the board · the winner's curse (CASI §3.3)</span>
+<p>10 estimates, each \(N(\mu_i, 1)\), all with true \(\mu_i = 0\). The largest of 10 standard normals averages about 1.54. Report "our best result was 1.5 SEs above zero" and you've reported noise: selecting the max biases it upward. CASI's prostate example: the top gene's 5.29 shrinks to 4.11 under empirical Bayes.</p>
+</div>
+<div class="board box"><span class="tag">On the board · significant but trivial</span>
+<p>\(n = 1{,}000{,}000\), \(s = 10\): \(\widehat{\text{se}} = 0.01\). An effect of 0.03 has \(z = 3\), \(p = 0.003\), and a 95% interval of \((0.01, 0.05)\): very significant and, on a scale with SD 10, practically nothing. The interval shows that; the p-value hides it.</p>
+</div>
+<div class="board box"><span class="tag">On the board · large p, low power</span>
+<p>\(n = 9\), \(s = 6\), \(\widehat{\text{se}} = 2\). A true effect of 2 is 1 SE: power about 0.17 (page 6). So \(p = 0.4\) here is what you'd see most of the time <em>even if the effect is real</em>. The 95% interval, about \(\pm 4.6\), says so honestly.</p>
+</div>
+<div class="tablewrap"><table><thead><tr><th>failure</th><th>breaks</th><th>where it's worked</th></tr></thead><tbody>
+<tr><td>unequal error variance</td><td>SE</td><td><a href="deep-08-regression.html#hetero">page 8 widget</a></td></tr>
+<tr><td>small n with z</td><td>c</td><td><a href="deep-04-se-uncertain.html#coverage">page 4 coverage race</a></td></tr>
+<tr><td>skewed data</td><td>c</td><td><a href="deep-04-se-uncertain.html#noise">page 4 scatter</a>, <a href="deep-02-limits.html#how">page 2</a></td></tr>
+<tr><td>jackknife on a median</td><td>SE</td><td><a href="deep-03-se-routes.html#jack">page 3 widget</a></td></tr>
+<tr><td>bootstrap of a maximum</td><td>SE</td><td><a href="deep-03-se-routes.html#boot">page 3 widget</a></td></tr>
+<tr><td>many tests</td><td>c</td><td><a href="deep-07-multiple.html#sim">page 7 widget</a></td></tr>
+<tr><td>coverage read as belief</td><td>reading</td><td><a href="deep-05-intervals.html#exact">page 5 Berger–Wolpert</a></td></tr>
+</tbody></table></div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the dependence widget, set \(\rho\) negative. What happens to the naive interval's coverage, and why?</summary>
+<p>It goes <em>above</em> 95%: with negative correlation, consecutive values tend to cancel, the true variance of the mean is smaller than \(\sigma^2/n\), and the naive SE is too large. Rare in practice, but it shows the formula's error has a sign set by the correlation.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>With 10 looks at 1.96 each time, the false-positive rate is about 19%, not 50%. Why not \(1 - 0.95^{10} = 40\%\)?</summary>
+<p>The looks are positively correlated: each later test includes all the earlier data. If look 3 wasn't significant, look 4 shares most of its data and probably isn't either. Correlation makes repeated chances less independent, so the inflation is real but smaller than for independent tests.</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>For t-distributed data with \(k = 3\), the variance is finite (it's \(k/(k-2) = 3\)). Why does the running SE still jump around?</summary>
+<p>The variance is finite but the fourth moment isn't (for \(k \le 4\)), so \(s^2\) itself has infinite variance and converges very slowly. The CLT for the mean still holds, but SE estimates are unreliable at practical sample sizes. "Finite variance" is the minimum for the theory, not a guarantee of good behavior.</p></details>
+
+<script>
+(function () {
+  function series(r, n, rho) { const x = new Array(n); x[0] = UU.randn(r) / Math.sqrt(Math.max(1e-6, 1 - rho * rho)); for (let i = 1; i < n; i++) x[i] = rho * x[i - 1] + UU.randn(r); return x; }
+  function update() {
+    const rho = UU.val("a-r"), n = UU.val("a-n"); document.querySelector('output[for="a-r"]').textContent = rho.toFixed(2); document.querySelector('output[for="a-n"]').textContent = n;
+    const r = UU.rng(66), one = series(r, n, rho), lim = Math.max(4, ...one.map(Math.abs)) * 1.05;
+    const f = UU.frame(document.getElementById("a-plot"), { W: 640, H: 180, x: [0, n], y: [-lim, lim], xlabel: "time", yfmt: v => v.toFixed(0) });
+    UU.path(f, one.map((v, i) => [i, v]), { style: "stroke:var(--c3);stroke-width:1.3" });
+    UU.el("line", { x1: f.x(0), x2: f.x(n), y1: f.y(UU.mean(one)), y2: f.y(UU.mean(one)), style: "stroke:var(--c1);stroke-width:2" }, f.g);
+    const ms = [], ns = []; let cov = 0;
+    for (let k = 0; k < 3000; k++) { const x = series(r, n, rho), m = UU.mean(x), se = UU.sd(x) / Math.sqrt(n); ms.push(m); ns.push(se); if (Math.abs(m) <= 1.96 * se) cov++; }
+    const tsd = UU.sd(ms), nv = UU.mean(ns), theory = Math.sqrt((1 + rho) / (1 - rho));
+    document.getElementById("a-read").innerHTML = `<div><span>true SD of the mean</span><b>${tsd.toFixed(3)}</b></div><div><span>average naive s/√n</span><b>${nv.toFixed(3)}</b></div><div><span>ratio true / naive</span><b>${(tsd / nv).toFixed(2)} (theory ≈ ${theory.toFixed(2)})</b></div><div><span>coverage of the naive 95% interval</span><b>${(cov / 30).toFixed(1)}%</b></div><div><span>effective sample size ≈ n(1−ρ)/(1+ρ)</span><b>${(n * (1 - rho) / (1 + rho)).toFixed(0)}</b></div>`;
+  }
+  ["a-r", "a-n"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  const POCOCK = { 1: 1.96, 2: 2.178, 3: 2.289, 4: 2.361, 5: 2.413, 10: 2.555, 20: 2.672, 50: 2.799 };
+  function pocock(k) { const ks = Object.keys(POCOCK).map(Number); let lo = 1, hi = 50; for (const q of ks) { if (q <= k) lo = q; if (q >= k) { hi = q; break; } } if (lo === hi) return POCOCK[lo]; const t = (Math.log(k) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)); return POCOCK[lo] + t * (POCOCK[hi] - POCOCK[lo]); }
+  function rate(k, c, reps, r) { let hit = 0; for (let j = 0; j < reps; j++) { let s = 0; for (let i = 1; i <= k; i++) { s += UU.randn(r); if (Math.abs(s / Math.sqrt(i)) > c) { hit++; break; } } } return hit / reps; }
+  function update() {
+    const k = UU.val("k-k"), mode = document.getElementById("k-c").value; document.querySelector('output[for="k-k"]').textContent = k;
+    const r = UU.rng(13), ks = [1, 2, 3, 5, 10, 20, 50], vals = ks.map(q => [q, rate(q, mode === "pocock" ? pocock(q) : 1.96, 6000, r)]);
+    const cur = rate(k, mode === "pocock" ? pocock(k) : 1.96, 20000, UU.rng(14));
+    const f = UU.frame(document.getElementById("k-plot"), { W: 640, H: 220, x: [0, ks.length], y: [0, 0.4], xt: [], xlabel: "number of looks", yfmt: v => (100 * v).toFixed(0) + "%" });
+    vals.forEach(([q, v], i) => { UU.el("rect", { x: f.x(i + 0.2), y: f.y(v), width: f.x(0.6) - f.x(0), height: f.y(0) - f.y(v), style: q === k ? "fill:var(--c1)" : "fill:var(--muted);opacity:.55" }, f.g); UU.el("text", { x: f.x(i + 0.5), y: f.H - f.m.b + 16, "text-anchor": "middle" }, f.g).textContent = q; UU.el("text", { x: f.x(i + 0.5), y: f.y(v) - 4, "text-anchor": "middle" }, f.g).textContent = (100 * v).toFixed(1) + "%"; });
+    UU.el("line", { x1: f.m.l, x2: f.W - f.m.r, y1: f.y(0.05), y2: f.y(0.05), style: "stroke:var(--ink);stroke-dasharray:5 4" }, f.g);
+    document.getElementById("k-read").innerHTML = `<div><span>false-positive rate with ${k} look${k > 1 ? "s" : ""}</span><b>${(100 * cur).toFixed(1)}%</b></div><div><span>threshold per look</span><b>|z| &gt; ${(mode === "pocock" ? pocock(k) : 1.96).toFixed(3)}</b></div><div><span>promised rate</span><b>5.0%</b></div>`;
+  }
+  ["k-k", "k-c"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  let seed = 21;
+  function tdraw(r, k) { let v = 0; for (let i = 0; i < k; i++) { const z = UU.randn(r); v += z * z; } return UU.randn(r) / Math.sqrt(v / k); }
+  function update() {
+    const k = UU.val("h-k"); document.querySelector('output[for="h-k"]').textContent = k;
+    const r = UU.rng(seed), N = 5000, lx = Math.log10; let s = 0, s2 = 0; const pm = [], ps = [];
+    for (let n = 1; n <= N; n++) { const v = tdraw(r, k); s += v; s2 += v * v; if (n >= 2 && (n < 60 || n % 10 === 0)) { const m = s / n, sd = Math.sqrt(Math.max(0, (s2 - n * m * m) / (n - 1))); pm.push([lx(n), m]); ps.push([lx(n), sd / Math.sqrt(n)]); } }
+    const ml = Math.max(1, ...pm.slice(20).map(p => Math.abs(p[1]))) * 1.1;
+    const f = UU.frame(document.getElementById("h-mean"), { W: 640, H: 180, x: [lx(2), lx(N)], y: [-ml, ml], xt: [1, 2, 3], xfmt: v => Math.pow(10, v), xlabel: "n (log scale)", ylabel: "running mean", yfmt: v => +v.toFixed(1) });
+    UU.el("line", { x1: f.x(lx(2)), x2: f.x(lx(N)), y1: f.y(0), y2: f.y(0), style: "stroke:var(--ink);stroke-dasharray:4 3" }, f.g);
+    UU.path(f, pm.map(p => [p[0], Math.max(-ml, Math.min(ml, p[1]))]), { style: "stroke:var(--c1);stroke-width:1.6" });
+    const sl = Math.max(...ps.slice(20).map(p => p[1])) * 1.1;
+    const g = UU.frame(document.getElementById("h-se"), { W: 640, H: 180, x: [lx(2), lx(N)], y: [0, sl], xt: [1, 2, 3], xfmt: v => Math.pow(10, v), xlabel: "n (log scale)", ylabel: "s/√n", yfmt: v => +v.toFixed(2) });
+    if (k > 2) { const sig = Math.sqrt(k / (k - 2)); UU.path(g, ps.map(p => [p[0], sig / Math.sqrt(Math.pow(10, p[0]))]).filter(p => p[1] <= sl), { style: "stroke:var(--ink);stroke-dasharray:5 4" }); }
+    UU.path(g, ps.map(p => [p[0], Math.min(sl, p[1])]), { style: "stroke:var(--c3);stroke-width:1.6" });
+  }
+  document.getElementById("h-k").addEventListener("input", update); document.getElementById("h-new").onclick = () => { seed++; update(); }; update();
+})();
+</script>
+
+<div class="pager"><a href="deep-08-regression.html">← §08 Inference for regression coefficients</a><span></span></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

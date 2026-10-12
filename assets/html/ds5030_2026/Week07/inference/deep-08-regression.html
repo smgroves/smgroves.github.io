@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Regression Inference</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#regression">← Back to the study guide, §8</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §8</p>
+<h1>Inference for regression coefficients</h1>
+<p class="sub">Where every column of a regression table comes from, on a line you can drag.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#five">Everything on five points</a></li>
+<li><a href="#drag">Widget: drag the data, watch the table</a></li>
+<li><a href="#matrix">The matrix version by hand</a></li>
+<li><a href="#table">Reading a real table</a></li>
+<li><a href="#hetero">Widget: when the SE formula is wrong</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="five">Everything on five points</h2>
+<p>A regression table is a Wald test and a normal (or t) interval for each coefficient. On five points every number can be produced by hand. Data: \(x = 1, 2, 3, 4, 5\), \(y = 1, 3, 2, 5, 4\).</p>
+<div class="board box"><span class="tag">On the board · coefficients</span>
+<p>\(\bar x = \bar y = 3\). \(\sum(x - \bar x)(y - \bar y) = 4 + 0 + 0 + 2 + 2 = 8\); \(\sum(x - \bar x)^2 = 10\). Slope \(\hat\beta_1 = 0.8\); intercept \(\hat\beta_0 = 3 - 0.8 \times 3 = 0.6\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · residuals and σ̂</span>
+<p>Fitted \(1.4, 2.2, 3.0, 3.8, 4.6\); residuals \(-0.4, 0.8, -1.0, 1.2, -0.6\) (sum 0). RSS \(= 3.6\). \(\hat\sigma^2 = 3.6/(n - 2) = 1.2\), \(\hat\sigma = 1.095\). Two degrees of freedom were spent estimating two coefficients.</p>
+</div>
+<div class="board box"><span class="tag">On the board · the table row for the slope</span>
+<div class="tablewrap"><table><thead><tr><th></th><th>coef</th><th>std err</th><th>t</th><th>P&gt;|t| (t₃)</th><th>[0.025</th><th>0.975]</th></tr></thead><tbody>
+<tr><td>x</td><td>0.8</td><td>\(1.095/\sqrt{10} = 0.346\)</td><td>2.31</td><td>0.10</td><td>\(0.8 - 3.182 \times 0.346 = -0.30\)</td><td>1.90</td></tr>
+<tr><td>const</td><td>0.6</td><td>\(0.346\sqrt{55/5} = 1.15\)</td><td>0.52</td><td>0.64</td><td>−3.06</td><td>4.26</td></tr>
+</tbody></table></div>
+<p>With \(z\) instead of \(t_3\), the slope's \(t = 2.31 > 1.96\) would "reject." With three residual degrees of freedom, the honest critical value is 3.18.</p>
+</div>
+<div class="board box"><span class="tag">On the board · the bow-tie and a prediction</span>
+<p>SE of the fitted line at \(x\): \(\hat\sigma\sqrt{1/5 + (x - 3)^2/10}\) = 0.49 at \(x = 3\), 0.85 at \(x = 5\), 1.15 at \(x = 6\). Predicting a new \(y\) at \(x = 6\): \(\hat y = 5.4\), SE \(= \sqrt{1.15^2 + 1.2} = 1.59\), 95% prediction interval \(5.4 \pm 3.18 \times 1.59 = (0.35, 10.45)\).</p>
+</div>
+
+<h2 id="drag">Widget: drag the data, watch the table</h2>
+<div class="widget" id="w-drag">
+<p class="wtitle">A live regression table</p>
+<p class="wlead">Drag any point. The red line is the least-squares fit; the dark band is the 95% confidence band for the mean of \(y\) (the bow-tie); the light band is the 95% prediction band for a new point. The table updates with classical and robust (HC1) standard errors.</p>
+<div class="controls">
+<button class="btn" id="r-reset">Reset to the five board points</button>
+<button class="btn" id="r-add">Add a random point</button>
+<button class="btn" id="r-del">Remove last point</button>
+<button class="btn" id="r-fan">Load 30 fan-shaped points</button>
+</div>
+<svg id="r-plot" style="touch-action:none"></svg>
+<div class="tablewrap" id="r-table"></div>
+<p class="note">Things to try: drag one end point far up and watch the slope's SE and the bands change; load the fan-shaped data and compare the classical and robust SEs.</p>
+</div>
+
+<h2 id="matrix">The matrix version by hand</h2>
+<div class="board box"><span class="tag">On the board · \((X^\top X)^{-1}X^\top y\)</span>
+$$X^\top X = \begin{pmatrix}5 & 15\\15 & 55\end{pmatrix},\ (X^\top X)^{-1} = \frac{1}{50}\begin{pmatrix}55 & -15\\-15 & 5\end{pmatrix},\ X^\top y = \begin{pmatrix}15\\53\end{pmatrix},\ \hat\beta = \frac{1}{50}\begin{pmatrix}30\\40\end{pmatrix} = \begin{pmatrix}0.6\\0.8\end{pmatrix}.$$
+<p>\(\hat\sigma^2(X^\top X)^{-1} = 1.2 \times \frac{1}{50}\begin{pmatrix}55 & -15\\-15 & 5\end{pmatrix} = \begin{pmatrix}1.32 & -0.36\\-0.36 & 0.12\end{pmatrix}\). SEs \(\sqrt{1.32} = 1.15\) and \(\sqrt{0.12} = 0.346\). The correlation between \(\hat\beta_0\) and \(\hat\beta_1\) is \(-0.36/\sqrt{1.32 \times 0.12} = -0.905\): if the slope came out too steep, the intercept probably came out too low. That's the pivot of the bow-tie.</p>
+</div>
+<div class="board box"><span class="tag">On the board · the robust (sandwich) SE for the slope</span>
+<p>\(\widehat{\text{se}}^2_{HC0} = \sum(x_i - \bar x)^2\hat\epsilon_i^2/\big(\sum(x_i - \bar x)^2\big)^2 = \frac{4(0.16) + 1(0.64) + 0 + 1(1.44) + 4(0.36)}{100} = 0.0416\), so 0.204; HC1 multiplies by \(\sqrt{n/(n-2)} = \sqrt{5/3}\): 0.263. Smaller than the classical 0.346 here, because the biggest residuals sit at low-leverage points near \(\bar x\).</p>
+</div>
+
+<h2 id="table">Reading a real table</h2>
+<div class="example box"><span class="tag">Worked example · Ames, Iowa (course)</span>
+<p>2,930 house sales, 11 coefficients, df 2,919. Row: <code>area 113.32 2.009 56.40 0.000 109.38 117.26</code>.</p>
+<ul>
+<li><strong>coef:</strong> holding age, air, and style fixed, +1 sq ft ↔ +$113 sale price on average.</li>
+<li><strong>std err:</strong> classical formula, assumes the same error spread for every house.</li>
+<li><strong>t:</strong> \(113.32/2.009 = 56.4\).</li>
+<li><strong>CI:</strong> \(113.32 \pm 1.961 \times 2.009\).</li>
+<li><strong>Change units</strong> to square meters: coef \(\times 10.764 = 1{,}220\), SE \(\times 10.764 = 21.6\), \(t\) unchanged.</li>
+<li><strong>Robust SE:</strong> 6.5, three times larger (errors grow with house size). The CI becomes \((100.6, 126.0)\).</li>
+</ul>
+</div>
+
+<h2 id="hetero">Widget: when the SE formula is wrong</h2>
+<div class="widget" id="w-het">
+<p class="wtitle">Classical vs. robust SEs under a fan-shaped error</p>
+<p class="wlead">2,000 simulated datasets: \(x\) uniform on 0–10, \(y = 1 + 0.5x + \epsilon\). The error SD depends on \(x\) in one of two shapes. The readouts compare the slope's true sampling SD with the average classical and robust SEs, and each method's coverage of the true slope.</p>
+<div class="controls">
+<label>\(n\) <input type="range" id="h-n" min="10" max="200" step="5" value="50"><output for="h-n"></output></label>
+<label>error shape <select id="h-shape"><option value="ends">noisy at both ends: SD = 1 + γ(x − 5)²/5</option><option value="fan">fan: SD = 1 + γx</option></select></label>
+<label>strength \(\gamma\) <input type="range" id="h-g" min="0" max="3" step="0.1" value="1.5" data-dec="1"><output for="h-g"></output></label>
+</div>
+<svg id="h-plot"></svg>
+<div class="readout" id="h-read"></div>
+<p class="note">The classical formula fails worst when the noisiest points are also the high-leverage ones (far from \(\bar x\)): "both ends" drops classical coverage to about 84%, while the robust SE stays near 94%. A fan that grows steadily with \(x\) does less damage when \(x\) is spread evenly.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the drag widget, move the point at \(x = 3\) far up. Why does the slope barely change, while moving the point at \(x = 5\) changes it a lot?</summary>
+<p>Leverage. The slope is \(\sum(x_i - \bar x)(y_i - \bar y)/\sum(x_i - \bar x)^2\), so a point's pull is proportional to \(x_i - \bar x\), which is 0 at \(x = 3\). Moving the middle point raises the intercept and inflates \(\hat\sigma\) (so every SE grows), but leaves the slope where it was.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>With strength \(\gamma = 0\) in the error-shape widget, which SE is better?</summary>
+<p>Both are about right on average (set strength to 0), but the classical one is slightly less noisy and its coverage is closer to 95% at small \(n\): when its assumption holds, it uses it. The robust SE costs a little efficiency in exchange for not depending on the assumption.</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>Why is the prediction band so much wider than the confidence band?</summary>
+<p>The confidence band covers the <em>average</em> \(y\) at each \(x\), whose uncertainty shrinks like \(1/\sqrt n\). The prediction band covers a single new \(y\), which adds that point's own noise \(\hat\sigma^2\). With infinite data the confidence band collapses onto the line; the prediction band stays at roughly \(\pm 1.96\sigma\).</p></details>
+
+<script>
+(function () {
+  const BASE = [[1, 1], [2, 3], [3, 2], [4, 5], [5, 4]];
+  let pts = BASE.map(p => p.slice()), drag = -1;
+  const svg = document.getElementById("r-plot"), r = UU.rng(17);
+  const X0 = -1, X1 = 11, Y0 = -6, Y1 = 14;
+  function fit() {
+    const n = pts.length, xb = UU.mean(pts.map(p => p[0])), yb = UU.mean(pts.map(p => p[1]));
+    const Sxx = pts.reduce((a, p) => a + (p[0] - xb) ** 2, 0), Sxy = pts.reduce((a, p) => a + (p[0] - xb) * (p[1] - yb), 0);
+    const b1 = Sxy / Sxx, b0 = yb - b1 * xb, e = pts.map(p => p[1] - b0 - b1 * p[0]), rss = e.reduce((a, v) => a + v * v, 0);
+    const s2 = rss / (n - 2), s = Math.sqrt(s2), sumx2 = pts.reduce((a, p) => a + p[0] * p[0], 0);
+    const se1 = s / Math.sqrt(Sxx), se0 = s * Math.sqrt(sumx2 / (n * Sxx));
+    const hc1 = Math.sqrt(pts.reduce((a, p, i) => a + (p[0] - xb) ** 2 * e[i] ** 2, 0) / Sxx ** 2 * n / (n - 2));
+    return { n, xb, Sxx, b0, b1, s, s2, se0, se1, hc1 };
+  }
+  function draw() {
+    const F = fit(), df = F.n - 2, tc = UU.tInv(0.975, df);
+    const f = UU.frame(svg, { W: 640, H: 340, x: [X0, X1], y: [Y0, Y1], xlabel: "x", ylabel: "y" });
+    const xs = Array.from({ length: 121 }, (_, i) => X0 + (X1 - X0) * i / 120);
+    const band = (k) => { const up = xs.map(x => [x, F.b0 + F.b1 * x + tc * F.s * Math.sqrt(k + 1 / F.n + (x - F.xb) ** 2 / F.Sxx)]), dn = xs.map(x => [x, F.b0 + F.b1 * x - tc * F.s * Math.sqrt(k + 1 / F.n + (x - F.xb) ** 2 / F.Sxx)]).reverse();
+      return up.concat(dn).map((p, i) => (i ? "L" : "M") + f.x(p[0]).toFixed(1) + "," + f.y(Math.max(Y0 - 50, Math.min(Y1 + 50, p[1]))).toFixed(1)).join("") + "Z"; };
+    UU.el("clipPath", { id: "rclip" }, f.svg).appendChild(UU.el("rect", { x: f.m.l, y: f.m.t, width: f.W - f.m.l - f.m.r, height: f.H - f.m.t - f.m.b }));
+    UU.el("path", { d: band(1), "clip-path": "url(#rclip)", style: "fill:var(--c3);opacity:.12" }, f.g);
+    UU.el("path", { d: band(0), "clip-path": "url(#rclip)", style: "fill:var(--c3);opacity:.32" }, f.g);
+    UU.el("line", { x1: f.x(X0), x2: f.x(X1), y1: f.y(F.b0 + F.b1 * X0), y2: f.y(F.b0 + F.b1 * X1), "clip-path": "url(#rclip)", style: "stroke:var(--c1);stroke-width:2.5" }, f.g);
+    pts.forEach((p, i) => { const c = UU.el("circle", { cx: f.x(p[0]), cy: f.y(p[1]), r: 7, style: "fill:var(--ink);cursor:grab;stroke:var(--bg);stroke-width:2", "data-i": i, tabindex: 0, "aria-label": `point ${i + 1}` }, f.g); });
+    svg._f = f;
+    const p2 = (t) => 2 * (1 - UU.tCdf(Math.abs(t), df));
+    const row = (name, b, se, hc) => `<tr><td>${name}</td><td>${b.toFixed(3)}</td><td>${se.toFixed(3)}</td><td>${(b / se).toFixed(2)}</td><td>${p2(b / se).toFixed(3)}</td><td>${(b - tc * se).toFixed(2)}</td><td>${(b + tc * se).toFixed(2)}</td><td>${hc === null ? "—" : hc.toFixed(3)}</td></tr>`;
+    document.getElementById("r-table").innerHTML = `<table><thead><tr><th></th><th>coef</th><th>std err</th><th>t</th><th>P&gt;|t|</th><th>[0.025</th><th>0.975]</th><th>robust SE (HC1)</th></tr></thead><tbody>${row("const", F.b0, F.se0, null)}${row("x", F.b1, F.se1, F.hc1)}</tbody></table>
+      <p class="note">n = ${F.n}, df = ${df}, σ̂ = ${F.s.toFixed(3)}, t critical value ${tc.toFixed(3)}</p>`;
+  }
+  function toData(evt) { const f = svg._f, pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse()); return [Math.max(X0, Math.min(X1, f.x.inv(q.x))), Math.max(Y0, Math.min(Y1, f.y.inv(q.y)))]; }
+  svg.addEventListener("pointerdown", e => { const t = e.target.closest("circle[data-i]"); if (!t) return; drag = +t.getAttribute("data-i"); svg.setPointerCapture(e.pointerId); });
+  svg.addEventListener("pointermove", e => { if (drag < 0) return; pts[drag] = toData(e).map(v => Math.round(v * 10) / 10); draw(); });
+  svg.addEventListener("pointerup", () => { drag = -1; });
+  document.getElementById("r-reset").onclick = () => { pts = BASE.map(p => p.slice()); draw(); };
+  document.getElementById("r-add").onclick = () => { const x = Math.round(10 * (0.5 + 9 * r())) / 10, F = fit(); pts.push([x, Math.round(10 * (F.b0 + F.b1 * x + F.s * UU.randn(r))) / 10]); draw(); };
+  document.getElementById("r-del").onclick = () => { if (pts.length > 3) { pts.pop(); draw(); } };
+  document.getElementById("r-fan").onclick = () => { pts = Array.from({ length: 30 }, () => { const x = Math.round(10 * (0.3 + 9.4 * r())) / 10; return [x, Math.round(10 * (1 + 0.5 * x + (0.2 + 0.45 * x) * UU.randn(r))) / 10]; }); draw(); };
+  draw();
+})();
+
+(function () {
+  function update() {
+    const n = UU.val("h-n"), g = UU.val("h-g"), shape = document.getElementById("h-shape").value; document.querySelector('output[for="h-n"]').textContent = n; document.querySelector('output[for="h-g"]').textContent = g.toFixed(1);
+    const r = UU.rng(55), tc = UU.tInv(0.975, n - 2), slopes = [], cl = [], rb = []; let cc = 0, cr = 0;
+    for (let k = 0; k < 2000; k++) {
+      const x = Array.from({ length: n }, () => 10 * r()), y = x.map(v => 1 + 0.5 * v + (shape === "fan" ? 1 + g * v : 1 + g * (v - 5) ** 2 / 5) * UU.randn(r));
+      const xb = UU.mean(x), yb = UU.mean(y); let Sxx = 0, Sxy = 0; for (let i = 0; i < n; i++) { Sxx += (x[i] - xb) ** 2; Sxy += (x[i] - xb) * (y[i] - yb); }
+      const b1 = Sxy / Sxx, b0 = yb - b1 * xb; let rss = 0, hc = 0; for (let i = 0; i < n; i++) { const e = y[i] - b0 - b1 * x[i]; rss += e * e; hc += (x[i] - xb) ** 2 * e * e; }
+      const se = Math.sqrt(rss / (n - 2) / Sxx), sr = Math.sqrt(hc / Sxx ** 2 * n / (n - 2));
+      slopes.push(b1); cl.push(se); rb.push(sr); if (Math.abs(b1 - 0.5) <= tc * se) cc++; if (Math.abs(b1 - 0.5) <= tc * sr) cr++;
+    }
+    const tsd = UU.sd(slopes), lo = 0, hi = Math.max(UU.quantile(cl, 0.995), UU.quantile(rb, 0.995), tsd) * 1.1;
+    const bc = UU.hist(cl, lo, hi, 50), br = UU.hist(rb, lo, hi, 50), ym = Math.max(...bc.map(b => b.d), ...br.map(b => b.d)) * 1.1;
+    const f = UU.frame(document.getElementById("h-plot"), { W: 640, H: 220, x: [lo, hi], y: [0, ym], yaxis: false, xlabel: "estimated SE of the slope across 2,000 datasets (gray = classical, red = robust); black line = true SD" });
+    UU.bars(f, bc, { style: "fill:var(--muted);opacity:.5" }); UU.bars(f, br, { style: "fill:var(--c1);opacity:.45" });
+    UU.vline(f, tsd, { style: "stroke:var(--ink);stroke-width:2" });
+    document.getElementById("h-read").innerHTML = `<div><span>true SD of the slope</span><b>${tsd.toFixed(4)}</b></div><div><span>average classical SE</span><b>${UU.mean(cl).toFixed(4)}</b></div><div><span>average robust SE (HC1)</span><b>${UU.mean(rb).toFixed(4)}</b></div><div><span>classical 95% coverage</span><b>${(cc / 20).toFixed(1)}%</b></div><div><span>robust 95% coverage</span><b>${(cr / 20).toFixed(1)}%</b></div>`;
+  }
+  ["h-n", "h-g", "h-shape"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-07-multiple.html">← §07 Many tests at once</a><a href="deep-09-failures.html">§09 When the machinery breaks →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

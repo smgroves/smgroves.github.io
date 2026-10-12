@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multiple Testing</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#multiple">← Back to the study guide, §7</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §7</p>
+<h1>Many tests at once</h1>
+<p class="sub">Family-wise error, Bonferroni, Holm, false discovery rates, and Benjamini–Hochberg.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#problem">The problem in one line</a></li>
+<li><a href="#fwer">Family-wise error: Bonferroni and Holm</a></li>
+<li><a href="#fdr">False discovery rate: Benjamini–Hochberg</a></li>
+<li><a href="#sim">Widget: many tests, three rules</a></li>
+<li><a href="#calc">Widget: apply the rules to your p-values</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="problem">The problem in one line</h2>
+<p>With \(m\) independent true nulls each tested at \(\alpha\), \(P(\text{at least one false rejection}) = 1 - (1 - \alpha)^m\).</p>
+<div class="board box"><span class="tag">On the board · how fast it grows</span>
+<div class="tablewrap"><table><thead><tr><th>\(m\)</th><th>1</th><th>5</th><th>10</th><th>20</th><th>100</th></tr></thead>
+<tbody><tr><td>\(1 - 0.95^m\)</td><td>0.05</td><td>0.23</td><td>0.40</td><td>0.64</td><td>0.994</td></tr>
+<tr><td>expected false rejections \(0.05m\)</td><td>0.05</td><td>0.25</td><td>0.5</td><td>1</td><td>5</td></tr></tbody></table></div>
+<p>CASI §15.1: "how easy it is to be fooled." Leukemia gene 136 had \(p = 0.0036\), but 400 of 7128 genes beat its t-statistic.</p>
+</div>
+<div class="analogy box"><span class="tag">Analogy · lottery tickets</span>
+<p>One ticket at 1-in-20 odds rarely wins. Buy twenty and you probably hold a winner. A "significant" result pulled from many tests is a winning ticket from a stack: it says more about the size of the stack than about the ticket.</p>
+</div>
+
+<h2 id="fwer">Family-wise error: Bonferroni and Holm</h2>
+<div class="formal box"><span class="tag">Formal · AoS Thm 10.24; CASI (15.8)–(15.10)</span>
+<p><strong>Bonferroni:</strong> reject \(H_{0i}\) if \(p_i &lt; \alpha/m\). FWER \(\le \alpha\) by the union bound, with no independence needed. <strong>Holm:</strong> sort the p-values; reject \(p_{(1)}, p_{(2)}, \dots\) while \(p_{(i)} \le \alpha/(m - i + 1)\); stop at the first failure. Also FWER \(\le \alpha\), and never rejects fewer than Bonferroni.</p>
+</div>
+<div class="story box"><span class="tag">Story proof · why Holm still controls FWER</span>
+<p>Say \(m_0\) of the nulls are true. Walk down the sorted list until the first <em>true</em> null. Everything before it was a false null, so at most \(m - m_0\) hypotheses came first, and this one is at rank \(i \le m - m_0 + 1\). To be rejected it must pass \(\alpha/(m - i + 1) \le \alpha/m_0\). So a false rejection requires the smallest true-null p-value to be below \(\alpha/m_0\), which by the union bound over the \(m_0\) true nulls has probability at most \(m_0 \cdot \alpha/m_0 = \alpha\). Holm earns its extra power because, once false nulls are cleared away, the later thresholds can afford to be looser.</p>
+</div>
+<div class="board box"><span class="tag">On the board · five p-values</span>
+<p>0.001, 0.012, 0.020, 0.040, 0.300; \(\alpha = 0.05\).</p>
+<div class="tablewrap"><table><thead><tr><th>\(i\)</th><th>\(p_{(i)}\)</th><th>Bonferroni 0.01</th><th>Holm \(0.05/(6-i)\)</th><th>BH \(0.01i\)</th></tr></thead><tbody>
+<tr><td>1</td><td>0.001</td><td>✓</td><td>0.0100 ✓</td><td>0.01 ✓</td></tr>
+<tr><td>2</td><td>0.012</td><td>✗</td><td>0.0125 ✓</td><td>0.02 ✓</td></tr>
+<tr><td>3</td><td>0.020</td><td>✗</td><td>0.0167 ✗ stop</td><td>0.03 ✓</td></tr>
+<tr><td>4</td><td>0.040</td><td>✗</td><td>—</td><td>0.04 ✓</td></tr>
+<tr><td>5</td><td>0.300</td><td>✗</td><td>—</td><td>0.05 ✗</td></tr>
+</tbody></table></div>
+<p>Rejections: Bonferroni 1, Holm 2, BH 4, uncorrected 4.</p>
+</div>
+<div class="board box"><span class="tag">On the board · Bonferroni thresholds in z units</span>
+<p>Two-sided Bonferroni at \(\alpha = 0.05\) requires \(|z| > \Phi^{-1}(1 - 0.025/m)\): \(m = 1 \to 1.96\); \(m = 10 \to 2.81\); \(m = 100 \to 3.48\); \(m = 7128 \to 4.49\). CASI's prostate example uses one-sided 0.05/6033, giving 4.31: four genes pass.</p>
+</div>
+
+<h2 id="fdr">False discovery rate: Benjamini–Hochberg</h2>
+<div class="formal box"><span class="tag">Formal · AoS (10.8), Thm 10.26; CASI (15.14)–(15.15)</span>
+<p>FDP = false rejections / rejections (0 if none); FDR = \(E[\text{FDP}]\). BH: find the largest \(i\) with \(p_{(i)} \le i\alpha/m\) and reject the \(i\) smallest. With independent p-values, FDR \(= \pi_0\alpha \le \alpha\), where \(\pi_0\) is the share of true nulls.</p>
+</div>
+<div class="story box"><span class="tag">Story proof · why the line \(i\alpha/m\) controls the false-discovery share</span>
+<p>Suppose you reject everything with \(p \le t\). True nulls have uniform p-values, so about \(m_0 t \le m t\) of them fall below \(t\): that's the expected number of false discoveries. If \(R\) p-values in total fall below \(t\), the false-discovery share is at most about \(mt/R\). Setting \(mt/R = \alpha\) gives \(t = R\alpha/m\): the BH line. BH picks the largest threshold where the observed count of small p-values justifies it.</p>
+</div>
+<div class="board box"><span class="tag">On the board · AoS Ex 10.28 (ten p-values)</span>
+<p>0.00017, 0.00448, 0.00671, 0.00907, 0.01220, 0.33626, … BH line \(0.005i\): the first five are below (0.005, 0.010, 0.015, 0.020, 0.025); the sixth (0.336 vs 0.030) is not. BH rejects 5; Bonferroni (0.005) rejects 2.</p>
+</div>
+
+<h2 id="sim">Widget: many tests, three rules</h2>
+<div class="widget" id="w-mt">
+<p class="wtitle">Sorted p-values and three thresholds</p>
+<p class="wlead">\(m\) tests, of which a share are real effects of size \(\delta\) SEs and the rest true nulls. Dots are sorted p-values (red = real effect, gray = true null) on a log scale. Lines: uncorrected \(\alpha\), Bonferroni \(\alpha/m\), and the BH line \(i\alpha/m\).</p>
+<div class="controls">
+<label>\(m\) <input type="range" id="t-m" min="10" max="500" step="10" value="100"><output for="t-m"></output></label>
+<label>share real effects <input type="range" id="t-pi" min="0" max="0.5" step="0.05" value="0.1" data-dec="2"><output for="t-pi"></output></label>
+<label>\(\delta\) <input type="range" id="t-d" min="1" max="5" step="0.25" value="3" data-dec="2"><output for="t-d"></output></label>
+<button class="btn" id="t-new">New data</button>
+<button class="btn primary" id="t-avg">Average over 500 runs</button>
+</div>
+<svg id="t-plot"></svg>
+<div class="tablewrap" id="t-table"></div>
+</div>
+
+<h2 id="calc">Widget: apply the rules to your p-values</h2>
+<div class="widget" id="w-calc">
+<p class="wtitle">Bonferroni, Holm, and BH calculator</p>
+<div class="controls"><label>p-values <input type="text" id="c-ps" value="0.001, 0.012, 0.020, 0.040, 0.300" style="width:22em"></label>
+<label>\(\alpha\) <select id="c-a"><option>0.10</option><option selected>0.05</option><option>0.01</option></select></label></div>
+<div class="tablewrap" id="c-out"></div>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the widget with no real effects (share 0), how many tests does each rule reject?</summary>
+<p>Uncorrected rejects about \(0.05m\) (all false). Bonferroni and BH usually reject none: when every null is true, FDR control and FWER control coincide, since any rejection makes FDP = 1.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>Run "Average over 500 runs" with 10% real effects. Uncorrected testing has the most power. Why not use it?</summary>
+<p>Look at its FDR: with 90 nulls and 10 real effects, about 4.5 false rejections per run against roughly 9 true ones, so a third of its "discoveries" are false. BH keeps that share near 5% while keeping most of the power; Bonferroni keeps even one false discovery rare, at a large cost in power.</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>Is BH valid if the tests are correlated?</summary>
+<p>The basic version is valid for independent and positively dependent p-values. AoS's \(C_m = \sum_{j=1}^m 1/j\) factor (divide \(\alpha\) by it) makes it valid under any dependence, at a cost of about a factor of \(\log m\) in the threshold. Bonferroni never needs independence.</p></details>
+
+<script>
+(function () {
+  let seed = 4;
+  const rules = (ps, a) => { const m = ps.length, o = ps.map((p, i) => [p, i]).sort((x, y) => x[0] - y[0]);
+    const unc = new Set(o.filter(x => x[0] <= a).map(x => x[1])), bon = new Set(o.filter(x => x[0] <= a / m).map(x => x[1]));
+    const holm = new Set(); for (let i = 0; i < m; i++) { if (o[i][0] <= a / (m - i)) holm.add(o[i][1]); else break; }
+    let kmax = -1; for (let i = 0; i < m; i++) if (o[i][0] <= (i + 1) * a / m) kmax = i; const bh = new Set(o.slice(0, kmax + 1).map(x => x[1]));
+    return { uncorrected: unc, Bonferroni: bon, Holm: holm, BH: bh }; };
+  function gen(r, m, pi, d) { const real = [], ps = []; for (let i = 0; i < m; i++) { const isReal = i < Math.round(pi * m); real.push(isReal); ps.push(2 * UU.normCdf(-Math.abs((isReal ? d : 0) + UU.randn(r)))); } return { ps, real }; }
+  function update() {
+    const m = UU.val("t-m"), pi = UU.val("t-pi"), d = UU.val("t-d"), a = 0.05;
+    document.querySelector('output[for="t-m"]').textContent = m; document.querySelector('output[for="t-pi"]').textContent = pi.toFixed(2); document.querySelector('output[for="t-d"]').textContent = d.toFixed(2);
+    const r = UU.rng(seed), { ps, real } = gen(r, m, pi, d), o = ps.map((p, i) => [p, real[i]]).sort((x, y) => x[0] - y[0]);
+    const lmin = Math.min(-6, Math.floor(Math.log10(Math.max(1e-12, o[0][0]))));
+    const f = UU.frame(document.getElementById("t-plot"), { W: 640, H: 280, x: [0, m + 1], y: [lmin, 0], xlabel: "rank i of the p-value", ylabel: "log₁₀ p", yfmt: v => v });
+    o.forEach(([p, isR], i) => UU.el("circle", { cx: f.x(i + 1), cy: f.y(Math.max(lmin, Math.log10(Math.max(p, 1e-12)))), r: m > 200 ? 1.8 : 2.8, style: isR ? "fill:var(--c1)" : "fill:var(--muted);opacity:.6" }, f.g));
+    const hl = (v, sty, lab) => { UU.el("line", { x1: f.x(0), x2: f.x(m + 1), y1: f.y(v), y2: f.y(v), style: sty }, f.g); UU.el("text", { x: f.x(m + 1) - 4, y: f.y(v) - 4, "text-anchor": "end" }, f.g).textContent = lab; };
+    hl(Math.log10(a), "stroke:var(--c3);stroke-dasharray:4 3", "uncorrected 0.05"); hl(Math.log10(a / m), "stroke:var(--c2);stroke-width:1.5", "Bonferroni 0.05/m");
+    UU.path(f, Array.from({ length: m }, (_, i) => [i + 1, Math.log10((i + 1) * a / m)]), { style: "stroke:var(--c4);stroke-width:2" });
+    UU.text(f, m * 0.15, Math.log10(0.15 * m * a / m), "BH line iα/m", { dy: 14, style: "fill:var(--c4)" });
+    const R = rules(ps, a);
+    document.getElementById("t-table").innerHTML = `<table><thead><tr><th>rule</th><th>rejections</th><th>false rejections</th><th>false-discovery share</th><th>real effects found</th></tr></thead><tbody>` +
+      Object.entries(R).map(([k, s]) => { const fa = [...s].filter(i => !real[i]).length, nr = real.filter(Boolean).length; return `<tr><td>${k}</td><td>${s.size}</td><td>${fa}</td><td>${s.size ? (fa / s.size).toFixed(2) : "0"}</td><td>${s.size - fa} of ${nr}</td></tr>`; }).join("") + `</tbody></table>`;
+  }
+  document.getElementById("t-avg").onclick = () => {
+    const m = UU.val("t-m"), pi = UU.val("t-pi"), d = UU.val("t-d"), r = UU.rng(seed + 1000), acc = {};
+    for (let k = 0; k < 500; k++) { const { ps, real } = gen(r, m, pi, d), R = rules(ps, 0.05), nr = real.filter(Boolean).length;
+      Object.entries(R).forEach(([name, s]) => { const fa = [...s].filter(i => !real[i]).length; acc[name] = acc[name] || [0, 0, 0]; acc[name][0] += fa > 0 ? 1 : 0; acc[name][1] += s.size ? fa / s.size : 0; acc[name][2] += nr ? (s.size - fa) / nr : 0; }); }
+    document.getElementById("t-table").innerHTML = `<table><thead><tr><th>rule (500 runs)</th><th>FWER: P(any false rejection)</th><th>FDR: average false-discovery share</th><th>power: share of real effects found</th></tr></thead><tbody>` +
+      Object.entries(acc).map(([k, v]) => `<tr><td>${k}</td><td>${(v[0] / 500).toFixed(3)}</td><td>${(v[1] / 500).toFixed(3)}</td><td>${(v[2] / 500).toFixed(3)}</td></tr>`).join("") + `</tbody></table>`;
+  };
+  ["t-m", "t-pi", "t-d"].forEach(id => document.getElementById(id).addEventListener("input", update));
+  document.getElementById("t-new").onclick = () => { seed++; update(); }; update();
+  window._mtRules = rules;
+})();
+
+(function () {
+  function update() {
+    const ps = document.getElementById("c-ps").value.split(/[ ,]+/).map(Number).filter(v => Number.isFinite(v) && v >= 0 && v <= 1), a = +document.getElementById("c-a").value;
+    if (!ps.length) return; const m = ps.length, R = window._mtRules(ps, a), o = ps.map((p, i) => [p, i]).sort((x, y) => x[0] - y[0]);
+    document.getElementById("c-out").innerHTML = `<table><thead><tr><th>rank</th><th>p</th><th>Bonferroni ${(a / m).toPrecision(3)}</th><th>Holm threshold</th><th>BH threshold</th><th>uncorrected</th></tr></thead><tbody>` +
+      o.map(([p, i], k) => `<tr><td>${k + 1}</td><td>${p}</td><td>${R.Bonferroni.has(i) ? "reject" : "—"}</td><td>${(a / (m - k)).toPrecision(3)} ${R.Holm.has(i) ? "reject" : "—"}</td><td>${((k + 1) * a / m).toPrecision(3)} ${R.BH.has(i) ? "reject" : "—"}</td><td>${R.uncorrected.has(i) ? "reject" : "—"}</td></tr>`).join("") +
+      `<tr><td colspan="2"><b>total rejections</b></td><td><b>${R.Bonferroni.size}</b></td><td><b>${R.Holm.size}</b></td><td><b>${R.BH.size}</b></td><td><b>${R.uncorrected.size}</b></td></tr></tbody></table>`;
+  }
+  ["c-ps", "c-a"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-06-testing.html">← §06 Hypothesis tests and p-values</a><a href="deep-08-regression.html">§08 Inference for regression coefficients →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

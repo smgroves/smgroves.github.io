@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Confidence Intervals</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#ci">← Back to the study guide, §5</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §5</p>
+<h1>Confidence intervals</h1>
+<p class="sub">What the 95% belongs to, and how normal, t, and bootstrap intervals are built.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#what">What the 95% belongs to</a></li>
+<li><a href="#rings">Widget: a hundred intervals</a></li>
+<li><a href="#exact">Coverage you can count</a></li>
+<li><a href="#normal">Normal-based intervals, step by step</a></li>
+<li><a href="#boot">Bootstrap intervals (widget)</a></li>
+<li><a href="#better">BC and BCa by hand</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="what">What the 95% belongs to</h2>
+<p>A confidence interval is a pair of statistics \((a(X), b(X))\) chosen so that \(P_\theta(a \le \theta \le b) \ge 1 - \alpha\) for every \(\theta\) (AoS (6.9)). The probability is over the data, with \(\theta\) held fixed. Once you've computed \((6.92, 10.26)\), nothing random is left: the interval contains \(\mu\) or it doesn't.</p>
+<div class="analogy box"><span class="tag">Analogy · ring toss</span>
+<p>The peg is bolted down. Your throwing arm lands the ring around the peg 95% of the time. After a throw you can see the ring, but not the peg, so you can't tell whether this throw was one of the 95%. The 95% describes the arm.</p>
+</div>
+<p>Wasserman's reading (AoS §6.3.2): over a career of unrelated studies, each with its own 95% interval, 95% of the intervals trap their own true values. CASI prefers hypothetical repetitions of <em>this</em> problem. Both are statements about the procedure.</p>
+
+<h2 id="rings">Widget: a hundred intervals</h2>
+<div class="widget" id="w-rings">
+<p class="wtitle">Intervals from repeated samples</p>
+<p class="wlead">Each horizontal line is one study's interval for \(\mu\) (vertical dashed line). Red intervals miss. The tally accumulates across batches.</p>
+<div class="controls">
+<label>Population <select id="g-pop"><option value="normal">normal (μ = 10, σ = 3)</option><option value="cars">car prices (μ = 8.59)</option></select></label>
+<label>\(n\) <input type="range" id="g-n" min="3" max="100" value="10"><output for="g-n"></output></label>
+<label>confidence <select id="g-conf"><option value="0.80">80%</option><option value="0.90">90%</option><option value="0.95" selected>95%</option><option value="0.99">99%</option></select></label>
+<label>method <select id="g-m"><option value="z">x̄ ± z·ŝe</option><option value="t">x̄ ± t·ŝe</option></select></label>
+<button class="btn primary" id="g-run">New batch of 100</button>
+</div>
+<svg id="g-plot"></svg>
+<div class="readout" id="g-read"></div>
+</div>
+
+<h2 id="exact">Coverage you can count</h2>
+<div class="board box"><span class="tag">On the board · coverage on {1, 3, 5}, samples of 2</span>
+<p>The nine sample means are 1, 2, 3, 2, 3, 4, 3, 4, 5 and \(\mu = 3\). The rule "\(\bar x \pm h\)" covers whenever \(|\bar x - 3| \le h\).</p>
+<div class="tablewrap"><table><thead><tr><th>half-width \(h\)</th><th>covering samples</th><th>coverage</th></tr></thead><tbody>
+<tr><td>0.5</td><td>\(\bar x = 3\): 3 samples</td><td>33%</td></tr><tr><td>1.5</td><td>\(\bar x \in \{2,3,4\}\): 7</td><td>78%</td></tr><tr><td>2.5</td><td>all 9</td><td>100%</td></tr></tbody></table></div>
+<p>No interval rule here hits exactly 95%: with discrete data, coverage jumps. That's why exact intervals for counts are conservative (coverage "at least" \(1-\alpha\)).</p>
+</div>
+<div class="board box"><span class="tag">On the board · Berger–Wolpert (AoS Ex 6.14)</span>
+<p>Two noisy readings \(Y_i = \theta \pm 1\) (each sign with probability 1/2). Report \(\{Y_1 - 1\}\) if the readings agree, \(\{(Y_1 + Y_2)/2\}\) if they differ. Four equally likely sign patterns: \((+,+)\) gives \(\theta\) ✓; \((-,-)\) gives \(\theta - 2\) ✗; \((+,-)\) and \((-,+)\) give \(\theta\) ✓. Coverage 3/4. Now observe 15 and 17: the readings differ, so the report is \(\{16\}\), and \(\theta\) must be 16. A "75% interval" that is certainly right. Coverage is about the rule, not the realized interval.</p>
+</div>
+
+<h2 id="normal">Normal-based intervals, step by step</h2>
+<div class="formal box"><span class="tag">Formal · AoS Thm 6.16</span>
+<p>If \(\hat\theta \approx N(\theta, \widehat{\text{se}}^2)\), then \(\hat\theta \pm z_{\alpha/2}\widehat{\text{se}}\) has coverage \(\to 1 - \alpha\). Proof: \(P(|\hat\theta - \theta|/\widehat{\text{se}} &lt; z_{\alpha/2}) \to P(|Z| &lt; z_{\alpha/2}) = 1 - \alpha\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · five intervals, one recipe</span>
+<div class="tablewrap"><table><thead><tr><th>problem</th><th>estimate</th><th>\(\widehat{\text{se}}\)</th><th>95% interval</th></tr></thead><tbody>
+<tr><td>board data mean</td><td>5</td><td>1</td><td>(3.04, 6.96); t₄: (2.22, 7.78)</td></tr>
+<tr><td>proportion: 30 of 100</td><td>0.30</td><td>\(\sqrt{0.21/100} = 0.046\)</td><td>(0.21, 0.39)</td></tr>
+<tr><td>difference: \(\bar x_1 = 10\), \(\bar x_2 = 7\), SEs 1.2 and 0.9</td><td>3</td><td>\(\sqrt{1.44 + 0.81} = 1.5\)</td><td>(0.06, 5.94)</td></tr>
+<tr><td>Poisson count 16</td><td>16</td><td>\(\sqrt{16} = 4\)</td><td>(8.2, 23.8)</td></tr>
+<tr><td>log-odds, \(\hat p = 0.6\), \(n = 100\)</td><td>0.405</td><td>0.204</td><td>(0.005, 0.805)</td></tr>
+</tbody></table></div>
+<p>The difference row is the one students get wrong: SEs of independent estimates add <em>in squares</em>, so the SE of the difference is 1.5, not \(1.2 + 0.9 = 2.1\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · how big a sample for a ±3-point poll?</span>
+<p>Worst case \(p = 0.5\): half-width \(1.96\sqrt{0.25/n} = 0.03\) gives \(\sqrt n = 1.96 \times 0.5/0.03 = 32.7\), so \(n \approx 1{,}068\). Halving the margin to ±1.5 points needs four times as many: about 4,270.</p>
+</div>
+
+<h2 id="boot">Bootstrap intervals</h2>
+<div class="widget" id="w-bci">
+<p class="wtitle">Normal, percentile, and pivotal intervals from the same replicates</p>
+<p class="wlead">Bootstrap replicates of the statistic on the car prices (or a subsample). The three intervals are drawn under the histogram. With a skewed bootstrap distribution, the percentile interval leans with the tail and the pivotal interval leans against it.</p>
+<div class="controls">
+<label>Statistic <select id="k-stat"><option value="mean">mean</option><option value="median">median</option><option value="sd">SD</option></select></label>
+<label>use the first \(n\) cars <input type="range" id="k-n" min="10" max="92" value="92"><output for="k-n"></output></label>
+<label>confidence <select id="k-conf"><option value="0.80">80%</option><option value="0.90">90%</option><option value="0.95" selected>95%</option></select></label>
+</div>
+<svg id="k-plot"></svg>
+<div class="readout" id="k-read"></div>
+</div>
+<div class="board box"><span class="tag">On the board · three intervals from ten replicates</span>
+<p>\(\hat\theta = 5\); replicates 3.6, 4.0, 4.4, 4.6, 4.8, 5.0, 5.2, 5.6, 6.2, 7.0 (SD 1.02); take the 10% and 90% quantiles as 4.0 and 6.2. 80% intervals: normal \(5 \pm 1.28(1.02) = (3.69, 6.31)\); percentile \((4.0, 6.2)\); pivotal \((10 - 6.2, 10 - 4.0) = (3.8, 6.0)\).</p>
+</div>
+<div class="story box"><span class="tag">Story proof · the pivotal flip</span>
+<p>The bootstrap world's miss \(\hat\theta^* - \hat\theta\) imitates the real world's miss \(\hat\theta - \theta\). If replicates often overshoot \(\hat\theta\) by a lot (long right tail), then \(\hat\theta\) probably overshoots \(\theta\) by a lot, so \(\theta\) sits further <em>left</em>. The interval stretches left: \(\hat\theta - (\theta^*_{.975} - \hat\theta) = 2\hat\theta - \theta^*_{.975}\).</p>
+</div>
+
+<h2 id="better">BC and BCa by hand</h2>
+<p>CASI Ch 11's ladder: standard → percentile (handles skew via a hidden transformation) → BC (also median bias, via \(z_0\)) → BCa (also SE that changes with \(\theta\), via the acceleration \(a\)). Standard intervals have coverage error of order \(1/\sqrt n\); BCa of order \(1/n\).</p>
+<div class="board box"><span class="tag">On the board · BC percentiles from a normal table</span>
+<p>\(p_0\) = share of replicates below \(\hat\theta\); \(z_0 = \Phi^{-1}(p_0)\). The BC interval uses percentiles \(\Phi(2z_0 \pm z_{\alpha/2})\) instead of \(\alpha/2\) and \(1 - \alpha/2\).</p>
+<div class="tablewrap"><table><thead><tr><th>\(p_0\)</th><th>\(z_0\)</th><th>95% BC uses percentiles</th></tr></thead><tbody>
+<tr><td>0.50</td><td>0</td><td>2.5%, 97.5% (= percentile interval)</td></tr>
+<tr><td>0.45</td><td>−0.126</td><td>\(\Phi(-2.212) = 1.3\%\), \(\Phi(1.708) = 95.6\%\)</td></tr>
+<tr><td>0.40</td><td>−0.253</td><td>\(\Phi(-2.466) = 0.7\%\), \(\Phi(1.454) = 92.7\%\)</td></tr>
+<tr><td>0.55</td><td>0.126</td><td>\(\Phi(-1.708) = 4.4\%\), \(\Phi(2.212) = 98.7\%\)</td></tr>
+</tbody></table></div>
+<p>When most replicates sit above \(\hat\theta\) (\(p_0 &lt; 0.5\)), the estimate looks biased upward relative to its bootstrap distribution, and BC slides both ends down.</p>
+</div>
+<div class="board box"><span class="tag">On the board · why symmetric intervals fail for counts (CASI Ch 11)</span>
+<p>One Poisson count of 10. Standard: \(10 \pm 1.96\sqrt{10} = (3.8, 16.2)\). Exact: \((5.1, 17.8)\). The Poisson's spread grows with its mean, so plausible values above 10 range further than plausible values below. A square-root transformation nearly fixes it: \(\sqrt{10} \pm 1.96/2 = (2.18, 4.14)\), squared: \((4.8, 17.2)\). The percentile method does this transformation for you without being told.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the ring widget with car prices at \(n = 5\), coverage is well below 95% even with the t method. Which intervals miss, the ones too high or too low?</summary>
+<p>Mostly ones entirely below \(\mu\). Small samples of car prices usually miss the few expensive cars, giving a low mean and a small SE together, so the interval is short and sits too low. Increase \(n\) and the misses even out.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>If I compute a 95% interval and then a 99% interval from the same data, is the probability that μ is in the 99% one higher?</summary>
+<p>Not in the frequentist sense: each is either right or wrong. What's higher is the long-run hit rate of the 99% <em>procedure</em>. You pay for it with width: \(2.576/1.96 = 1.31\) times wider.</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>When do the normal and percentile bootstrap intervals agree?</summary>
+<p>When the bootstrap distribution is symmetric and close to normal: then its quantiles are \(\hat\theta \pm z\cdot\widehat{\text{se}}_{\text{boot}}\). In the widget, the mean of all 92 cars nearly agrees; the SD of the first 15 cars doesn't.</p></details>
+
+<script>
+(function () {
+  const C = UU.CARS, cm = UU.mean(C); let seed = 1, hits = 0, total = 0;
+  function run() {
+    const pop = document.getElementById("g-pop").value, n = UU.val("g-n"), conf = +document.getElementById("g-conf").value, meth = document.getElementById("g-m").value;
+    document.querySelector('output[for="g-n"]').textContent = n;
+    const mu = pop === "normal" ? 10 : cm, draw = pop === "normal" ? (r => 10 + 3 * UU.randn(r)) : (r => UU.pick(C, r)), r = UU.rng(seed++);
+    const c = meth === "z" ? UU.normInv(1 - (1 - conf) / 2) : UU.tInv(1 - (1 - conf) / 2, n - 1), ints = [];
+    for (let j = 0; j < 100; j++) { const x = Array.from({ length: n }, () => draw(r)), m = UU.mean(x), h = c * UU.sd(x) / Math.sqrt(n); ints.push([m - h, m + h, m - h <= mu && mu <= m + h]); }
+    hits += ints.filter(i => i[2]).length; total += 100;
+    const spread = pop === "normal" ? 3 : 8.2, w = 2.2 * c * spread / Math.sqrt(n) + 1;
+    const f = UU.frame(document.getElementById("g-plot"), { W: 640, H: 330, x: [mu - w, mu + w], y: [0, 101], yaxis: false, grid: false, xlabel: "intervals (red = miss)" });
+    ints.forEach((iv, j) => UU.el("line", { x1: f.x(Math.max(iv[0], mu - w)), x2: f.x(Math.min(iv[1], mu + w)), y1: f.y(j + 1), y2: f.y(j + 1), style: iv[2] ? "stroke:var(--muted);stroke-width:2;opacity:.6" : "stroke:var(--c1);stroke-width:2.5" }, f.g));
+    UU.vline(f, mu, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const missLow = ints.filter(i => !i[2] && i[1] < mu).length, missHigh = ints.filter(i => !i[2] && i[0] > mu).length;
+    document.getElementById("g-read").innerHTML = `<div><span>this batch: covered</span><b>${100 - missLow - missHigh} / 100</b></div><div><span>missed below / above μ</span><b>${missLow} / ${missHigh}</b></div><div><span>running coverage</span><b>${(100 * hits / total).toFixed(1)}% of ${total}</b></div><div><span>critical value used</span><b>${c.toFixed(3)}</b></div>`;
+  }
+  ["g-pop", "g-n", "g-conf", "g-m"].forEach(id => document.getElementById(id).addEventListener("input", () => { hits = 0; total = 0; run(); }));
+  document.getElementById("g-run").onclick = run; run();
+})();
+
+(function () {
+  const STAT = { mean: UU.mean, median: UU.median, sd: a => UU.sd(a, 1) };
+  function update() {
+    const s = STAT[document.getElementById("k-stat").value], n = UU.val("k-n"), conf = +document.getElementById("k-conf").value, a = (1 - conf) / 2;
+    document.querySelector('output[for="k-n"]').textContent = n;
+    const x = UU.CARS.slice(0, n), est = s(x), r = UU.rng(123), reps = Array.from({ length: 2000 }, () => s(UU.resample(x, r))), se = UU.sd(reps);
+    const ql = UU.quantile(reps, a), qh = UU.quantile(reps, 1 - a), z = UU.normInv(1 - a);
+    const I = { normal: [est - z * se, est + z * se], percentile: [ql, qh], pivotal: [2 * est - qh, 2 * est - ql] };
+    const lo = Math.min(UU.quantile(reps, 0.001), I.pivotal[0], I.normal[0]), hi = Math.max(UU.quantile(reps, 0.999), I.pivotal[1], I.normal[1]), pad = (hi - lo) * 0.05;
+    const bins = UU.hist(reps, lo - pad, hi + pad, 50), dmax = Math.max(...bins.map(b => b.d));
+    const f = UU.frame(document.getElementById("k-plot"), { W: 640, H: 300, x: [lo - pad, hi + pad], y: [-dmax * 0.45, dmax * 1.08], yaxis: false, grid: false, xlabel: `bootstrap replicates of the ${document.getElementById("k-stat").value} (B = 2000)` });
+    UU.bars(f, bins, { style: "fill:var(--c3);opacity:.45" }); UU.vline(f, est, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const cols = { normal: "--muted", percentile: "--c3", pivotal: "--c1" };
+    Object.entries(I).forEach(([k, [l, h]], i) => { const yy = -dmax * (0.1 + 0.13 * i);
+      UU.el("line", { x1: f.x(l), x2: f.x(h), y1: f.y(yy), y2: f.y(yy), style: `stroke:var(${cols[k]});stroke-width:4` }, f.g);
+      UU.el("text", { x: f.x(h) + 6, y: f.y(yy) + 4 }, f.g).textContent = k; });
+    const skew = UU.mean(reps.map(v => ((v - UU.mean(reps)) / se) ** 3));
+    document.getElementById("k-read").innerHTML = `<div><span>estimate</span><b>${est.toFixed(3)}</b></div><div><span>bootstrap SE</span><b>${se.toFixed(3)}</b></div>` + Object.entries(I).map(([k, [l, h]]) => `<div><span>${k}</span><b>(${l.toFixed(2)}, ${h.toFixed(2)})</b></div>`).join("") + `<div><span>skewness of replicates</span><b>${skew.toFixed(2)}</b></div>`;
+  }
+  ["k-stat", "k-n", "k-conf"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-04-se-uncertain.html">← §04 Is the standard error itself uncertain?</a><a href="deep-06-testing.html">§06 Hypothesis tests and p-values →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

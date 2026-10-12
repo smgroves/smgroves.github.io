@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tests and p-values</title>
+<link rel="stylesheet" href="deep.css?v=2">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide.html#testing">← Back to the study guide, §6</a><a href="inference_study_guide.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §6</p>
+<h1>Hypothesis tests and p-values</h1>
+<p class="sub">Size, power, the Wald test, p-values, permutation tests, and Neyman–Pearson, with power you can drag.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#frame">The framework, on five coin flips</a></li>
+<li><a href="#power">Size and power (widget)</a></li>
+<li><a href="#wald">The Wald test and its duality with intervals</a></li>
+<li><a href="#p">p-values (widget)</a></li>
+<li><a href="#perm">Permutation tests (widget)</a></li>
+<li><a href="#np">Neyman–Pearson and likelihood ratios</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="frame">The framework, on five coin flips</h2>
+<p>A test fixes a rejection region \(R\) in advance and rejects \(H_0\) when the data land in it. Its power function \(\beta(\theta) = P_\theta(X \in R)\) says how often that happens for each possible truth (AoS Def 10.1). The size is the largest rejection probability over \(\theta\) in the null.</p>
+<div class="board box"><span class="tag">On the board · three rejection rules for 5 flips, \(H_0: p = 1/2\)</span>
+<div class="tablewrap"><table><thead><tr><th>reject if the number of heads is</th><th>size (\(p = 0.5\))</th><th>power at \(p = 0.8\)</th></tr></thead><tbody>
+<tr><td>0 or 5</td><td>\(2/32 = 0.0625\)</td><td>\(0.8^5 + 0.2^5 = 0.328\)</td></tr>
+<tr><td>5 (one-sided)</td><td>\(1/32 = 0.031\)</td><td>\(0.8^5 = 0.328\)</td></tr>
+<tr><td>4 or 5 (one-sided)</td><td>\(6/32 = 0.19\)</td><td>\(5(0.8)^4(0.2) + 0.8^5 = 0.737\)</td></tr>
+</tbody></table></div>
+<p>The one-sided rule "5 heads" has the same power at \(p = 0.8\) as the two-sided "0 or 5," at half the size, because 0 heads is almost impossible when \(p = 0.8\). Bigger regions buy power with size. Nothing here gets both a small size and high power: five flips is too little data.</p>
+</div>
+
+<h2 id="power">Size and power</h2>
+<div class="widget" id="w-power">
+<p class="wtitle">Null and alternative, side by side</p>
+<p class="wlead">The Wald statistic \(W = (\hat\theta - \theta_0)/\text{se}\) is \(N(0,1)\) under the null (black) and \(N(\delta, 1)\) if the truth is \(\delta\) standard errors away (red). The shaded regions are the rejection region: dark shading under the black curve is the size; shading under the red curve is the power.</p>
+<div class="controls">
+<label>true effect \(\delta\) (in SEs) <input type="range" id="p-d" min="0" max="5" step="0.1" value="2" data-dec="1"><output for="p-d"></output></label>
+<label>\(\alpha\) <select id="p-a"><option value="0.10">0.10</option><option value="0.05" selected>0.05</option><option value="0.01">0.01</option></select></label>
+<label>test <select id="p-side"><option value="two">two-sided</option><option value="one">one-sided (θ &gt; θ₀)</option></select></label>
+</div>
+<svg id="p-plot"></svg>
+<div class="readout" id="p-read"></div>
+<p class="note">\(\delta\) is the true effect divided by the SE, so it grows like \(\sqrt n\): doubling the effect and quadrupling the sample size have the same effect on power.</p>
+</div>
+<div class="board box"><span class="tag">On the board · power from AoS Thm 10.6</span>
+<p>Two-sided, \(\alpha = 0.05\), true effect \(\delta\) SEs: \(\text{power} \approx 1 - \Phi(1.96 - \delta) + \Phi(-1.96 - \delta)\).</p>
+<div class="tablewrap"><table><thead><tr><th>\(\delta\)</th><th>0</th><th>1</th><th>1.96</th><th>2.8</th><th>3.6</th></tr></thead>
+<tbody><tr><td>power</td><td>0.05</td><td>0.17</td><td>0.50</td><td>0.80</td><td>0.95</td></tr></tbody></table></div>
+<p>The "\(\delta = 2.8\) for 80% power" rule: \(2.8 = 1.96 + 0.84\), where 0.84 is the normal's 80th percentile. A study planned for 80% power needs the true effect to be 2.8 SEs. Example: to detect a 2-point difference with SD 10 per person in each of two groups, the SE is \(10\sqrt{2/n}\), so \(2 = 2.8 \times 10\sqrt{2/n}\) gives \(n = 2(28/2)^2 = 392\) per group.</p>
+</div>
+
+<h2 id="wald">The Wald test and its duality with intervals</h2>
+<div class="formal box"><span class="tag">Formal · AoS Def 10.3, Thm 10.10</span>
+<p>Reject \(H_0: \theta = \theta_0\) when \(|W| > z_{\alpha/2}\), \(W = (\hat\theta - \theta_0)/\widehat{\text{se}}\). Equivalently, reject exactly when \(\theta_0\) is outside \(\hat\theta \pm z_{\alpha/2}\widehat{\text{se}}\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · one interval, every test</span>
+<p>Board data: \(\bar x = 5\), \(\widehat{\text{se}} = 1\), interval \((3.04, 6.96)\). Test \(\mu_0 = 3\): \(W = 2\), reject. \(\mu_0 = 4\): \(W = 1\), retain. \(\mu_0 = 6.9\): \(W = -1.9\), retain. \(\mu_0 = 7\): \(W = -2\), reject. The interval is the list of null values that survive.</p>
+</div>
+<div class="board box"><span class="tag">On the board · the Wald tests in AoS Ch 10</span>
+<ul>
+<li><strong>Two proportions:</strong> 30/100 vs 45/100. \(\hat\delta = -0.15\); \(\widehat{\text{se}} = \sqrt{0.21/100 + 0.2475/100} = 0.0676\); \(W = -2.22\); \(p = 0.026\).</li>
+<li><strong>Paired:</strong> differences \(\{1, 0, 0, -1, 1, 1, 0, 1\}\): \(\bar d = 0.375\), \(s_d = 0.744\), \(\widehat{\text{se}} = 0.263\), \(W = 1.43\), retain.</li>
+<li><strong>Cholesterol (Ex 10.15):</strong> \(W = 20.9/\sqrt{25 + 5.76} = 3.77\), \(p \approx 0.0002\).</li>
+</ul>
+</div>
+
+<h2 id="p">p-values</h2>
+<p>A p-value is the smallest \(\alpha\) at which you'd reject (AoS Def 10.11), equivalently the probability under \(H_0\) of a statistic at least as extreme as observed (Thm 10.12). Under \(H_0\) it is uniform (Thm 10.14); under an alternative it piles up near 0, more so with more power.</p>
+<div class="widget" id="w-pdist">
+<p class="wtitle">The distribution of p-values</p>
+<p class="wlead">2,000 simulated two-sided Wald tests with true effect \(\delta\) SEs. At \(\delta = 0\) the histogram is flat: under the null, \(p &lt; 0.05\) happens 5% of the time and \(p &lt; 0.5\) half the time.</p>
+<div class="controls"><label>true effect \(\delta\) <input type="range" id="q-d" min="0" max="4" step="0.1" value="0" data-dec="1"><output for="q-d"></output></label></div>
+<svg id="q-plot"></svg>
+<div class="readout" id="q-read"></div>
+</div>
+<div class="board box"><span class="tag">On the board · p-values by counting and from Φ</span>
+<ul>
+<li>5 heads in 5 flips: one-sided \(p = 1/32 = 0.031\); two-sided \(2/32 = 0.0625\).</li>
+<li>4 heads in 5 flips, one-sided: \(P(\ge 4) = 6/32 = 0.19\).</li>
+<li>Wald: \(W = 2 \to p = 2(0.0228) = 0.046\); \(W = 1 \to 0.317\); \(W = 3 \to 0.0027\).</li>
+</ul>
+</div>
+<div class="pitfall box"><span class="tag">Pitfall · what a p-value is not (AoS §10.2)</span>
+<p>It is not \(P(H_0\mid\text{data})\). A large one is not evidence for \(H_0\) (it might be low power). And two studies with \(p = 0.04\) and \(p = 0.06\) found nearly identical evidence (\(z = 2.05\) vs \(1.88\)).</p>
+</div>
+
+<h2 id="perm">Permutation tests</h2>
+<div class="widget" id="w-perm">
+<p class="wtitle">Shuffle the labels</p>
+<p class="wlead">Enter two small groups. The widget computes \(T = |\bar x_A - \bar x_B|\) for every way of splitting the pooled data into groups of the same sizes (all splits if there are at most 20,000; otherwise 20,000 random shuffles) and reports the share at least as extreme as the real split.</p>
+<div class="controls">
+<label>group A <input type="text" id="m-a" value="6, 8"></label>
+<label>group B <input type="text" id="m-b" value="1, 3"></label>
+</div>
+<svg id="m-plot"></svg>
+<div class="readout" id="m-read"></div>
+<p class="note">Try A = 6, 8 and B = 1, 3 (smallest possible p is 1/3), then A = 6, 8, 9, 7 and B = 1, 3, 2, 4.</p>
+</div>
+<div class="board box"><span class="tag">On the board · AoS Ex 10.19 and a four-point version</span>
+<p><strong>AoS:</strong> \((1, 9 \mid 3)\): \(T = |5 - 3| = 2\); the 3 distinct splits give \(T = 2, 7, 5\) (each twice among the 6 orderings). \(P(T > 2) = 4/6\) (AoS's convention); \(P(T \ge 2) = 1\).</p>
+<p><strong>Four points:</strong> A \(\{6, 8\}\), B \(\{1, 3\}\): \(T = 5\). The six splits give \(T = 5, 5, 2, 2, 0, 0\), so \(p = 2/6 = 1/3\). With two per group, no data can reach significance.</p>
+</div>
+
+<h2 id="np">Neyman–Pearson and likelihood ratios</h2>
+<div class="formal box"><span class="tag">Formal · CASI (2.20)–(2.23)</span>
+<p>For simple \(f_0\) vs \(f_1\), the tests that can't be beaten on both error rates at once reject when \(\log(f_1(x)/f_0(x)) \ge c\).</p>
+</div>
+<div class="board box"><span class="tag">On the board · one observation, then ten</span>
+<p><strong>One \(X\), \(N(0,1)\) vs \(N(1,1)\):</strong> \(\log L = x - \tfrac12\); reject when \(x \ge 1.645\) for \(\alpha = 0.05\); \(\beta = \Phi(1.645 - 1) = 0.74\).</p>
+<p><strong>Ten \(X\)s, \(N(0,1)\) vs \(N(0.5,1)\) (CASI Fig 2.2):</strong> \(\log L = 0.5\sum x_i - 1.25\). Rejecting when \(\sum x_i \ge 4\): \(\alpha = P(N(0,10) \ge 4) = 1 - \Phi(1.26) = 0.10\), \(\beta = P(N(5,10) &lt; 4) = \Phi(-0.32) = 0.38\).</p>
+<p>In both cases the "best test" is just "reject when the average is big." Neyman–Pearson justifies the obvious test.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Ask the class</span>In the power widget at \(\delta = 0\), how big is the power?</summary>
+<p>Exactly \(\alpha\). With no true effect, "power" is the false-rejection rate. That's why the power curve starts at \(\alpha\), not 0.</p></details>
+<details class="q"><summary><span class="qtag">Ask the class</span>Switching to one-sided raises the power for \(\delta = 2\). Should we always use one-sided tests?</summary>
+<p>Only if you decided before seeing the data, and only if an effect in the other direction would be treated like no effect. Choosing the side after looking doubles the real false-positive rate, and a one-sided test has essentially no power for effects in the opposite direction (set \(\delta\) negative in your head: the shaded region is on the wrong side).</p></details>
+<details class="q"><summary><span class="qtag">Check yourself</span>In the p-value widget at \(\delta = 2\), about half the p-values are below 0.05. Why does that match the power widget?</summary>
+<p>"\(p &lt; 0.05\)" and "reject at \(\alpha = 0.05\)" are the same event, so the share of p-values below 0.05 is the power, about 0.52 at \(\delta = 2\).</p></details>
+
+<script>
+(function () {
+  function update() {
+    const d = UU.val("p-d"), a = +document.getElementById("p-a").value, two = document.getElementById("p-side").value === "two";
+    document.querySelector('output[for="p-d"]').textContent = d.toFixed(1);
+    const c = two ? UU.normInv(1 - a / 2) : UU.normInv(1 - a), xs = Array.from({ length: 301 }, (_, i) => -4 + i * (10 / 300));
+    const f = UU.frame(document.getElementById("p-plot"), { W: 640, H: 240, x: [-4, 6], y: [0, 0.43], yaxis: false, xlabel: "W" });
+    const shade = (dens, a0, b0, sty) => { const seg = xs.filter(x => x >= a0 && x <= b0); if (!seg.length) return; const poly = [[seg[0], 0], ...seg.map(x => [x, dens(x)]), [seg[seg.length - 1], 0]]; UU.el("path", { d: poly.map((p, i) => (i ? "L" : "M") + f.x(p[0]) + "," + f.y(p[1])).join("") + "Z", style: sty }, f.g); };
+    const alt = x => UU.normPdf(x - d);
+    shade(alt, c, 6, "fill:var(--c1);opacity:.25"); if (two) shade(alt, -4, -c, "fill:var(--c1);opacity:.25");
+    shade(UU.normPdf, c, 6, "fill:var(--ink);opacity:.45"); if (two) shade(UU.normPdf, -4, -c, "fill:var(--ink);opacity:.45");
+    UU.path(f, xs.map(x => [x, UU.normPdf(x)]), { style: "stroke:var(--ink);stroke-width:2" });
+    UU.path(f, xs.map(x => [x, alt(x)]), { style: "stroke:var(--c1);stroke-width:2" });
+    UU.vline(f, c, { style: "stroke:var(--muted);stroke-dasharray:3 3" }); if (two) UU.vline(f, -c, { style: "stroke:var(--muted);stroke-dasharray:3 3" });
+    const pw = 1 - UU.normCdf(c - d) + (two ? UU.normCdf(-c - d) : 0);
+    document.getElementById("p-read").innerHTML = `<div><span>critical value</span><b>${c.toFixed(3)}</b></div><div><span>size (type I error)</span><b>${a.toFixed(3)}</b></div><div><span>power</span><b>${pw.toFixed(3)}</b></div><div><span>type II error β</span><b>${(1 - pw).toFixed(3)}</b></div>`;
+  }
+  ["p-d", "p-a", "p-side"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  function update() {
+    const d = UU.val("q-d"); document.querySelector('output[for="q-d"]').textContent = d.toFixed(1);
+    const r = UU.rng(8), ps = Array.from({ length: 2000 }, () => 2 * UU.normCdf(-Math.abs(d + UU.randn(r))));
+    const bins = UU.hist(ps, 0, 1, 20);
+    const f = UU.frame(document.getElementById("q-plot"), { W: 640, H: 220, x: [0, 1], y: [0, Math.max(1.5, ...bins.map(b => b.d)) * 1.08], xlabel: "p-value", yfmt: v => v.toFixed(1) });
+    UU.bars(f, bins, { style: "fill:var(--c3);opacity:.6" });
+    UU.el("line", { x1: f.x(0), x2: f.x(1), y1: f.y(1), y2: f.y(1), style: "stroke:var(--ink);stroke-dasharray:4 3" }, f.g);
+    UU.vline(f, 0.05, { style: "stroke:var(--c1);stroke-width:1.5" });
+    const fr = t => ps.filter(p => p < t).length / ps.length;
+    document.getElementById("q-read").innerHTML = `<div><span>share p &lt; 0.05</span><b>${fr(0.05).toFixed(3)}</b></div><div><span>share p &lt; 0.01</span><b>${fr(0.01).toFixed(3)}</b></div><div><span>share p &lt; 0.5</span><b>${fr(0.5).toFixed(3)}</b></div><div><span>median p</span><b>${UU.median(ps).toFixed(3)}</b></div>`;
+  }
+  document.getElementById("q-d").addEventListener("input", update); update();
+})();
+
+(function () {
+  function combos(n, k, cb) { const idx = Array.from({ length: k }, (_, i) => i); while (true) { cb(idx); let i = k - 1; while (i >= 0 && idx[i] === n - k + i) i--; if (i < 0) return; idx[i]++; for (let j = i + 1; j < k; j++) idx[j] = idx[j - 1] + 1; } }
+  function choose(n, k) { let c = 1; for (let i = 0; i < k; i++) c = c * (n - i) / (i + 1); return c; }
+  function update() {
+    const A = document.getElementById("m-a").value.split(/[ ,]+/).map(Number).filter(Number.isFinite), B = document.getElementById("m-b").value.split(/[ ,]+/).map(Number).filter(Number.isFinite);
+    if (A.length < 1 || B.length < 1) return;
+    const all = A.concat(B), N = all.length, k = A.length, tot = all.reduce((s, v) => s + v, 0), tobs = Math.abs(UU.mean(A) - UU.mean(B)), Ts = [];
+    const T = sA => Math.abs(sA / k - (tot - sA) / (N - k));
+    const nc = choose(N, k);
+    if (nc <= 20000) combos(N, k, idx => { let s = 0; idx.forEach(i => s += all[i]); Ts.push(T(s)); });
+    else { const r = UU.rng(5); for (let j = 0; j < 20000; j++) { const p = [...all]; for (let i = p.length - 1; i > 0; i--) { const q = Math.floor(r() * (i + 1)); [p[i], p[q]] = [p[q], p[i]]; } let s = 0; for (let i = 0; i < k; i++) s += p[i]; Ts.push(T(s)); } }
+    const ge = Ts.filter(t => t >= tobs - 1e-9).length, gt = Ts.filter(t => t > tobs + 1e-9).length, hi = Math.max(...Ts, tobs) * 1.05 || 1;
+    const bins = UU.hist(Ts, 0, hi, Math.min(40, Math.max(8, new Set(Ts.map(t => t.toFixed(6))).size)));
+    const f = UU.frame(document.getElementById("m-plot"), { W: 640, H: 210, x: [0, hi], y: [0, Math.max(...bins.map(b => b.d)) * 1.1], yaxis: false, xlabel: `T = |mean A − mean B| over ${nc <= 20000 ? "all " + Ts.length + " splits" : "20,000 random shuffles"}` });
+    UU.bars(f, bins, { style: "fill:var(--c3);opacity:.55" }); UU.vline(f, tobs, { style: "stroke:var(--c1);stroke-width:2" });
+    document.getElementById("m-read").innerHTML = `<div><span>observed T</span><b>${tobs.toFixed(3)}</b></div><div><span>p = P(T ≥ observed)</span><b>${(ge / Ts.length).toFixed(4)}</b></div><div><span>AoS convention P(T &gt; observed)</span><b>${(gt / Ts.length).toFixed(4)}</b></div><div><span>smallest possible p</span><b>${(1 / nc < 1e-4 ? "&lt; 0.0001" : (2 * (k === N - k ? 1 : 0.5) / nc).toFixed(4))}</b></div>`;
+  }
+  ["m-a", "m-b"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-05-intervals.html">← §05 Confidence intervals</a><a href="deep-07-multiple.html">§07 Many tests at once →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>
