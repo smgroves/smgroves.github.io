@@ -6,7 +6,7 @@ subtitle: Assistant Professor in the <a href='https://datascience.virginia.edu/'
 
 profile:
   align: right
-  image: prof_pic.png
+  image: prof_pic.jpg
   image_circular: false # crops the image to make it circular
   address: >
     <p>smgroves@virginia.edu</p>
