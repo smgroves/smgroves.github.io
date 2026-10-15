@@ -53,12 +53,8 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
     ["The plot", "Where the gap would land if you re-ran the trial many times. Pink: the 1.7% of re-runs below 0."],
   ];
   sc.items = [
-    { s: "Because the curve extends past 0, a true gap of 0 is plausible.", ans: false,
-      why: "0 is outside the middle 95%: 3 ± 1.96 × 1.41 = (0.23, 5.77). Only 1.7% is below 0, less than the 2.5% tail." },
     { s: "The gap is significantly different from 0 at α = 0.05.", ans: true,
       why: "z = (3 − 0)/1.41 = 2.12, so p ≈ 0.03 < 0.05." },
-    { s: "At α = 0.01, we could not rule out a gap of 0.", ans: true,
-      why: "z = 2.12 < 2.576, so p ≈ 0.03 > 0.01. The 99% interval (−0.64, 6.64) includes 0." },
     { s: "There’s a 1.7% chance the new drug is truly worse than the standard one.", ans: false,
       why: "The true gap is fixed; the 1.7% is about re-runs if the true gap were 3. (A flat-prior Bayesian would say 1.7%.)" },
   ];
