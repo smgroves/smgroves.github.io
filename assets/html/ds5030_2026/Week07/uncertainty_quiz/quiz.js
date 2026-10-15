@@ -227,7 +227,7 @@ function rulesBox() {
   return h("section", { class: "rules" },
     h("h2", {}, "How the challenge works"),
     h("ul", {},
-      h("li", {}, "You may talk with other students to decide on your answer."),
+      h("li", {}, "You may collaborate with anyone else to decide your answer. (My hope is that if you use someone else’s answer, they explain it to you!)"),
       h("li", {}, "The final score for our section will be % correct answers, so only one person per group needs to submit or everyone can (but of course, many correct answers will outweigh incorrect answers)."),
       h("li", {}, "There will be a timer for each example; votes can't be input when the timer is up or when I reveal the answers."),
       h("li", {}, "You shouldn't need to do math, except possibly a z-score calculation with estimate, mean, and SE given."),
