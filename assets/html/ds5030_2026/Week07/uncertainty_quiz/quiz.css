@@ -214,3 +214,4 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .timer:empty { display: none; }
 .host select { font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
 .host button.start { background: var(--true); border-color: var(--true); color: #fff; }
+.host .ok { color: var(--true); width: 100%; font-weight: 600; }

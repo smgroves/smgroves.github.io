@@ -232,9 +232,35 @@ function sectionChip() {
 }
 
 function hostIndexNote() {
-  return h("div", { class: "host" },
-    h("span", {}, `Host view for ${sectionById(SECTION).name}. Open an example to run it. Students:`),
-    h("span", { class: "link" }, `${location.origin}${location.pathname}?section=${SECTION}`));
+  const bar = h("div", { class: "host" });
+  let msg = "";
+  const once = ex => new Promise(res => { let off = null, done = false; off = backend.onState(SECTION, ex, st => { if (done) return; done = true; res(st); setTimeout(() => off && off()); }); });
+  async function newRoundAll() {
+    const name = sectionById(SECTION).name;
+    if (!confirm(`Start a new round on all ${Q.scenarios.length} examples for ${name}? Current votes are cleared from every tally, and results, answers and timers are reset.`)) return;
+    msg = "Clearing…"; draw();
+    try {
+      for (let ex = 1; ex <= Q.scenarios.length; ex++) {
+        const st = await once(ex);
+        await backend.setState(SECTION, ex, { round: (st.round || 0) + 1, show: false, reveal: false, endsAt: null });
+      }
+      msg = `New round started on all examples for ${name}.`;
+    } catch {
+      msg = "Only the instructor account can do this. Sign in as instructor first.";
+    }
+    draw();
+  }
+  function draw() {
+    const who = backend.hostName();
+    bar.replaceChildren(...[
+      h("span", {}, `Host view for ${sectionById(SECTION).name}. Open an example to run it.`),
+      h("button", { type: "button", onclick: newRoundAll }, "New round for all examples"),
+      backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(draw, e => { msg = "Sign-in failed: " + e.message; draw(); }) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
+      h("span", { class: "link" }, `Students: ${location.origin}${location.pathname}?section=${SECTION}`),
+      msg ? h("span", { class: msg.startsWith("New round") ? "ok" : "err" }, msg) : null].filter(Boolean));
+  }
+  draw();
+  return bar;
 }
 
 // every section's % correct on every example, live; for projecting the competition
