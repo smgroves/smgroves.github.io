@@ -14,6 +14,7 @@ const NEEDS_MATH = [
   "If the effect is 0, P(any interval excludes 0) = 1 − .90·.95·.99 ≈ 15%.",
   "Reporting only the best of 5 outcomes raises the false-positive rate to about 23%.",
   "The SE of the gap is 1 + 1 = 2.",   // dropped by request
+  "The CIs overlap a lot, so the drug made no significant difference.",   // dropped by request (paired data)
 ];
 const dropped = Q.scenarios.reduce((n, sc) => n + sc.items.filter(it => NEEDS_MATH.includes(it.s)).length, 0);
 if (dropped !== NEEDS_MATH.length) console.warn(`quiz: expected to skip ${NEEDS_MATH.length} statements, matched ${dropped}`);
@@ -71,7 +72,6 @@ if (missingQ.length) console.warn("quiz: examples without a question:", missingQ
 const REWORD = {
   "Reporting all three intervals gives three chances at a significant result.": "Because the 90%, 95% and 99% intervals are three separate tests, reporting all of them raises the chance of a false positive.",
   "If we redid the study many times, about 68% of bars built this way would cover the route’s true average.": "If we redid each study many times, about 68% of the bars would cover each route’s true average.",
-  "The CIs overlap a lot, so the drug made no significant difference.": "Because the CIs overlap a lot, the drug made no significant difference.",
 };
 Q.scenarios.forEach(sc => sc.items.forEach(it => { if (REWORD[it.s]) it.s = REWORD[it.s]; }));
 const app = document.getElementById("app");
