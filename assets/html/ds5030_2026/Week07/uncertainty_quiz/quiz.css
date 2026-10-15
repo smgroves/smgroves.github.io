@@ -204,3 +204,13 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .scores { font-size: 0.9em; margin: 8px 0 0; }
 .scores b { color: var(--pink); }
 .scores .mine { font-weight: 700; }
+
+/* answer clock */
+.ex-head { position: relative; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 800; font-size: clamp(1.6rem, 4.5vh, 2.6rem); line-height: 1; min-width: 4.2ch; text-align: right; color: var(--ink); margin-left: auto; }
+.timer.urgent, .timer.up { color: var(--pink); }
+.timer.up { font-size: clamp(1.1rem, 3vh, 1.6rem); }
+.timer.idle { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.timer:empty { display: none; }
+.host select { font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
+.host button.start { background: var(--true); border-color: var(--true); color: #fff; }

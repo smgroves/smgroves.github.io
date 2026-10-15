@@ -2,7 +2,8 @@
 // Students: open the page, pick their section, pick an example, tap T or F. Host: add ?host to the URL and sign in.
 // Each section (sections.js) is its own room: its own votes, results, reveal and rounds.
 // Database layout (Firebase Realtime Database):
-//   quiz/state/<sec>/<ex>               { round, show, reveal }   written only by the host
+//   quiz/state/<sec>/<ex>               { round, show, reveal, endsAt }   written only by the host
+//                                       (endsAt: server time in ms when the answer clock runs out)
 //   quiz/votes/<sec>/<ex>/<round>/<uid> { "0": true, "1": false } written only by that student
 
 const Q = window.QUIZ;
@@ -12,6 +13,7 @@ const NEEDS_MATH = [
   "The 95% CI for the difference B − A is [0.23, 5.77], which excludes 0.",
   "If the effect is 0, P(any interval excludes 0) = 1 − .90·.95·.99 ≈ 15%.",
   "Reporting only the best of 5 outcomes raises the false-positive rate to about 23%.",
+  "The SE of the gap is 1 + 1 = 2.",   // dropped by request
 ];
 const dropped = Q.scenarios.reduce((n, sc) => n + sc.items.filter(it => NEEDS_MATH.includes(it.s)).length, 0);
 if (dropped !== NEEDS_MATH.length) console.warn(`quiz: expected to skip ${NEEDS_MATH.length} statements, matched ${dropped}`);
@@ -46,7 +48,9 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
   const [first] = sc.story;
   if (first[0] !== "Same data, one curve") console.warn("quiz: example 5 story changed in the deck; check the override");
   sc.cap = "The drug trial from Examples 2 and 3 (A = 10, B = 13 months). Curve: the gap B − A. Pink: below 0.";
-  sc.story = [["Back to the drug trial", "From Examples 2 and 3: patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)];
+  sc.story = [["Back to the drug trial", "From Examples 2 and 3: patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)]
+    // the "SE of the gap" statement is skipped, so don't point the reader at it
+    .map(([l, t]) => [l, t.replace(" How wide is it? That’s statement 1.", "")]);
 }
 const app = document.getElementById("app");
 const params = new URLSearchParams(location.search);
@@ -67,8 +71,11 @@ async function firebaseBackend(config) {
   const user = await new Promise(res => {
     const off = au.onAuthStateChanged(auth, u => { if (u) { off(); res(u); } else au.signInAnonymously(auth).catch(() => res(null)); });
   });
+  let offset = 0;   // local clock vs Firebase server clock, so every device counts down together
+  db_.onValue(db_.ref(db, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
   return {
     live: true,
+    now: () => Date.now() + offset,
     uid: () => auth.currentUser && auth.currentUser.uid,
     hostName: () => (auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser.email : null),
     async signInHost() { await au.signInWithPopup(auth, new au.GoogleAuthProvider()); },
@@ -85,6 +92,7 @@ function localBackend() {
   const fire = () => subs.forEach(f => f());
   return {
     live: false, ok: true,
+    now: () => Date.now(),
     uid: () => "me",
     hostName: () => "this device",
     async signInHost() {},
@@ -249,6 +257,7 @@ function renderExample(ex) {
   const list = h("ol", { class: "stmts" });
   const saved = h("p", { class: "saved", "aria-live": "polite" });
   const scoreLine = h("p", { class: "scores" });
+  const timerEl = h("div", { class: "timer", role: "timer" });
   const hostBar = HOST ? h("div", { class: "host" }) : null;
   let qsEl;
 
@@ -256,6 +265,7 @@ function renderExample(ex) {
   show(
     h("header", { class: "ex-head" },
       h("div", {}, h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length} · ${sectionById(sec).name}`), h("h1", {}, sc.title)),
+      timerEl,
       h("nav", { class: "crumbs" },
         h("a", { href: "#/" }, "All examples"),
         ex > 1 ? h("a", { href: `#/${ex - 1}` }, "← Previous") : null,
@@ -291,6 +301,9 @@ function renderExample(ex) {
   }
 
   function myAnswers() { return store.get(key(state.round || 0)) || {}; }
+  const timeLeft = () => (state.endsAt ? state.endsAt - backend.now() : null);
+  const timeUp = () => state.endsAt != null && timeLeft() <= 0;
+  const locked = () => !!state.reveal || timeUp();
 
   // worst = draw as if results and answers were both showing (used only to size the text)
   function drawStatements(worst = false) {
@@ -302,13 +315,14 @@ function renderExample(ex) {
       const li = h("li", { class: "stmt" }, h("div", { class: "row" }, h("span", { class: "n" }, i + 1), h("span", { class: "s" }, it.s)));
       if (!HOST) {
         const pick = v => () => {
+          if (locked()) return;
           const a = { ...myAnswers(), [i]: v };
           store.set(key(state.round || 0), a);
           backend.vote(sec, ex, state.round || 0, a).then(() => { saved.textContent = "Your answers are saved."; },
             () => { saved.textContent = "Couldn't save your answer. Check your connection."; });
           drawStatements();
         };
-        const btn = (v, label, cls) => h("button", { type: "button", class: cls, "aria-pressed": String(mine[i] === v), onclick: pick(v), ...(reveal ? { disabled: "" } : {}) }, label);
+        const btn = (v, label, cls) => h("button", { type: "button", class: cls, "aria-pressed": String(mine[i] === v), onclick: pick(v), ...(reveal || locked() ? { disabled: "" } : {}) }, label);
         li.append(h("div", { class: "tf", role: "group", "aria-label": `Statement ${i + 1}` }, btn(true, "True", "t"), btn(false, "False", "f")));
       }
       if (showTally) {
@@ -366,6 +380,34 @@ function renderExample(ex) {
   addEventListener("resize", onResize);
   unsubs.push(() => removeEventListener("resize", onResize));
 
+  // ---- answer clock ----
+  const fmt = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
+  let wasLocked = null;
+  function tick() {
+    const left = timeLeft();
+    timerEl.className = "timer" + (left == null ? " idle" : left <= 0 ? " up" : left <= 30000 ? " urgent" : "");
+    timerEl.textContent = left == null ? (HOST ? "Clock not started" : "") : left > 0 ? fmt(left) : "Time's up";
+    const now = locked();
+    if (wasLocked !== null && now !== wasLocked) {
+      drawStatements(); drawHost();
+      if (!HOST && timeUp() && !state.reveal) saved.textContent = "Time's up. Your answers are locked in.";
+    }
+    wasLocked = now;
+  }
+  const clock = setInterval(tick, 250);
+  unsubs.push(() => clearInterval(clock));
+  function timerControls(set) {
+    const dur = store.get("uuquiz:duration") || 180;
+    const left = timeLeft();
+    if (left != null && left > 0) return [
+      h("button", { type: "button", onclick: () => set({ endsAt: state.endsAt + 30000 }) }, "+30 s"),
+      h("button", { type: "button", onclick: () => set({ endsAt: backend.now() }) }, "End now"),
+    ];
+    const pickDur = h("select", { "aria-label": "Answer time", onchange: e => store.set("uuquiz:duration", +e.target.value) },
+      [60, 90, 120, 180, 240, 300].map(v => h("option", { value: v, ...(v === dur ? { selected: "" } : {}) }, fmt(v * 1000))));
+    return [pickDur, h("button", { type: "button", class: "start", onclick: () => set({ endsAt: backend.now() + (store.get("uuquiz:duration") || 180) * 1000 }) }, timeUp() ? "Restart timer" : "Start timer")];
+  }
+
   function drawHost() {
     if (!hostBar) return;
     const who = backend.hostName();
@@ -375,9 +417,10 @@ function renderExample(ex) {
     const toggle = (k, on, off) => h("button", { type: "button", class: state[k] ? "on" : "", onclick: () => set({ [k]: !state[k] }) }, state[k] ? off : on);
     hostBar.replaceChildren(...[
       h("span", { class: "count" }, `${sectionById(sec).name}: ${Object.keys(votes).length} responding`),
+      ...timerControls(set),
       toggle("show", "Show results", "Hide results"),
       toggle("reveal", "Reveal answers", "Hide answers"),
-      h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false }); } }, "New round"),
+      h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false, endsAt: null }); } }, "New round"),
       backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(() => { hostErr = ""; drawHost(); }, e => fail("Sign-in failed: " + e.message)) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
       h("span", { class: "link" }, "Students: " + studentURL()),
       hostErr ? h("span", { class: "err" }, hostErr) : null].filter(Boolean));
@@ -395,7 +438,7 @@ function renderExample(ex) {
       unsubs.push(() => roundSub && roundSub());
       saved.textContent = "";
     }
-    drawFigure(); drawData(); drawHost(); fitText();
+    drawFigure(); drawData(); drawHost(); fitText(); tick();
   }));
 }
 
