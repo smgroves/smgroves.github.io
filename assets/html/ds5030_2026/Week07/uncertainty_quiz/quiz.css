@@ -186,3 +186,25 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
   body.on-example .qs .story p.the-q b { display: block; margin: 0 0 2px; }
   body.on-example .plots .data-row .story { margin-top: 0; }
 }
+
+/* sections */
+.picker { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; margin: 0 0 18px; }
+.picker h2 { margin: 0 0 10px; }
+.picks { display: flex; flex-wrap: wrap; gap: 10px; }
+.picks button { font: inherit; font-weight: 700; padding: 10px 18px; border-radius: 8px; border: 2px solid var(--pink); background: var(--bg); color: var(--ink); cursor: pointer; }
+.picks button:hover, .picks button:focus-visible { background: var(--pink); color: #fff; outline: none; }
+.chip { font-size: 15px; margin: 0 0 16px; }
+.linkish { font: inherit; background: none; border: 0; padding: 0; color: var(--pink); text-decoration: underline; cursor: pointer; }
+.board { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; margin: 0 0 18px; }
+.board h2 { margin: 0 0 4px; }
+.board .note { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.board table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+.board th, .board td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.board th { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.board td small, .scores small { color: var(--muted); }
+.board tr.mine td { font-weight: 700; }
+.board td.tot { font-weight: 700; color: var(--pink); }
+.tablewrap { overflow-x: auto; }
+.scores { font-size: 0.9em; margin: 8px 0 0; }
+.scores b { color: var(--pink); }
+.scores .mine { font-weight: 700; }

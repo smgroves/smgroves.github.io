@@ -1,8 +1,9 @@
 // Live true/false quiz for the "Reading uncertainty plots" deck.
-// Students: open the page, pick an example, tap T or F. Host: add ?host to the URL and sign in.
+// Students: open the page, pick their section, pick an example, tap T or F. Host: add ?host to the URL and sign in.
+// Each section (sections.js) is its own room: its own votes, results, reveal and rounds.
 // Database layout (Firebase Realtime Database):
-//   quiz/state/<ex>               { round, show, reveal }   written only by the host
-//   quiz/votes/<ex>/<round>/<uid> { "0": true, "1": false } written only by that student
+//   quiz/state/<sec>/<ex>               { round, show, reveal }   written only by the host
+//   quiz/votes/<sec>/<ex>/<round>/<uid> { "0": true, "1": false } written only by that student
 
 const Q = window.QUIZ;
 
@@ -40,7 +41,10 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
   ];
 }
 const app = document.getElementById("app");
-const HOST = new URLSearchParams(location.search).has("host");
+const params = new URLSearchParams(location.search);
+const HOST = params.has("host");
+const SECTIONS = window.QUIZ_SECTIONS || [{ id: "s1", name: "Section 1" }];
+const sectionById = id => SECTIONS.find(s => s.id === id);
 const FB_VER = "10.12.2";
 
 // ---------- backend: Firebase if configured, otherwise this device only ----------
@@ -60,10 +64,10 @@ async function firebaseBackend(config) {
     uid: () => auth.currentUser && auth.currentUser.uid,
     hostName: () => (auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser.email : null),
     async signInHost() { await au.signInWithPopup(auth, new au.GoogleAuthProvider()); },
-    onState(ex, cb) { return db_.onValue(db_.ref(db, `quiz/state/${ex}`), s => cb(s.val() || {})); },
-    onVotes(ex, round, cb) { return db_.onValue(db_.ref(db, `quiz/votes/${ex}/${round}`), s => cb(s.val() || {})); },
-    vote(ex, round, answers) { return db_.set(db_.ref(db, `quiz/votes/${ex}/${round}/${auth.currentUser.uid}`), answers); },
-    setState(ex, patch) { return db_.update(db_.ref(db, `quiz/state/${ex}`), patch); },
+    onState(sec, ex, cb) { return db_.onValue(db_.ref(db, `quiz/state/${sec}/${ex}`), s => cb(s.val() || {})); },
+    onVotes(sec, ex, round, cb) { return db_.onValue(db_.ref(db, `quiz/votes/${sec}/${ex}/${round}`), s => cb(s.val() || {})); },
+    vote(sec, ex, round, answers) { return db_.set(db_.ref(db, `quiz/votes/${sec}/${ex}/${round}/${auth.currentUser.uid}`), answers); },
+    setState(sec, ex, patch) { return db_.update(db_.ref(db, `quiz/state/${sec}/${ex}`), patch); },
     ok: !!user,
   };
 }
@@ -76,10 +80,10 @@ function localBackend() {
     uid: () => "me",
     hostName: () => "this device",
     async signInHost() {},
-    onState(ex, cb) { const f = () => cb(state[ex] || {}); subs.push(f); f(); return () => subs.splice(subs.indexOf(f), 1); },
-    onVotes(ex, round, cb) { const f = () => cb((votes[ex] || {})[round] || {}); subs.push(f); f(); return () => subs.splice(subs.indexOf(f), 1); },
-    async vote(ex, round, answers) { ((votes[ex] ||= {})[round] ||= {}).me = answers; fire(); },
-    async setState(ex, patch) { state[ex] = { ...(state[ex] || {}), ...patch }; fire(); },
+    onState(sec, ex, cb) { const k = `${sec}/${ex}`, f = () => cb(state[k] || {}); subs.push(f); f(); return () => subs.splice(subs.indexOf(f), 1); },
+    onVotes(sec, ex, round, cb) { const k = `${sec}/${ex}`, f = () => cb((votes[k] || {})[round] || {}); subs.push(f); f(); return () => subs.splice(subs.indexOf(f), 1); },
+    async vote(sec, ex, round, answers) { ((votes[`${sec}/${ex}`] ||= {})[round] ||= {}).me = answers; fire(); },
+    async setState(sec, ex, patch) { const k = `${sec}/${ex}`; state[k] = { ...(state[k] || {}), ...patch }; fire(); },
   };
 }
 
@@ -98,7 +102,48 @@ const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const studentURL = () => location.origin + location.pathname + location.hash;
+// the section a visitor belongs to: from the link (?section=s1), else remembered on this device
+let SECTION = null;
+{
+  const fromURL = sectionById(params.get("section"));
+  if (fromURL) store.set("uuquiz:section", fromURL.id);
+  SECTION = fromURL ? fromURL.id : (sectionById(store.get("uuquiz:section")) || {}).id || null;
+}
+function setSection(id) {
+  SECTION = id;
+  store.set("uuquiz:section", id);
+  const u = new URL(location.href);
+  if (id) u.searchParams.set("section", id); else u.searchParams.delete("section");
+  history.replaceState(null, "", u);
+  route();
+}
+const studentURL = () => `${location.origin}${location.pathname}?section=${SECTION}${location.hash}`;
+
+// share of answers that were correct, per section, for one example (each section's current round)
+function score(ex, votes) {
+  const items = Q.scenarios[ex - 1].items;
+  let c = 0, a = 0, n = 0;
+  for (const v of Object.values(votes || {})) {
+    if (!v) continue;
+    let any = false;
+    items.forEach((it, i) => { if (v[i] != null) { a++; any = true; if (v[i] === it.ans) c++; } });
+    if (any) n++;
+  }
+  return { c, a, n };
+}
+function watchScores(ex, cb) {
+  const scores = {}, offs = [];
+  for (const sec of SECTIONS) {
+    let offVotes = null;
+    offs.push(backend.onState(sec.id, ex, st => {
+      if (offVotes) offVotes();
+      offVotes = backend.onVotes(sec.id, ex, st.round || 0, v => { scores[sec.id] = score(ex, v); cb({ ...scores }); });
+    }));
+    offs.push(() => offVotes && offVotes());
+  }
+  return () => offs.forEach(f => f && f());
+}
+const pct = s => (s && s.a ? Math.round((100 * s.c) / s.a) : null);
 
 function plot(draw, pad) {
   const r = SlideSVG.render(draw, pad);
@@ -120,8 +165,10 @@ function renderIndex() {
     h("h1", {}, "Reading uncertainty plots"),
     h("p", { class: "sub" }, "True or false? Error bars, confidence intervals, and sampling distributions. Throughout: estimates are approximately normal, SEs are known, and “significant” means at α = 0.05."),
     banner(),
-    HOST ? hostIndexNote() : null,
-    h("div", { class: "grid" }, Q.scenarios.map((sc, i) => {
+    SECTION ? sectionChip() : sectionPicker(),
+    HOST && SECTION ? hostIndexNote() : null,
+    HOST ? leaderboard() : null,
+    !SECTION ? null : h("div", { class: "grid" }, Q.scenarios.map((sc, i) => {
       const a = h("a", { class: "card", href: `#/${i + 1}` },
         h("span", { class: "num" }, `Example ${i + 1}`),
         h("span", { class: "t" }, sc.title),
@@ -141,31 +188,66 @@ function banner() {
   return h("p", { class: "banner" }, "Live voting isn't set up yet, so votes stay on this device. (Instructor: add the Firebase config to firebase-config.js.)");
 }
 
+function sectionPicker() {
+  return h("section", { class: "picker" },
+    h("h2", {}, HOST ? "Which section are you running?" : "Which section are you in?"),
+    h("div", { class: "picks" }, SECTIONS.map(sec => h("button", { type: "button", onclick: () => setSection(sec.id) }, sec.name))));
+}
+
+function sectionChip() {
+  return h("p", { class: "chip" }, "Your section: ", h("b", {}, sectionById(SECTION).name), " ",
+    h("button", { type: "button", class: "linkish", onclick: () => setSection(null) }, "change"));
+}
+
 function hostIndexNote() {
   return h("div", { class: "host" },
-    h("span", {}, "Host view. Open an example to run it. Students use this page without ", h("code", {}, "?host"), "."),
-    h("span", { class: "link" }, location.origin + location.pathname));
+    h("span", {}, `Host view for ${sectionById(SECTION).name}. Open an example to run it. Students:`),
+    h("span", { class: "link" }, `${location.origin}${location.pathname}?section=${SECTION}`));
+}
+
+// every section's % correct on every example, live; for projecting the competition
+function leaderboard() {
+  const box = h("section", { class: "board" });
+  const all = {};
+  const draw = () => {
+    const total = id => Q.scenarios.reduce((t, _, i) => { const s = (all[i + 1] || {})[id]; return s ? { c: t.c + s.c, a: t.a + s.a } : t; }, { c: 0, a: 0 });
+    const rows = SECTIONS.map(sec => ({ sec, tot: total(sec.id) })).sort((x, y) => (pct(y.tot) ?? -1) - (pct(x.tot) ?? -1));
+    box.replaceChildren(
+      h("h2", {}, "Section leaderboard"),
+      h("p", { class: "note" }, "Share of answers that were correct, each section's current round."),
+      h("div", { class: "tablewrap" }, h("table", {},
+        h("thead", {}, h("tr", {}, h("th", {}, "Section"), Q.scenarios.map((_, i) => h("th", {}, `Ex ${i + 1}`)), h("th", {}, "Overall"))),
+        h("tbody", {}, rows.map(({ sec, tot }) => h("tr", sec.id === SECTION ? { class: "mine" } : {},
+          h("td", {}, sec.name),
+          Q.scenarios.map((_, i) => { const s = (all[i + 1] || {})[sec.id]; const p = pct(s); return h("td", {}, p == null ? "–" : `${p}%`, s && s.n ? h("small", {}, ` (${s.n})`) : null); }),
+          h("td", { class: "tot" }, pct(tot) == null ? "–" : `${pct(tot)}%`)))))));
+  };
+  Q.scenarios.forEach((_, i) => unsubs.push(watchScores(i + 1, s => { all[i + 1] = s; draw(); })));
+  draw();
+  return box;
 }
 
 // ---------- example ----------
 function renderExample(ex) {
   clearSubs();
+  const sec = SECTION;
   const sc = Q.scenarios[ex - 1];
   const dv = Q.DATA[sc.title];
-  let state = {}, votes = {}, roundSub = null, hostErr = "";
-  const key = r => `uuquiz:${ex}:${r}`;
+  let state = {}, votes = {}, roundSub = null, hostErr = "", scores = {};
+  const key = r => `uuquiz:${sec}:${ex}:${r}`;
 
   const fig = h("div", { class: "figure" });
   const dataBox = h("section", { class: "data" });
   const list = h("ol", { class: "stmts" });
   const saved = h("p", { class: "saved", "aria-live": "polite" });
+  const scoreLine = h("p", { class: "scores" });
   const hostBar = HOST ? h("div", { class: "host" }) : null;
   let qsEl;
 
   document.body.classList.add("on-example");
   show(
     h("header", { class: "ex-head" },
-      h("div", {}, h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length}`), h("h1", {}, sc.title)),
+      h("div", {}, h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length} · ${sectionById(sec).name}`), h("h1", {}, sc.title)),
       h("nav", { class: "crumbs" },
         h("a", { href: "#/" }, "All examples"),
         ex > 1 ? h("a", { href: `#/${ex - 1}` }, "← Previous") : null,
@@ -179,6 +261,7 @@ function renderExample(ex) {
         h("div", { class: "story" }, sc.story.map(([label, text]) => h("p", label === "The question" ? { class: "the-q" } : {}, h("b", {}, label), text))),
         h("h2", {}, "True or false?"),
         list,
+        scoreLine,
         saved)),
   );
   document.title = `${sc.title} · Reading Uncertainty Plots`;
@@ -213,7 +296,7 @@ function renderExample(ex) {
         const pick = v => () => {
           const a = { ...myAnswers(), [i]: v };
           store.set(key(state.round || 0), a);
-          backend.vote(ex, state.round || 0, a).then(() => { saved.textContent = "Your answers are saved."; },
+          backend.vote(sec, ex, state.round || 0, a).then(() => { saved.textContent = "Your answers are saved."; },
             () => { saved.textContent = "Couldn't save your answer. Check your connection."; });
           drawStatements();
         };
@@ -233,6 +316,16 @@ function renderExample(ex) {
       }
       return li;
     }));
+    drawScores(worst);
+  }
+
+  // after the reveal: how every section did on this example (the competition)
+  function drawScores(worst = false) {
+    if (!(worst || state.reveal)) { scoreLine.replaceChildren(); return; }
+    const parts = SECTIONS.map(s => ({ s, p: pct(scores[s.id]), n: (scores[s.id] || {}).n || 0 }))
+      .sort((x, y) => (y.p ?? -1) - (x.p ?? -1))
+      .map(({ s, p, n }) => h("span", s.id === sec ? { class: "mine" } : {}, `${s.name} ${p == null ? "–" : p + "%"}`, n ? h("small", {}, ` (${n})`) : null));
+    scoreLine.replaceChildren(h("b", {}, "Sections, % correct: "), ...parts.flatMap((p, i) => (i ? [" · ", p] : [p])));
   }
 
   // wide screens: the largest text size at which the right column fits with results and answers showing,
@@ -270,10 +363,10 @@ function renderExample(ex) {
     const who = backend.hostName();
     // keep the error outside the bar: Firebase applies a write locally, then reverts it (and redraws) if the rules reject it
     const fail = msg => { hostErr = msg; drawHost(); };
-    const set = patch => { hostErr = ""; return backend.setState(ex, patch).catch(() => fail(`Only the instructor account can control the quiz. Click "Sign in as instructor" (signed in as ${who || "an anonymous student"}).`)); };
+    const set = patch => { hostErr = ""; return backend.setState(sec, ex, patch).catch(() => fail(`Only the instructor account can control the quiz. Click "Sign in as instructor" (signed in as ${who || "an anonymous student"}).`)); };
     const toggle = (k, on, off) => h("button", { type: "button", class: state[k] ? "on" : "", onclick: () => set({ [k]: !state[k] }) }, state[k] ? off : on);
     hostBar.replaceChildren(...[
-      h("span", { class: "count" }, `${Object.keys(votes).length} responding`),
+      h("span", { class: "count" }, `${sectionById(sec).name}: ${Object.keys(votes).length} responding`),
       toggle("show", "Show results", "Hide results"),
       toggle("reveal", "Reveal answers", "Hide answers"),
       h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false }); } }, "New round"),
@@ -284,12 +377,13 @@ function renderExample(ex) {
     document.documentElement.style.setProperty("--stick", hostBar.offsetHeight + 12 + "px");
   }
 
-  unsubs.push(backend.onState(ex, s => {
+  unsubs.push(watchScores(ex, s => { scores = s; drawScores(); }));
+  unsubs.push(backend.onState(sec, ex, s => {
     const roundChanged = (s.round || 0) !== (state.round || 0) || !roundSub;
     state = s;
     if (roundChanged) {
       if (roundSub) roundSub();
-      roundSub = backend.onVotes(ex, state.round || 0, v => { votes = v; drawStatements(); drawHost(); });
+      roundSub = backend.onVotes(sec, ex, state.round || 0, v => { votes = v; drawStatements(); drawHost(); });
       unsubs.push(() => roundSub && roundSub());
       saved.textContent = "";
     }
@@ -301,7 +395,7 @@ function renderExample(ex) {
 function route() {
   const m = location.hash.match(/^#\/(\d+)/);
   const ex = m && +m[1];
-  if (ex >= 1 && ex <= Q.scenarios.length) renderExample(ex); else renderIndex();
+  if (ex >= 1 && ex <= Q.scenarios.length && SECTION) renderExample(ex); else renderIndex();
   window.scrollTo(0, 0);
 }
 addEventListener("hashchange", route);
