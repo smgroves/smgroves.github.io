@@ -222,3 +222,8 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .rules ul { margin: 0; padding-left: 1.2em; }
 .rules li { margin: 4px 0; }
 .rules p.fun { margin: 10px 0 0; font-weight: 600; }
+
+/* home page: the 6 examples as 2 rows of 3 (2 across on tablets, 1 on phones) */
+.grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
