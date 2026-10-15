@@ -437,6 +437,8 @@ function renderExample(ex) {
   unsubs.push(() => removeEventListener("resize", onResize));
 
   // ---- answer clock ----
+  const DEFAULT_DUR = 120;                 // seconds; the host can pick another length per device
+  const DUR_KEY = "uuquiz:duration-v2";    // new key so an older saved 3:00 choice doesn't override the 2:00 default
   const fmt = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
   let wasLocked = null;
   function tick() {
@@ -453,15 +455,15 @@ function renderExample(ex) {
   const clock = setInterval(tick, 250);
   unsubs.push(() => clearInterval(clock));
   function timerControls(set) {
-    const dur = store.get("uuquiz:duration") || 180;
+    const dur = store.get(DUR_KEY) || DEFAULT_DUR;
     const left = timeLeft();
     if (left != null && left > 0) return [
       h("button", { type: "button", onclick: () => set({ endsAt: state.endsAt + 30000 }) }, "+30 s"),
       h("button", { type: "button", onclick: () => set({ endsAt: backend.now() }) }, "End now"),
     ];
-    const pickDur = h("select", { "aria-label": "Answer time", onchange: e => store.set("uuquiz:duration", +e.target.value) },
+    const pickDur = h("select", { "aria-label": "Answer time", onchange: e => store.set(DUR_KEY, +e.target.value) },
       [60, 90, 120, 180, 240, 300].map(v => h("option", { value: v, ...(v === dur ? { selected: "" } : {}) }, fmt(v * 1000))));
-    return [pickDur, h("button", { type: "button", class: "start", onclick: () => set({ endsAt: backend.now() + (store.get("uuquiz:duration") || 180) * 1000 }) }, timeUp() ? "Restart timer" : "Start timer")];
+    return [pickDur, h("button", { type: "button", class: "start", onclick: () => set({ endsAt: backend.now() + (store.get(DUR_KEY) || DEFAULT_DUR) * 1000 }) }, timeUp() ? "Restart timer" : "Start timer")];
   }
 
   function drawHost() {
