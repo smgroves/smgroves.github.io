@@ -127,7 +127,7 @@ function renderExample(ex) {
   clearSubs();
   const sc = Q.scenarios[ex - 1];
   const dv = Q.DATA[sc.title];
-  let state = {}, votes = {}, roundSub = null;
+  let state = {}, votes = {}, roundSub = null, hostErr = "";
   const key = r => `uuquiz:${ex}:${r}`;
 
   const fig = h("div", { class: "figure" });
@@ -205,17 +205,18 @@ function renderExample(ex) {
   function drawHost() {
     if (!hostBar) return;
     const who = backend.hostName();
-    const err = h("span", { class: "err" });
-    const set = patch => backend.setState(ex, patch).catch(() => { err.textContent = `Only the instructor account can control the quiz (signed in as ${who || "a student"}).`; });
+    // keep the error outside the bar: Firebase applies a write locally, then reverts it (and redraws) if the rules reject it
+    const fail = msg => { hostErr = msg; drawHost(); };
+    const set = patch => { hostErr = ""; return backend.setState(ex, patch).catch(() => fail(`Only the instructor account can control the quiz. Click "Sign in as instructor" (signed in as ${who || "an anonymous student"}).`)); };
     const toggle = (k, on, off) => h("button", { type: "button", class: state[k] ? "on" : "", onclick: () => set({ [k]: !state[k] }) }, state[k] ? off : on);
     hostBar.replaceChildren(
       h("span", { class: "count" }, `${Object.keys(votes).length} responding`),
       toggle("show", "Show results", "Hide results"),
       toggle("reveal", "Reveal answers", "Hide answers"),
       h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false }); } }, "New round"),
-      backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(drawHost, e => { err.textContent = "Sign-in failed: " + e.message; }) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
+      backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(() => { hostErr = ""; drawHost(); }, e => fail("Sign-in failed: " + e.message)) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
       h("span", { class: "link" }, "Students: " + studentURL()),
-      err);
+      hostErr ? h("span", { class: "err" }, hostErr) : null);
   }
 
   unsubs.push(backend.onState(ex, s => {
