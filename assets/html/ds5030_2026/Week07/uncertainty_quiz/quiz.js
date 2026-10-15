@@ -232,7 +232,7 @@ function rulesBox() {
       h("li", {}, "There will be a timer for each example; votes can't be input when the timer is up or when I reveal the answers."),
       h("li", {}, "You shouldn't need to do math, except possibly a z-score calculation with estimate, mean, and SE given."),
       h("li", {}, "You can reference the slides.")),
-    h("p", { class: "fun" }, "This is supposed to be fun, not stressful! The time limit is purposefully short. Take advantage of being able to work together. If something still confuses you after the game, take a look at the slides I’ll post for more in-depth answers."));
+    h("p", { class: "fun" }, "This is supposed to be fun, not stressful! The time limit is purposefully short. Take advantage of being able to work together. If something still confuses you after the game, take a look at additional slides I’ll post after class for more in-depth answers."));
 }
 
 function sectionPicker() {
