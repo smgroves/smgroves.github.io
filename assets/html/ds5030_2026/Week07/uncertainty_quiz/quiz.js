@@ -197,6 +197,7 @@ function renderIndex() {
     h("h1", {}, "Reading uncertainty plots"),
     h("p", { class: "sub" }, "True or false? Error bars, confidence intervals, and sampling distributions. Throughout: estimates are approximately normal, SEs are known, and “significant” means at α = 0.05."),
     banner(),
+    rulesBox(),
     SECTION ? sectionChip() : sectionPicker(),
     HOST && SECTION ? hostIndexNote() : null,
     HOST ? leaderboard() : null,
@@ -218,6 +219,18 @@ function banner() {
   if (backend.live && backend.ok) return null;
   if (backend.live) return h("p", { class: "banner" }, "Couldn't connect to live voting. Check your connection and reload.");
   return h("p", { class: "banner" }, "Live voting isn't set up yet, so votes stay on this device. (Instructor: add the Firebase config to firebase-config.js.)");
+}
+
+// the rules of the challenge, in the instructor's words
+function rulesBox() {
+  return h("section", { class: "rules" },
+    h("h2", {}, "How the challenge works"),
+    h("ul", {},
+      h("li", {}, "You may talk with other students to decide on your answer."),
+      h("li", {}, "The final score for our section will be % correct answers, so only one person per group needs to submit or everyone can (but of course, many correct answers will outweigh incorrect answers)."),
+      h("li", {}, "There will be a timer for each example; votes can't be input when the timer is up or when I reveal the answers."),
+      h("li", {}, "You shouldn't need to actually do math to interpret these plots."),
+      h("li", {}, "You can reference the slides.")));
 }
 
 function sectionPicker() {

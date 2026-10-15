@@ -215,3 +215,9 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .host select { font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
 .host button.start { background: var(--true); border-color: var(--true); color: #fff; }
 .host .ok { color: var(--true); width: 100%; font-weight: 600; }
+
+/* challenge rules on the home page */
+.rules { background: var(--card); border: 1px solid var(--rule); border-left: 4px solid var(--pink); border-radius: 10px; padding: 12px 16px; margin: 0 0 18px; }
+.rules h2 { margin: 0 0 6px; font-size: 1.1rem; }
+.rules ul { margin: 0; padding-left: 1.2em; }
+.rules li { margin: 4px 0; }
