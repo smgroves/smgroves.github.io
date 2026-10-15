@@ -65,6 +65,7 @@ if (missingQ.length) console.warn("quiz: examples without a question:", missingQ
 
 // Reworded statements (the deck keeps its original wording)
 const REWORD = {
+  "If we redid the study many times, about 68% of bars built this way would cover the route’s true average.": "If we redid each study many times, 68% of the bars would cover each route’s true average.",
   "The CIs overlap a lot, so the drug made no significant difference.": "Because the CIs overlap a lot, the drug made no significant difference.",
 };
 Q.scenarios.forEach(sc => sc.items.forEach(it => { if (REWORD[it.s]) it.s = REWORD[it.s]; }));
