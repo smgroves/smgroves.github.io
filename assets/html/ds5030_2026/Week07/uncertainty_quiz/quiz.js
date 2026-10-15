@@ -195,7 +195,7 @@ function renderIndex() {
   show(
     h("p", { class: "eyebrow" }, "DS 5030 · Week 8 · In class challenge"),
     h("h1", {}, "Reading uncertainty plots"),
-    h("p", { class: "sub" }, "True or false? Error bars, confidence intervals, and sampling distributions. Throughout: estimates are approximately normal, SEs are known, and “significant” means at α = 0.05."),
+    h("p", { class: "sub" }, "True or false? Error bars, confidence intervals, and sampling distributions. Throughout: estimates are approximately normal, SEs are known, all sampling distributions were generated with an appropriately high number of bootstraps, and “significant” means at α = 0.05."),
     banner(),
     rulesBox(),
     SECTION ? sectionChip() : sectionPicker(),
@@ -230,7 +230,6 @@ function rulesBox() {
       h("li", {}, "The final score for our section will be % correct answers, so only one person per group needs to submit or everyone can (but of course, many correct answers will outweigh incorrect answers)."),
       h("li", {}, "There will be a timer for each example; votes can't be input when the timer is up or when I reveal the answers."),
       h("li", {}, "You shouldn't need to actually do math to interpret these plots."),
-      h("li", {}, "Assume all sampling distributions were generated with an appropriately high number of bootstraps."),
       h("li", {}, "You can reference the slides.")));
 }
 
