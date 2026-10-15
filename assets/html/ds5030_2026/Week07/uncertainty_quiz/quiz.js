@@ -161,7 +161,7 @@ function renderIndex() {
   clearSubs();
   document.body.classList.remove("on-example");
   show(
-    h("p", { class: "eyebrow" }, "DS 5030 · Week 7 · Live quiz"),
+    h("p", { class: "eyebrow" }, "DS 5030 · Week 8 · In class challenge"),
     h("h1", {}, "Reading uncertainty plots"),
     h("p", { class: "sub" }, "True or false? Error bars, confidence intervals, and sampling distributions. Throughout: estimates are approximately normal, SEs are known, and “significant” means at α = 0.05."),
     banner(),
