@@ -5,6 +5,16 @@
 //   quiz/votes/<ex>/<round>/<uid> { "0": true, "1": false } written only by that student
 
 const Q = window.QUIZ;
+
+// The live quiz skips statements that can only be judged by calculating; the deck keeps them.
+const NEEDS_MATH = [
+  "The 95% CI for the difference B − A is [0.23, 5.77], which excludes 0.",
+  "If the effect is 0, P(any interval excludes 0) = 1 − .90·.95·.99 ≈ 15%.",
+  "Reporting only the best of 5 outcomes raises the false-positive rate to about 23%.",
+];
+const dropped = Q.scenarios.reduce((n, sc) => n + sc.items.filter(it => NEEDS_MATH.includes(it.s)).length, 0);
+if (dropped !== NEEDS_MATH.length) console.warn(`quiz: expected to skip ${NEEDS_MATH.length} statements, matched ${dropped}`);
+Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.includes(it.s)); });
 const app = document.getElementById("app");
 const HOST = new URLSearchParams(location.search).has("host");
 const FB_VER = "10.12.2";
