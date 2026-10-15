@@ -85,3 +85,64 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
   .example { grid-template-columns: 1fr; }
   .plots { position: static; max-height: none; overflow: visible; }
 }
+
+/* example header: title on the left, navigation on the right */
+.ex-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 12px; }
+.ex-head h1 { margin: 0; }
+.ex-head .eyebrow { margin: 0 0 2px; }
+.ex-head .crumbs { margin: 0; gap: 18px; }
+
+/* wide screens: the whole example fits in one window (projector-friendly) */
+@media (min-width: 861px) and (min-height: 520px) {
+  body.on-example .page { max-width: none; height: 100vh; padding: 12px 24px; display: flex; flex-direction: column; }
+  body.on-example .ex-head h1 { font-size: clamp(1.3rem, 3.2vh, 1.9rem); }
+  body.on-example .host { position: static; margin-bottom: 10px; padding: 6px 12px; flex-wrap: nowrap; white-space: nowrap; }
+  body.on-example .host .link { overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+  body.on-example .host .err { white-space: normal; }
+  body.on-example .banner { margin-bottom: 10px; }
+  body.on-example .example { flex: 1; min-height: 0; grid-template-rows: 100%; }
+  body.on-example .plots { position: static; height: 100%; max-height: none; display: flex; flex-direction: column; overflow-y: auto; }
+  body.on-example .plots > .figure { flex: 3 1 0; min-height: 140px; display: flex; }
+  body.on-example .plots .data { flex: 2 1 0; min-height: 0; display: flex; flex-direction: column; }
+  body.on-example .plots .data:empty { display: none; }
+  body.on-example .plots .data h2 { margin: 10px 0 6px; font-size: 1rem; }
+  body.on-example .plots .data-fig { flex: 1 1 0; min-height: 110px; display: flex; }
+  body.on-example .plots .data .story { font-size: 13.5px; margin-top: 6px; }
+  body.on-example .plots .data .story p { margin: 0 0 4px; }
+  body.on-example .plots .data .story b { display: inline; margin-right: 6px; }
+  body.on-example .figure .slide-svg { width: 100%; height: 100%; }
+  body.on-example .cap { margin: 0 0 6px; }
+  body.on-example .qs { height: 100%; overflow-y: auto; font-size: clamp(14px, 1.9vh, 17px); padding-right: 4px; }
+  body.on-example .qs .story p { margin: 0 0 6px; }
+  body.on-example .qs .story b { display: inline; margin-right: 6px; }
+  body.on-example .qs h2 { margin: 10px 0 8px; font-size: 1.05rem; }
+  body.on-example .stmts { gap: 8px; }
+  body.on-example .stmt { padding: 8px 12px; }
+  body.on-example .tf { margin-top: 6px; }
+  body.on-example .tf button { padding: 6px 0; font-size: 14px; }
+  body.on-example .tally, body.on-example .answer { margin-top: 5px; font-size: 0.88em; }
+  body.on-example .bar { height: 10px; margin-top: 3px; }
+  body.on-example .saved { margin: 4px 0 0; }
+}
+
+@media (min-width: 861px) and (min-height: 520px) {
+  /* one row per tally: text, then the bar filling the rest */
+  body.on-example .tally { display: flex; align-items: center; gap: 10px; }
+  body.on-example .tally .bar { flex: 1; margin-top: 0; min-width: 80px; }
+  /* True/False beside the statement */
+  body.on-example .stmt { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: start; }
+  body.on-example .stmt > :not(.tf) { grid-column: 1; }
+  body.on-example .stmt .tf { grid-column: 2; grid-row: 1; margin: 0; }
+  body.on-example .tf button { min-width: 4.6rem; padding: 4px 10px; }
+  body.on-example .qs { font-size: clamp(13px, 1.85vh, 17px); }
+  body.on-example .plots .data-fig { min-height: 90px; }
+}
+
+@media (min-width: 861px) and (min-height: 520px) {
+  body.on-example .plots > .figure { flex: 1 1 0; }
+  body.on-example .plots .data { flex: 1.1 1 0; }
+  body.on-example .stmts { gap: 6px; }
+  body.on-example .stmt { padding: 6px 10px; }
+  body.on-example .tally, body.on-example .answer { margin-top: 3px; }
+  body.on-example .qs h2 { margin: 6px 0 6px; }
+}

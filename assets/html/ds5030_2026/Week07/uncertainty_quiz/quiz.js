@@ -90,6 +90,7 @@ const clearSubs = () => { unsubs.forEach(f => f && f()); unsubs = []; };
 // ---------- index ----------
 function renderIndex() {
   clearSubs();
+  document.body.classList.remove("on-example");
   show(
     h("p", { class: "eyebrow" }, "DS 5030 · Week 7 · Live quiz"),
     h("h1", {}, "Reading uncertainty plots"),
@@ -136,14 +137,16 @@ function renderExample(ex) {
   const saved = h("p", { class: "saved", "aria-live": "polite" });
   const hostBar = HOST ? h("div", { class: "host" }) : null;
 
+  document.body.classList.add("on-example");
   show(
-    h("nav", { class: "crumbs" },
-      h("a", { href: "#/" }, "← All examples"),
-      h("span", {}, ex > 1 ? h("a", { href: `#/${ex - 1}` }, "← Previous") : null, " ", ex < Q.scenarios.length ? h("a", { href: `#/${ex + 1}` }, "Next →") : null)),
+    h("header", { class: "ex-head" },
+      h("div", {}, h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length}`), h("h1", {}, sc.title)),
+      h("nav", { class: "crumbs" },
+        h("a", { href: "#/" }, "All examples"),
+        ex > 1 ? h("a", { href: `#/${ex - 1}` }, "← Previous") : null,
+        ex < Q.scenarios.length ? h("a", { href: `#/${ex + 1}` }, "Next →") : null)),
     hostBar,
     banner(),
-    h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length}`),
-    h("h1", {}, sc.title),
     // plots on the left (sticky on wide screens), story and statements on the right
     h("div", { class: "example" },
       h("div", { class: "plots" }, h("p", { class: "cap" }, sc.cap), fig, dataBox),
@@ -164,9 +167,9 @@ function renderExample(ex) {
     if (!showData) { dataBox.replaceChildren(); return; }
     const r = plot(s => dv.render(s));
     const side = r.slide.blocks ? h("div", { class: "story" }, r.slide.blocks.map(([l, t]) => h("p", {}, h("b", {}, l), t))) : null;
-    dataBox.replaceChildren(
+    dataBox.replaceChildren(...[
       h("h2", {}, dv.heading || "The data behind the plot"),
-      h("div", { class: "figure" }, r.svg), side);
+      h("div", { class: "figure data-fig" }, r.svg), side].filter(Boolean));
   }
 
   function myAnswers() { return store.get(key(state.round || 0)) || {}; }
@@ -210,14 +213,14 @@ function renderExample(ex) {
     const fail = msg => { hostErr = msg; drawHost(); };
     const set = patch => { hostErr = ""; return backend.setState(ex, patch).catch(() => fail(`Only the instructor account can control the quiz. Click "Sign in as instructor" (signed in as ${who || "an anonymous student"}).`)); };
     const toggle = (k, on, off) => h("button", { type: "button", class: state[k] ? "on" : "", onclick: () => set({ [k]: !state[k] }) }, state[k] ? off : on);
-    hostBar.replaceChildren(
+    hostBar.replaceChildren(...[
       h("span", { class: "count" }, `${Object.keys(votes).length} responding`),
       toggle("show", "Show results", "Hide results"),
       toggle("reveal", "Reveal answers", "Hide answers"),
       h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false }); } }, "New round"),
       backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(() => { hostErr = ""; drawHost(); }, e => fail("Sign-in failed: " + e.message)) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
       h("span", { class: "link" }, "Students: " + studentURL()),
-      hostErr ? h("span", { class: "err" }, hostErr) : null);
+      hostErr ? h("span", { class: "err" }, hostErr) : null].filter(Boolean));
     // keep the sticky plot column below the sticky host bar
     document.documentElement.style.setProperty("--stick", hostBar.offsetHeight + 12 + "px");
   }
