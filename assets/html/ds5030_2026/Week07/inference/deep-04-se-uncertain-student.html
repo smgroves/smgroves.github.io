@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uncertain Standard Errors</title>
+<link rel="stylesheet" href="deep.css?v=4">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide_student.html#uncertain">← Back to the study guide, §4</a><a href="inference_study_guide_student.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §4</p>
+<h1>Is the standard error itself uncertain?</h1>
+<p class="sub">How noisy an estimated SE is, what that does to intervals, and how the t-distribution fixes it.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#why">Why the SE is random</a></li>
+<li><a href="#noise">How noisy: the widget and the formula</a></li>
+<li><a href="#tails">What a noisy SE does to Z</a></li>
+<li><a href="#t">The t-distribution</a></li>
+<li><a href="#coverage">Coverage race: z vs. t</a></li>
+<li><a href="#boott">Bootstrap-t</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="why">Why the SE is random</h2>
+<p>\(\widehat{\text{se}} = s/\sqrt n\) is computed from the same \(n\) numbers as \(\bar x\). Draw a different sample and you get a different \(s\), so a different SE. CASI's first chapter notes this regress: the accuracy estimate is "itself an algorithm" with its own accuracy. In practice the SE's own uncertainty matters a lot at small \(n\) and for skewed data, and almost not at all for large, well-behaved samples.</p>
+<div class="analogy box"><span class="tag">Analogy · a rubber ruler</span>
+<p>Measuring "how many SEs away" with an estimated SE is measuring with a ruler you also had to estimate. A steel ruler (large \(n\)) gives the same length every time. A rubber ruler (small \(n\)) stretches and shrinks from sample to sample, and every interval inherits the stretch.</p>
+</div>
+
+<h2 id="noise">How noisy is ŝe?</h2>
+<div class="widget" id="w-senoise">
+<p class="wtitle">The sampling distribution of the standard error</p>
+<p class="wlead">5,000 samples of size \(n\). Left: histogram of \(\widehat{\text{se}}/\text{se}\) (1 means "exactly right"). Right: each sample's mean against its SE, red when the 95% interval \(\bar x \pm 1.96\,\widehat{\text{se}}\) misses \(\mu\).</p>
+<div class="controls">
+<label>Population <select id="s-pop"><option value="normal">normal</option><option value="cars">car prices</option><option value="expo">exponential</option></select></label>
+<label>\(n\) <input type="range" id="s-n" min="3" max="100" value="10"><output for="s-n"></output></label>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px"><svg id="s-hist"></svg><svg id="s-scatter"></svg></div>
+<div class="readout" id="s-read"></div>
+</div>
+
+<div class="formal box"><span class="tag">Formal · standard result (normal data)</span>
+<p>\((n-1)S^2/\sigma^2 \sim \chi^2_{n-1}\), independent of \(\bar X\); \(V(S^2) = 2\sigma^4/(n-1)\). By the delta method on \(\sqrt{\cdot}\), \(\text{sd}(S) \approx \sigma/\sqrt{2(n-1)}\), so the relative noise in \(\widehat{\text{se}}\) is about \(1/\sqrt{2(n-1)}\).</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · the delta step, written out</span>
+<p>\(g(v) = \sqrt v\), \(g'(v) = 1/(2\sqrt v)\). At \(v = \sigma^2\): \(\text{sd}(S) \approx \frac{1}{2\sigma}\,\text{sd}(S^2) = \frac{1}{2\sigma}\cdot\sigma^2\sqrt{\frac{2}{n-1}} = \frac{\sigma}{\sqrt{2(n-1)}}\). Divide by \(\sigma\) for the relative noise. Then the table: \(n = 5 \to 1/\sqrt8 = 0.35\); \(n = 10 \to 0.24\); \(n = 30 \to 0.13\); \(n = 92 \to 0.07\). For the toy data (\(n = 5\), \(\widehat{\text{se}} = 1\)), a true SE of 0.65 or 1.35 would be unsurprising.</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · ŝe from three resamples of the toy data</span>
+<p>Resample \(\{2, 2, 5, 8, 8\}\): \(s^2 = (9+9+0+9+9)/4 = 9\), \(\widehat{\text{se}} = 3/\sqrt5 = 1.34\). Resample \(\{4, 5, 5, 6, 8\}\): mean 5.6, \(s^2 = (2.56 + 0.36 + 0.36 + 0.16 + 5.76)/4 = 2.3\), \(\widehat{\text{se}} = 0.68\). Same population, SEs differing by a factor of two.</p>
+</div>
+
+<h2 id="tails">What a noisy SE does to Z</h2>
+<div class="story box"><span class="tag">Story proof · the asymmetry of being wrong</span>
+<p>If the SE comes out 30% too small, a "±1.96 SE" interval is really ±1.37 true SEs and covers 83%. If it comes out 30% too big, the interval is ±2.55 true SEs and covers 99%. Losing 12 points one way but gaining only 4 the other means a symmetric wobble in the SE produces a net loss in coverage. Equivalently, \(Z = (\bar X - \mu)/\widehat{\text{se}}\) has heavier tails than \(N(0,1)\).</p>
+</div>
+<div class="board box"><span class="tag">Work it by hand · the coverage arithmetic</span>
+<p>If the SE estimate is \(c\) times the truth, the interval \(\bar x \pm 1.96\,\widehat{\text{se}}\) covers with probability \(2\Phi(1.96c) - 1\).</p>
+<div class="tablewrap"><table><thead><tr><th>\(c\)</th><th>0.5</th><th>0.7</th><th>0.85</th><th>1</th><th>1.15</th><th>1.3</th><th>1.5</th></tr></thead>
+<tbody><tr><td>coverage</td><td>67%</td><td>83%</td><td>90%</td><td>95%</td><td>98%</td><td>99%</td><td>99.7%</td></tr></tbody></table></div>
+<p>Average coverage over a symmetric spread of \(c\) values is below 95%: the curve bends down faster on the left than it rises on the right.</p>
+</div>
+
+<h2 id="t">The t-distribution</h2>
+<div class="widget" id="w-t">
+<p class="wtitle">t vs. normal</p>
+<p class="wlead">The t density with \(k\) degrees of freedom (red) against \(N(0,1)\) (black). Shaded: the area beyond ±1.96, which is what a z-based 95% interval actually misses when the statistic is t-distributed.</p>
+<div class="controls"><label>degrees of freedom \(k\) <input type="range" id="t-k" min="1" max="60" value="4"><output for="t-k"></output></label></div>
+<svg id="t-plot"></svg>
+<div class="readout" id="t-read"></div>
+</div>
+
+<div class="story box"><span class="tag">Story proof · a normal over a random ruler</span>
+<p>\(T = Z/\sqrt{V/k}\) with \(Z \sim N(0,1)\) and \(V \sim \chi^2_k\) independent. Conditional on \(V\), \(T\) is normal with SD \(\sqrt{k/V}\). So \(T\) is a mixture of bells of different widths, weighted by how likely each width is. Mixing narrow and wide bells gives a sharper peak and fatter tails. As \(k\) grows, \(V/k \to 1\) and every bell has width 1.</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · three t-tests with integer data</span>
+<ul>
+<li><strong>One sample:</strong> \(\{2, 4, 5, 6, 8\}\), \(H_0: \mu = 3\): \(t = 2/1 = 2\), df 4, \(t_{4,.025} = 2.776\): retain (p = 0.12). The z-test would reject (p = 0.046).</li>
+<li><strong>Nine points:</strong> \(\bar x = 54\), \(s = 6\), \(H_0: \mu = 50\): \(t = 4/2 = 2\), df 8, \(t_{8,.025} = 2.306\): retain (p = 0.081).</li>
+<li><strong>Two samples:</strong> \(\{2, 4, 6\}\) vs \(\{5, 7, 9\}\): pooled \(\hat\sigma^2 = 4\), \(t = 3/1.63 = 1.84\), df 4: retain (p = 0.14).</li>
+</ul>
+<p>All three have \(t\) near 2 and all three fail to reject: at these sample sizes, "2 standard errors" isn't enough evidence once you admit the SE is estimated.</p>
+</div>
+
+<h2 id="coverage">Coverage race: z vs. t</h2>
+<div class="widget" id="w-race">
+<p class="wtitle">How often does each 95% interval cover μ?</p>
+<p class="wlead">10,000 samples per setting. Bars: actual coverage of \(\bar x \pm 1.96\,\widehat{\text{se}}\) and \(\bar x \pm t_{n-1,.025}\,\widehat{\text{se}}\). The dashed line is 95%.</p>
+<div class="controls">
+<label>Population <select id="r-pop"><option value="normal">normal</option><option value="cars">car prices</option><option value="expo">exponential</option><option value="unif">uniform</option></select></label>
+</div>
+<svg id="r-plot"></svg>
+<div class="readout" id="r-read"></div>
+</div>
+
+<h2 id="boott">Bootstrap-t</h2>
+<p>The t-interval assumes normal data. The bootstrap-t keeps the idea of dividing by an estimated SE, but learns the distribution of \(t^* = (\bar x^* - \bar x)/\widehat{\text{se}}^*\) by resampling (CASI (11.52)–(11.53)). Each resample brings its own SE, so the noise in the SE is built into \(t^*\), including its lopsidedness for skewed data.</p>
+<div class="board box"><span class="tag">Work it by hand · three replicates</span>
+<p>From \(\{2, 4, 5, 6, 8\}\): \(\{2,2,5,8,8\}\) gives \(t^* = 0/1.34 = 0\); \(\{4,5,5,6,8\}\) gives \(t^* = 0.6/0.68 = 0.89\); \(\{2,4,4,5,6\}\) gives \(t^* = -0.8/0.66 = -1.21\). With thousands of these, take the 2.5% and 97.5% points \(t^{*(.025)}, t^{*(.975)}\); the interval is \(\big(\bar x - \widehat{\text{se}}\,t^{*(.975)},\ \bar x - \widehat{\text{se}}\,t^{*(.025)}\big)\). Note the flip, as with the pivotal interval.</p>
+</div>
+<p>CASI's example: AML − ALL means, Student's interval \((0.062, 0.314)\), bootstrap-t \((0.072, 0.323)\). Close, which supported the normality assumption in that case.</p>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Think about it</span>In the scatter, the red (missed) points for car prices cluster at the lower left. Why there?</summary>
+<p>Lower left means a low mean and a small SE. Those are samples that happened to miss the few expensive cars: without them, both the average and the spread come out small. A large miss divided by a small SE gives a very negative \(Z\), so the interval misses on the low side. For normal data the two are independent and the red points spread evenly.</p></details>
+<details class="q"><summary><span class="qtag">Think about it</span>The t-interval is wider than the z-interval. Isn't it just being cautious?</summary>
+<p>It's being accurate. For normal data, \(t_{n-1}\) is the exact distribution of the standardized mean, so the t-interval has exactly 95% coverage and the z-interval has less. Look at the race widget with normal data: t sits on the line at every \(n\).</p></details>
+<details class="q"><summary><span class="qtag">Check your understanding</span>For normal data, \(\bar X\) and \(S\) are independent. Why does that matter for the t-distribution?</summary>
+<p>It's what makes \(T = Z/\sqrt{V/k}\) a ratio of <em>independent</em> pieces, which is the definition of the t-distribution. For skewed data \(\bar X\) and \(S\) are positively correlated, the ratio isn't t-distributed, and its tails are lopsided (the scatter widget's red cluster).</p></details>
+
+<script>
+(function () {
+  const C = UU.CARS, cm = UU.mean(C), cs = UU.sd(C, 0);
+  const P = { normal: { draw: r => UU.randn(r), mu: 0, sd: 1 }, cars: { draw: r => UU.pick(C, r), mu: cm, sd: cs }, expo: { draw: r => -Math.log(1 - r()), mu: 1, sd: 1 } };
+  function update() {
+    const p = P[document.getElementById("s-pop").value], n = UU.val("s-n"); document.querySelector('output[for="s-n"]').textContent = n;
+    const r = UU.rng(99), se = p.sd / Math.sqrt(n), ratio = [], pts = []; let miss = 0, low = 0;
+    for (let j = 0; j < 5000; j++) { const x = Array.from({ length: n }, () => p.draw(r)); const m = UU.mean(x), sh = UU.sd(x) / Math.sqrt(n); ratio.push(sh / se); const z = (m - p.mu) / sh, mi = Math.abs(z) > 1.96; if (mi) { miss++; if (z < 0) low++; } if (j < 1500) pts.push([m, sh, mi]); }
+    const bins = UU.hist(ratio, 0, 3, 45);
+    const f = UU.frame(document.getElementById("s-hist"), { W: 320, H: 240, x: [0, 3], y: [0, Math.max(...bins.map(b => b.d)) * 1.1], yaxis: false, xlabel: "ŝe / true se" });
+    UU.bars(f, bins, { style: "fill:var(--c3);opacity:.6" }); UU.vline(f, 1, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+    const g = UU.frame(document.getElementById("s-scatter"), { W: 320, H: 240, x: [UU.quantile(xs, 0.002), UU.quantile(xs, 0.998)], y: [0, UU.quantile(ys, 0.995)], xlabel: "sample mean", ylabel: "ŝe", yfmt: v => +v.toFixed(2), xn: 4 });
+    pts.forEach(q => UU.el("circle", { cx: g.x(q[0]), cy: g.y(Math.min(q[1], UU.quantile(ys, 0.995))), r: 1.8, style: q[2] ? "fill:var(--c1)" : "fill:var(--muted);opacity:.35" }, g.g));
+    UU.vline(g, p.mu, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const ms = pts.map(q => q[0]), ss = pts.map(q => q[1]), mm = UU.mean(ms), smm = UU.mean(ss);
+    const corr = ms.reduce((a, v, i) => a + (v - mm) * (ss[i] - smm), 0) / Math.sqrt(ms.reduce((a, v) => a + (v - mm) ** 2, 0) * ss.reduce((a, v) => a + (v - smm) ** 2, 0));
+    document.getElementById("s-read").innerHTML = `<div><span>relative SD of ŝe (simulated)</span><b>${UU.sd(ratio).toFixed(3)}</b></div><div><span>normal-theory 1/√(2(n−1))</span><b>${(1 / Math.sqrt(2 * (n - 1))).toFixed(3)}</b></div><div><span>corr(mean, ŝe)</span><b>${corr.toFixed(2)}</b></div><div><span>z-interval coverage</span><b>${(100 * (1 - miss / 5000)).toFixed(1)}%</b></div><div><span>misses low / high</span><b>${(100 * low / 5000).toFixed(1)}% / ${(100 * (miss - low) / 5000).toFixed(1)}%</b></div>`;
+  }
+  ["s-pop", "s-n"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  function update() {
+    const k = UU.val("t-k"); document.querySelector('output[for="t-k"]').textContent = k;
+    const xs = Array.from({ length: 301 }, (_, i) => -5 + i / 30);
+    const f = UU.frame(document.getElementById("t-plot"), { W: 640, H: 240, x: [-5, 5], y: [0, 0.42], yfmt: v => v.toFixed(1), xlabel: "t" });
+    [[-5, -1.96], [1.96, 5]].forEach(([a, b]) => { const seg = xs.filter(x => x >= a && x <= b); const d = seg.map(x => [x, UU.tPdf(x, k)]); const poly = [[a, 0], ...d, [b, 0]]; UU.el("path", { d: poly.map((p, i) => (i ? "L" : "M") + f.x(p[0]) + "," + f.y(p[1])).join("") + "Z", style: "fill:var(--c1);opacity:.25" }, f.g); });
+    UU.path(f, xs.map(x => [x, UU.normPdf(x)]), { style: "stroke:var(--ink);stroke-width:1.6" });
+    UU.path(f, xs.map(x => [x, UU.tPdf(x, k)]), { style: "stroke:var(--c1);stroke-width:2.5" });
+    const tail = 2 * (1 - UU.tCdf(1.96, k)), c = UU.tInv(0.975, k);
+    document.getElementById("t-read").innerHTML = `<div><span>t critical value, 95%</span><b>${c.toFixed(3)}</b></div><div><span>P(|T| &gt; 1.96)</span><b>${tail.toFixed(4)}</b></div><div><span>z-interval coverage if the truth is t_k</span><b>${(100 * (1 - tail)).toFixed(1)}%</b></div><div><span>width ratio t / z</span><b>${(c / 1.96).toFixed(3)}</b></div>`;
+  }
+  document.getElementById("t-k").addEventListener("input", update); update();
+})();
+
+(function () {
+  const C = UU.CARS, cm = UU.mean(C);
+  const P = { normal: { draw: r => UU.randn(r), mu: 0 }, cars: { draw: r => UU.pick(C, r), mu: cm }, expo: { draw: r => -Math.log(1 - r()), mu: 1 }, unif: { draw: r => r(), mu: 0.5 } };
+  const NS = [3, 5, 10, 20, 30, 50, 100];
+  function update() {
+    const p = P[document.getElementById("r-pop").value], r = UU.rng(31), res = [];
+    for (const n of NS) { const tc = UU.tInv(0.975, n - 1); let cz = 0, ct = 0; for (let j = 0; j < 10000; j++) { let s = 0, s2 = 0; for (let i = 0; i < n; i++) { const v = p.draw(r); s += v; s2 += v * v; } const m = s / n, sh = Math.sqrt(Math.max(0, (s2 - n * m * m) / (n - 1)) / n), d = Math.abs(m - p.mu); if (d <= 1.96 * sh) cz++; if (d <= tc * sh) ct++; } res.push([n, cz / 100, ct / 100]); }
+    const f = UU.frame(document.getElementById("r-plot"), { W: 640, H: 240, x: [0, NS.length], y: [70, 100], xt: [], xlabel: "sample size n", yfmt: v => v + "%" });
+    res.forEach(([n, z, t], i) => { const x0 = f.x(i + 0.15), w = (f.x(1) - f.x(0)) * 0.33;
+      UU.el("rect", { x: x0, y: f.y(Math.max(70, z)), width: w, height: f.y(70) - f.y(Math.max(70, z)), style: "fill:var(--muted);opacity:.6" }, f.g);
+      UU.el("rect", { x: x0 + w + 2, y: f.y(Math.max(70, t)), width: w, height: f.y(70) - f.y(Math.max(70, t)), style: "fill:var(--c1);opacity:.8" }, f.g);
+      UU.el("text", { x: x0 + w, y: f.H - f.m.b + 16, "text-anchor": "middle" }, f.g).textContent = n; });
+    UU.el("line", { x1: f.m.l, x2: f.W - f.m.r, y1: f.y(95), y2: f.y(95), style: "stroke:var(--ink);stroke-dasharray:5 4" }, f.g);
+    document.getElementById("r-read").innerHTML = res.map(([n, z, t]) => `<div><span>n = ${n}: z / t</span><b>${z.toFixed(1)}% / ${t.toFixed(1)}%</b></div>`).join("") + `<div><span>legend</span><b style="font-family:var(--sans);font-size:13px">gray = z, red = t</b></div>`;
+  }
+  document.getElementById("r-pop").addEventListener("input", update); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-03-se-routes-student.html">← §03 Five ways to get a standard error</a><a href="deep-05-intervals-student.html">§05 Confidence intervals →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

@@ -58,7 +58,7 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .tf button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .tally { margin: 10px 0 0 calc(1.2em + 12px); font-size: 14px; }
 .bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--panel); margin-top: 4px; }
-.bar .bt { background: var(--true); } .bar .bf { background: var(--false); }
+.bar .bt { background: var(--true); }
 .answer { margin: 10px 0 0 calc(1.2em + 12px); font-size: 15px; }
 .pill { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; border-radius: 5px; padding: 2px 8px; margin-right: 6px; }
 .pill.t { background: var(--true); } .pill.f { background: var(--false); }

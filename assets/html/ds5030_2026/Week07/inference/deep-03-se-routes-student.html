@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Five Routes to an SE</title>
+<link rel="stylesheet" href="deep.css?v=4">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide_student.html#routes">← Back to the study guide, §3</a><a href="inference_study_guide_student.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §3</p>
+<h1>Five ways to get a standard error</h1>
+<p class="sub">Plug-in, Taylor series, Fisher information, the bootstrap, the jackknife, and pivots, each worked by hand and live.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#map">The map: where the unknown F gets replaced</a></li>
+<li><a href="#plugin">Plug-in and the ECDF (widget)</a></li>
+<li><a href="#taylor">Taylor series</a></li>
+<li><a href="#fisher">Fisher information (widget)</a></li>
+<li><a href="#boot">The bootstrap (widget)</a></li>
+<li><a href="#jack">The jackknife (widget)</a></li>
+<li><a href="#pivot">Pivots</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="map">The map: where the unknown F gets replaced</h2>
+<p>Every standard error is the SD of an estimator's sampling distribution, and that SD depends on the unknown population \(F\). CASI §2.1 lists the devices for getting around this. The useful way to compare them is to ask <em>when</em> each one swaps \(F\) for something computable.</p>
+<div class="tablewrap"><table><thead><tr><th>Device</th><th>Theory first, then plug in?</th><th>Works for any statistic?</th><th>Cost</th></tr></thead><tbody>
+<tr><td>Plug-in formula</td><td>yes</td><td>no: needs a formula</td><td>none</td></tr>
+<tr><td>Taylor / delta</td><td>yes</td><td>smooth functions of averages</td><td>a derivative</td></tr>
+<tr><td>Fisher information</td><td>yes</td><td>MLEs in a parametric model</td><td>a second derivative</td></tr>
+<tr><td>Jackknife</td><td>numerical derivatives</td><td>smooth statistics</td><td>\(n\) recomputations</td></tr>
+<tr><td>Bootstrap</td><td>no: plug in first, then simulate</td><td>almost any</td><td>\(B\) recomputations</td></tr>
+<tr><td>Pivot</td><td>nothing to plug in</td><td>rare special cases</td><td>none</td></tr>
+</tbody></table></div>
+
+<h2 id="plugin">Plug-in and the ECDF</h2>
+<p>The empirical CDF \(\hat F_n\) is the sample treated as a population: probability \(1/n\) on each point. Every plug-in estimate is "compute the population quantity, but on \(\hat F_n\)." Glivenko–Cantelli says \(\hat F_n\) converges to \(F\) uniformly; DKW says how fast, with a band of half-width \(\epsilon_n = \sqrt{\log(2/\alpha)/(2n)}\).</p>
+
+<div class="widget" id="w-ecdf">
+<p class="wtitle">The ECDF and its DKW band</p>
+<p class="wlead">Draw \(n\) car prices at random from the 92 (or type your own data). The step function is \(\hat F_n\); the shaded band is the \(1-\alpha\) DKW band; the smooth line is the "true" CDF (all 92 cars). Readouts are plug-in estimates.</p>
+<div class="controls">
+<label>\(n\) <input type="range" id="f-n" min="5" max="92" value="20"><output for="f-n"></output></label>
+<label>confidence <select id="f-a"><option value="0.10">90%</option><option value="0.05" selected>95%</option><option value="0.01">99%</option></select></label>
+<button class="btn" id="f-new">New sample</button>
+<label>or your data <input type="text" id="f-data" placeholder="e.g. 2, 4, 5, 6, 8"></label>
+</div>
+<svg id="f-plot"></svg>
+<div class="readout" id="f-read"></div>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · plug-in estimates and their SEs on {2, 4, 5, 6, 8}</span>
+<div class="tablewrap"><table><thead><tr><th>quantity</th><th>plug-in</th><th>SE (plug-in)</th></tr></thead><tbody>
+<tr><td>mean</td><td>5</td><td>\(\hat\sigma/\sqrt n = 2/\sqrt5 = 0.89\) (or \(s/\sqrt n = 1\))</td></tr>
+<tr><td>\(F(5) = P(X \le 5)\)</td><td>3/5 = 0.6</td><td>\(\sqrt{0.6(0.4)/5} = 0.22\)</td></tr>
+<tr><td>\(P(X > 5)\)</td><td>0.4</td><td>0.22</td></tr>
+<tr><td>\(E[X^2]\)</td><td>29</td><td>SD of \(\{4, 16, 25, 36, 64\}\) is 20.4 (plug-in), so \(20.4/\sqrt5 = 9.1\)</td></tr>
+<tr><td>variance</td><td>4</td><td>no simple formula: bootstrap it</td></tr>
+</tbody></table></div>
+<p>Linear functionals (\(\int r\,dF\)) are averages of \(r(x_i)\), so their SE is the SD of the \(r(x_i)\) over \(\sqrt n\). Everything else needs a delta method or a bootstrap.</p>
+</div>
+
+<h2 id="taylor">Taylor series</h2>
+<p>Covered in depth on <a href="deep-02-limits-student.html#delta">page 2</a>. The one-line summary: a smooth function of an average wobbles by the slope times the average's wobble. CASI's historical point is that before computers, every new statistic needed its own Taylor expansion; the SE of a correlation coefficient takes a page of fourth moments (CASI (10.10)), and the jackknife and bootstrap made that expertise unnecessary.</p>
+<div class="board box"><span class="tag">Work it by hand · SE of a ratio of means</span>
+<p>Patch data style (AoS Ex 8.7): \(\hat\theta = \bar Y/\bar Z\). Delta method with two variables, \(g(y, z) = y/z\), gradient \((1/z, -y/z^2)\):</p>
+$$\widehat{\text{se}}^2(\hat\theta) \approx \frac{1}{\bar z^2}\Big(\widehat{\text{se}}^2(\bar y) - 2\hat\theta\,\widehat{\text{cov}}(\bar y, \bar z) + \hat\theta^2\,\widehat{\text{se}}^2(\bar z)\Big).$$
+<p>Tiny numbers: \(\bar y = 2\), \(\bar z = 4\), so \(\hat\theta = 0.5\); with \(\widehat{\text{se}}(\bar y) = 0.4\), \(\widehat{\text{se}}(\bar z) = 0.8\), and independent \(\bar y, \bar z\): \(\widehat{\text{se}}^2 = \frac{1}{16}(0.16 + 0.25 \times 0.64) = \frac{0.32}{16} = 0.02\), so \(\widehat{\text{se}} = 0.14\). AoS uses the bootstrap instead (0.105 on the real data) precisely to avoid this algebra.</p>
+</div>
+
+<h2 id="fisher">Fisher information</h2>
+<p>For a parametric model, the MLE's SE comes from the curvature of the log-likelihood at its peak: sharp peak, small SE. The widget shows a Bernoulli log-likelihood. As \(n\) grows with the same success rate, the curve gets sharper and the SE shrinks like \(1/\sqrt n\).</p>
+<div class="widget" id="w-fisher">
+<p class="wtitle">Curvature is information</p>
+<p class="wlead">\(k\) successes in \(n\) trials. The solid curve is \(\ell(p) - \ell(\hat p)\); the dashed curve is the quadratic with the same curvature, \(-(p - \hat p)^2/(2\,\widehat{\text{se}}^2)\). The horizontal line at −1.92 crosses the curves near \(\hat p \pm 1.96\,\widehat{\text{se}}\): the Wald interval (dashed) and the likelihood interval (solid).</p>
+<div class="controls">
+<label>\(n\) <input type="range" id="i-n" min="5" max="400" value="20"><output for="i-n"></output></label>
+<label>\(\hat p = k/n\) <input type="range" id="i-p" min="0.02" max="0.98" step="0.01" value="0.3" data-dec="2"><output for="i-p"></output></label>
+</div>
+<svg id="i-plot"></svg>
+<div class="readout" id="i-read"></div>
+</div>
+<div class="board box"><span class="tag">Work it by hand · three Fisher SEs</span>
+<ul>
+<li><strong>Bernoulli</strong> \(\{1, 0, 1, 1, 0\}\): \(\ell(p) = 3\log p + 2\log(1-p)\); \(\ell'' = -3/p^2 - 2/(1-p)^2\), at \(\hat p = 0.6\): \(-8.33 - 12.5 = -20.8\). \(\widehat{\text{se}} = 1/\sqrt{20.8} = 0.22\), which equals \(\sqrt{0.6 \times 0.4/5}\).</li>
+<li><strong>Poisson</strong> \(\{2, 4, 5, 6, 8\}\): \(\ell'' = -25/\lambda^2 = -1\) at \(\hat\lambda = 5\); \(\widehat{\text{se}} = 1\).</li>
+<li><strong>Exponential</strong> \(\{1, 2, 3\}\): \(\ell(\lambda) = 3\log\lambda - 6\lambda\); \(\hat\lambda = 3/6 = 0.5\); \(\ell'' = -3/\lambda^2 = -12\); \(\widehat{\text{se}} = 1/\sqrt{12} = 0.29\) (= \(\hat\lambda/\sqrt n\)).</li>
+</ul>
+</div>
+
+<h2 id="boot">The bootstrap</h2>
+<div class="widget" id="w-boot">
+<p class="wtitle">Resample, recompute, repeat</p>
+<p class="wlead">Click "1 resample" to see a single bootstrap sample (repeated points are stacked; missing ones are hollow). "1,000 resamples" builds the bootstrap distribution of the chosen statistic. The SD of that histogram is the bootstrap SE.</p>
+<div class="controls">
+<label>Data <select id="b-data"><option value="board">toy data {2,4,5,6,8}</option><option value="cars">92 car prices</option><option value="small">{1, 3, 5}</option><option value="custom">your data →</option></select></label>
+<input type="text" id="b-custom" placeholder="type numbers" style="width:12em" aria-label="custom data">
+<label>Statistic <select id="b-stat"><option value="mean">mean</option><option value="median">median</option><option value="sd">SD</option><option value="max">maximum</option></select></label>
+<button class="btn" id="b-1">1 resample</button>
+<button class="btn primary" id="b-1000">1,000 resamples</button>
+<button class="btn" id="b-reset">Reset</button>
+</div>
+<svg id="b-dots"></svg>
+<svg id="b-hist"></svg>
+<div class="readout" id="b-read"></div>
+<p class="note">Try the maximum: the bootstrap distribution piles up on the largest data value and can never exceed it. That's the bootstrap's known failure for extreme statistics.</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · the ideal bootstrap of {1, 3, 5}</span>
+<p>Ten distinct resamples (probabilities out of 27): means 1, 3, 5 (1 each); 5/3, 7/3, 7/3, 11/3, 11/3, 13/3 (3 each); 3 (6). Bootstrap variance of the mean \(= 8/9\), SE \(= 0.94 = \hat\sigma/\sqrt n\). Medians: 1 w.p. 7/27, 3 w.p. 13/27, 5 w.p. 7/27, SE \(= \sqrt{56/27} = 1.44\). Set the widget to {1, 3, 5} and run 1,000 resamples: it should land near 0.94 and 1.44.</p>
+</div>
+
+<div class="story box"><span class="tag">Story proof · how much does finite B matter?</span>
+<p>With \(B\) resamples the bootstrap SE is itself an SD estimated from \(B\) draws, so its own relative noise is about \(1/\sqrt{2(B-1)}\) (page 4's formula, applied to the simulation). \(B = 200\) gives 5%, \(B = 1000\) gives 2%. Compare that with the statistical uncertainty in the SE from having only \(n\) data points (11% for the 92 cars). Past a few hundred resamples, more \(B\) buys almost nothing.</p>
+</div>
+
+<h2 id="jack">The jackknife</h2>
+<div class="widget" id="w-jack">
+<p class="wtitle">Leave one out</p>
+<p class="wlead">Each dot is the statistic recomputed with one point removed. The jackknife SE is their SD (divisor \(n\)) multiplied by \(\sqrt{n-1}\), because leave-one-out values are packed \(n-1\) times too close together. Compare with the bootstrap SE for the same data.</p>
+<div class="controls">
+<label>Data <select id="j-data"><option value="board">toy data {2,4,5,6,8}</option><option value="five">{1, 2, 3, 4, 5}</option><option value="cars">92 car prices</option></select></label>
+<label>Statistic <select id="j-stat"><option value="mean">mean</option><option value="median">median</option><option value="sd">SD</option></select></label>
+</div>
+<svg id="j-plot"></svg>
+<div class="readout" id="j-read"></div>
+</div>
+<div class="board box"><span class="tag">Work it by hand · jackknife of the mean and of the median</span>
+<p><strong>Mean of {2, 4, 5, 6, 8}:</strong> leave-one-out means 5.75, 5.25, 5, 4.75, 4.25; squared deviations sum 1.25; \(\frac45 \times 1.25 = 1\); SE 1 \(= s/\sqrt n\).</p>
+<p><strong>Median of {1, 2, 3, 4, 5}:</strong> leave-one-out medians 3.5, 3.5, 3, 2.5, 2.5; squared deviations sum 1.0; \(\frac45 \times 1.0 = 0.8\); SE 0.89. Only three distinct values: the median jumps from one data point to the next as points are removed, which is the non-smoothness that breaks the jackknife on larger samples (car prices: jackknife 1.43 vs bootstrap 0.75).</p>
+</div>
+
+<h2 id="pivot">Pivots</h2>
+<p>A pivot's distribution doesn't depend on unknown parameters, so no plugging in is needed. The t-statistic is the classic: \(\sqrt n(\bar X - \mu)/S \sim t_{n-1}\) for normal data whatever \(\sigma\) is. Others: \((n-1)S^2/\sigma^2 \sim \chi^2_{n-1}\) (gives an exact interval for \(\sigma^2\)); for exponential data, \(2\lambda\sum X_i \sim \chi^2_{2n}\).</p>
+<div class="board box"><span class="tag">Work it by hand · an exact interval for σ² from a pivot</span>
+<p>Toy data, \(s^2 = 5\), \(n = 5\). \(4s^2/\sigma^2 = 20/\sigma^2 \sim \chi^2_4\), whose 2.5% and 97.5% points are 0.484 and 11.14. So \(0.484 \le 20/\sigma^2 \le 11.14\), i.e. \(1.80 \le \sigma^2 \le 41.3\). A 95% interval for the variance runs over a factor of 23: five points say almost nothing about spread.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Think about it</span>The bootstrap SE of the mean for the toy data comes out near 0.89, not 1. Which is right?</summary>
+<p>Both are estimates of the same thing. The bootstrap is a plug-in method, so it reproduces \(\hat\sigma/\sqrt n\) with divisor \(n\): \(2/\sqrt5 = 0.89\). The textbook \(s/\sqrt n = 1\) uses divisor \(n - 1\). At \(n = 5\) the difference is 11%; at \(n = 92\) it's 0.5%.</p></details>
+<details class="q"><summary><span class="qtag">Think about it</span>In the Fisher widget, why does the Wald interval sometimes go below 0 when \(\hat p\) is near 0, but the likelihood interval doesn't?</summary>
+<p>The Wald interval is symmetric by construction (\(\hat p \pm 1.96\,\widehat{\text{se}}\)), but the likelihood is lopsided near the boundary. The quadratic approximation is the delta-method idea applied to the log-likelihood, and it fails where the curve isn't close to a parabola: small \(n\) or \(p\) near 0 or 1.</p></details>
+<details class="q"><summary><span class="qtag">Check your understanding</span>Why must the two-sample bootstrap resample each group separately?</summary>
+<p>Pooling and resampling 72 patients would make the group sizes random (sometimes 30 AML, sometimes 20), adding variability the real study didn't have, since the design fixed the group sizes. Resample within each group to mimic the design (CASI §10.3).</p></details>
+
+<script>
+(function () {
+  const C = [...UU.CARS].sort((a, b) => a - b); let seed = 3;
+  function update() {
+    const custom = document.getElementById("f-data").value.split(/[ ,]+/).map(Number).filter(Number.isFinite);
+    const r = UU.rng(seed), n = UU.val("f-n"); document.querySelector('output[for="f-n"]').textContent = n;
+    const x = (custom.length >= 2 ? custom : Array.from({ length: n }, () => UU.pick(UU.CARS, r))).sort((a, b) => a - b), m = x.length;
+    const a = +document.getElementById("f-a").value, eps = Math.sqrt(Math.log(2 / a) / (2 * m));
+    const lo = Math.min(0, x[0]), hi = Math.max(40, x[m - 1]) * (custom.length >= 2 ? 1.05 : 1);
+    const f = UU.frame(document.getElementById("f-plot"), { W: 640, H: 260, x: [custom.length >= 2 ? x[0] - 1 : lo, custom.length >= 2 ? x[m - 1] + 1 : hi], y: [0, 1], xlabel: custom.length >= 2 ? "your data" : "price ($1000s)", yfmt: v => v.toFixed(1) });
+    const xl = f.x.inv(f.m.l), xr = f.x.inv(f.W - f.m.r);
+    const steps = [[xl, 0]]; x.forEach((v, i) => { steps.push([v, i / m]); steps.push([v, (i + 1) / m]); }); steps.push([xr, 1]);
+    const up = steps.map(p => [p[0], Math.min(1, p[1] + eps)]), dn = steps.map(p => [p[0], Math.max(0, p[1] - eps)]).reverse();
+    UU.el("path", { d: up.concat(dn).map((p, i) => (i ? "L" : "M") + f.x(p[0]) + "," + f.y(p[1])).join("") + "Z", style: "fill:var(--tint-pos);opacity:.75" }, f.g);
+    if (custom.length < 2) { const tr = [[xl, 0]]; C.forEach((v, i) => { tr.push([v, i / C.length]); tr.push([v, (i + 1) / C.length]); }); tr.push([xr, 1]); UU.path(f, tr, { style: "stroke:var(--c3);stroke-width:1.2;opacity:.8" }); }
+    UU.path(f, steps, { style: "stroke:var(--c1);stroke-width:2" });
+    const pm = UU.mean(x), pv = UU.variance(x, 0);
+    document.getElementById("f-read").innerHTML = `<div><span>plug-in mean</span><b>${pm.toFixed(2)}</b></div><div><span>plug-in variance (÷n)</span><b>${pv.toFixed(2)}</b></div><div><span>plug-in median</span><b>${UU.median(x).toFixed(2)}</b></div><div><span>DKW half-width ε</span><b>±${eps.toFixed(3)}</b></div>`;
+  }
+  ["f-n", "f-a", "f-data"].forEach(id => document.getElementById(id).addEventListener("input", update));
+  document.getElementById("f-new").onclick = () => { seed++; update(); }; update();
+})();
+
+(function () {
+  function update() {
+    const n = UU.val("i-n"), p = UU.val("i-p"); document.querySelector('output[for="i-n"]').textContent = n; document.querySelector('output[for="i-p"]').textContent = p.toFixed(2);
+    const k = Math.round(p * n), ph = Math.min(Math.max(k / n, 0.5 / n), 1 - 0.5 / n);
+    const ll = q => k * Math.log(q) + (n - k) * Math.log(1 - q), l0 = ll(ph), se = Math.sqrt(ph * (1 - ph) / n);
+    const xs = Array.from({ length: 300 }, (_, i) => 0.001 + 0.998 * i / 299);
+    const f = UU.frame(document.getElementById("i-plot"), { W: 640, H: 260, x: [0, 1], y: [-6, 0.3], xlabel: "p", ylabel: "log-likelihood (peak = 0)", yfmt: v => v });
+    UU.el("line", { x1: f.x(0), x2: f.x(1), y1: f.y(-1.92), y2: f.y(-1.92), style: "stroke:var(--muted);stroke-dasharray:3 3" }, f.g);
+    UU.path(f, xs.map(q => [q, Math.max(-6, ll(q) - l0)]), { style: "stroke:var(--c1);stroke-width:2.5" });
+    UU.path(f, xs.map(q => [q, Math.max(-6, -((q - ph) ** 2) / (2 * se * se))]), { style: "stroke:var(--ink);stroke-width:1.4;stroke-dasharray:6 4" });
+    let a = ph, b = ph; while (a > 0.0005 && ll(a) - l0 > -1.92) a -= 0.0005; while (b < 0.9995 && ll(b) - l0 > -1.92) b += 0.0005;
+    document.getElementById("i-read").innerHTML = `<div><span>k successes</span><b>${k} of ${n}</b></div><div><span>curvature −ℓ″(p̂) = n/(p̂(1−p̂))</span><b>${(1 / (se * se)).toFixed(1)}</b></div><div><span>SE = 1/√curvature</span><b>${se.toFixed(4)}</b></div><div><span>Wald 95%</span><b>(${(ph - 1.96 * se).toFixed(3)}, ${(ph + 1.96 * se).toFixed(3)})</b></div><div><span>likelihood 95%</span><b>(${Math.max(0, a).toFixed(3)}, ${Math.min(1, b).toFixed(3)})</b></div>`;
+  }
+  ["i-n", "i-p"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+
+(function () {
+  const r = UU.rng(42); let reps = [], last = null;
+  const STAT = { mean: UU.mean, median: UU.median, sd: a => UU.sd(a, 1), max: a => Math.max(...a) };
+  function data() {
+    const v = document.getElementById("b-data").value;
+    if (v === "board") return UU.BOARD; if (v === "cars") return UU.CARS; if (v === "small") return [1, 3, 5];
+    const c = document.getElementById("b-custom").value.split(/[ ,]+/).map(Number).filter(Number.isFinite); return c.length >= 2 ? c : UU.BOARD;
+  }
+  function run(k) { const x = data(), s = STAT[document.getElementById("b-stat").value]; for (let j = 0; j < k; j++) { last = UU.resample(x, r); reps.push(s(last)); } draw(); }
+  function draw() {
+    const x = data(), s = STAT[document.getElementById("b-stat").value], n = x.length, uniq = [...new Set(x)].sort((a, b) => a - b);
+    const lo = Math.min(...x), hi = Math.max(...x), pad = (hi - lo) * 0.06 || 1;
+    const f = UU.frame(document.getElementById("b-dots"), { W: 640, H: n > 20 ? 120 : 150, x: [lo - pad, hi + pad], y: [0, 10], grid: false, yaxis: false, xlabel: last ? "latest resample: filled = drawn (stacked by count), hollow = left out" : "data (click a button to resample)" });
+    const cnt = new Map(); if (last) last.forEach(v => cnt.set(v, (cnt.get(v) || 0) + 1));
+    const base = new Map(); x.forEach(v => base.set(v, (base.get(v) || 0) + 1));
+    const rr = n > 20 ? 2.5 : 6, step = n > 20 ? 1.4 : 2.2;
+    uniq.forEach(v => { const c = last ? (cnt.get(v) || 0) : base.get(v); if (last && c === 0) for (let i = 0; i < base.get(v); i++) UU.el("circle", { cx: f.x(v), cy: f.y(0.8 + i * step), r: rr, style: "fill:none;stroke:var(--muted)" }, f.g);
+      for (let i = 0; i < c; i++) UU.el("circle", { cx: f.x(v), cy: f.y(0.8 + i * step), r: rr, style: "fill:var(--c1)" }, f.g); });
+    const est = s(x);
+    if (reps.length) {
+      const sd = reps.length > 1 ? UU.sd(reps) : 0, rlo = Math.min(...reps), rhi = Math.max(...reps), w = (rhi - rlo) || 1, bins = UU.hist(reps, rlo - w * 0.05, rhi + w * 0.05, 40);
+      const g = UU.frame(document.getElementById("b-hist"), { W: 640, H: 200, x: [rlo - w * 0.05, rhi + w * 0.05], y: [0, Math.max(...bins.map(b => b.d)) * 1.1], yaxis: false, xlabel: `bootstrap distribution of the ${document.getElementById("b-stat").value} (${reps.length} resamples)` });
+      UU.bars(g, bins, { style: "fill:var(--c1);opacity:.6" }); UU.vline(g, est, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+      const omitted = last ? uniq.filter(v => !cnt.get(v)).reduce((a, v) => a + base.get(v), 0) / n : 0;
+      const formula = document.getElementById("b-stat").value === "mean" ? `<div><span>formula s/√n (÷(n−1))</span><b>${(UU.sd(x) / Math.sqrt(n)).toFixed(3)}</b></div><div><span>plug-in σ̂/√n (÷n)</span><b>${(UU.sd(x, 0) / Math.sqrt(n)).toFixed(3)}</b></div>` : "";
+      document.getElementById("b-read").innerHTML = `<div><span>estimate on the data</span><b>${est.toFixed(3)}</b></div><div><span>bootstrap SE</span><b>${sd.toFixed(3)}</b></div>${formula}<div><span>share of points left out of the latest resample</span><b>${(100 * omitted).toFixed(0)}%</b></div>`;
+    } else { UU.frame(document.getElementById("b-hist"), { W: 640, H: 200, x: [0, 1], y: [0, 1], yaxis: false, xt: [], xlabel: "bootstrap distribution appears here" }); document.getElementById("b-read").innerHTML = `<div><span>estimate on the data</span><b>${est.toFixed(3)}</b></div>`; }
+  }
+  ["b-data", "b-stat", "b-custom"].forEach(id => document.getElementById(id).addEventListener("input", () => { reps = []; last = null; draw(); }));
+  document.getElementById("b-1").onclick = () => run(1); document.getElementById("b-1000").onclick = () => run(1000);
+  document.getElementById("b-reset").onclick = () => { reps = []; last = null; draw(); }; draw();
+})();
+
+(function () {
+  const STAT = { mean: UU.mean, median: UU.median, sd: a => UU.sd(a, 1) };
+  function update() {
+    const v = document.getElementById("j-data").value, x = v === "board" ? UU.BOARD : v === "five" ? [1, 2, 3, 4, 5] : UU.CARS;
+    const s = STAT[document.getElementById("j-stat").value], n = x.length;
+    const loo = x.map((_, i) => s(x.filter((_, j) => j !== i))), lm = UU.mean(loo);
+    const sej = Math.sqrt((n - 1) / n * loo.reduce((a, t) => a + (t - lm) ** 2, 0));
+    const r = UU.rng(7), boots = Array.from({ length: 2000 }, () => s(UU.resample(x, r))), seb = UU.sd(boots);
+    const lo = Math.min(...loo), hi = Math.max(...loo), pad = (hi - lo) * 0.15 || 0.5;
+    const f = UU.frame(document.getElementById("j-plot"), { W: 640, H: 150, x: [lo - pad, hi + pad], y: [0, 10], grid: false, yaxis: false, xlabel: "leave-one-out values of the statistic (stacked when equal)" });
+    const cnt = new Map(); loo.forEach(t => { const key = t.toFixed(6); const c = cnt.get(key) || 0; cnt.set(key, c + 1); UU.el("circle", { cx: f.x(t), cy: f.y(1 + (n > 20 ? 0.35 : 1.6) * c), r: n > 20 ? 3 : 6, style: "fill:var(--c2);opacity:.8" }, f.g); });
+    UU.vline(f, lm, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    document.getElementById("j-read").innerHTML = `<div><span>distinct leave-one-out values</span><b>${cnt.size}</b></div><div><span>jackknife SE</span><b>${sej.toFixed(3)}</b></div><div><span>bootstrap SE (B = 2000)</span><b>${seb.toFixed(3)}</b></div><div><span>ratio jack / boot</span><b>${(sej / seb).toFixed(2)}</b></div>`;
+  }
+  ["j-data", "j-stat"].forEach(id => document.getElementById(id).addEventListener("input", update)); update();
+})();
+</script>
+
+<div class="pager"><a href="deep-02-limits-student.html">← §02 The LLN, the CLT, and the delta method</a><a href="deep-04-se-uncertain-student.html">§04 Is the standard error itself uncertain? →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

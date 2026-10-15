@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sampling Distributions</title>
+<link rel="stylesheet" href="deep.css?v=4">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" defer></script>
+<script src="deep.js?v=1"></script>
+</head>
+<body>
+<div class="page">
+<div class="crumbs"><a href="inference_study_guide_student.html#sampling">← Back to the study guide, §1</a><a href="inference_study_guide_student.html">Study guide contents</a></div>
+<p class="eyebrow">DS 5030 · Understanding Uncertainty · Go deeper · §1</p>
+<h1>Sampling distributions, bias, and the standard error</h1>
+<p class="sub">What the ± after an estimate is measuring, worked out with samples small enough to list.</p>
+<nav class="mini" aria-label="On this page"><strong>On this page</strong>
+<ol>
+<li><a href="#recipe">An estimator is a recipe</a></li>
+<li><a href="#universes">Widget: a thousand parallel studies</a></li>
+<li><a href="#enumerate">Sampling distributions you can list</a></li>
+<li><a href="#mse">Bias, variance, MSE, and the divisor question</a></li>
+<li><a href="#consistency">Consistency</a></li>
+<li><a href="#sdse">SD vs. SE, five ways</a></li>
+<li><a href="#questions">Questions</a></li>
+</ol></nav>
+
+<h2 id="recipe">An estimator is a recipe</h2>
+<p>An estimator is a rule written down before the data arrive: "add the numbers and divide by \(n\)," "sort them and take the middle one." Applied to one dataset, the rule produces one number, the estimate. Applied to every dataset the world could have handed you, it produces a distribution of numbers: the <strong>sampling distribution</strong>.</p>
+<p>The frequentist move (CASI Ch 2) is to grade the number you have by the behavior of the recipe that produced it. If the recipe usually lands within 0.85 of the truth, you report your number as "± 0.85." Nothing about your particular number is known to be good or bad; only the recipe has a track record.</p>
+
+<div class="formal box"><span class="tag">Formal · CASI (2.4)–(2.7), AoS §6.3.1</span>
+<p>Estimate \(\hat\theta = t(x)\) (a number); estimator \(\hat\Theta = t(X)\) (a random variable). With \(\mu = E_F[\hat\Theta]\): \(\text{bias} = \mu - \theta\), \(\text{var} = E_F[(\hat\Theta - \mu)^2]\), \(\text{se} = \sqrt{\text{var}}\), \(\text{MSE} = E_F[(\hat\Theta - \theta)^2] = \text{bias}^2 + \text{var}\).</p>
+</div>
+
+<p>Three things vary in a sampling distribution, and it helps to separate them: the <em>population</em> \(F\) (fixed, unknown), the <em>sample</em> (random, one draw of \(n\) values), and the <em>estimate</em> (random, because it's computed from the sample). If you blur the first two, you will later be tempted to think the CLT makes the data normal.</p>
+
+<h2 id="universes">Widget: a thousand parallel studies</h2>
+<div class="widget" id="w-universes">
+<p class="wtitle">Parallel studies</p>
+<p class="wlead">Each click runs studies of size \(n\) on the same population and records each study's average. The top panel shows the population and the most recent sample (dots). The bottom panel is the sampling distribution of the mean, built one study at a time.</p>
+<div class="controls">
+<label>Population <select id="u-pop"><option value="cars">car prices (92 listings)</option><option value="normal">normal, mean 8.6, SD 8.2</option><option value="unif">uniform 0 to 17</option><option value="expo">exponential, mean 8.6</option></select></label>
+<label>\(n\) <input type="range" id="u-n" min="2" max="100" value="10"><output for="u-n"></output></label>
+<button class="btn" id="u-1">Run 1 study</button>
+<button class="btn primary" id="u-1000">Run 1,000 studies</button>
+<button class="btn" id="u-reset">Reset</button>
+</div>
+<svg id="u-top"></svg>
+<svg id="u-bot"></svg>
+<div class="readout" id="u-read"></div>
+<p class="note">Things to try: move \(n\) from 10 to 40 and watch the bottom histogram's SD halve; switch to car prices with \(n = 2\) and see a skewed sampling distribution; note that the top panel's spread never changes with \(n\).</p>
+</div>
+
+<h2 id="enumerate">Sampling distributions you can list</h2>
+<p>With a tiny population and tiny samples, there are few enough possible samples to write every one down. Then nothing is approximate: the sampling distribution, its mean, its SE, and the bias of any estimator are exact fractions.</p>
+
+<div class="board box"><span class="tag">Work it by hand · {1, 3, 5}, samples of 2</span>
+<p>\(\mu = 3\), \(\sigma^2 = 8/3\). The 9 equally likely samples give \(\bar x = 1, 2, 3, 2, 3, 4, 3, 4, 5\). So \(\bar X\) takes values 1, 2, 3, 4, 5 with probabilities \(\tfrac19, \tfrac29, \tfrac39, \tfrac29, \tfrac19\): mean 3, variance \(\tfrac{12}{9} = \tfrac43 = \sigma^2/2\), SE 1.15.</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · {1, 3, 5}, samples of 3</span>
+<p>Now 27 samples. The sum of three draws counts like the coefficients of \((1 + z + z^2)^3 = 1 + 3z + 6z^2 + 7z^3 + 6z^4 + 3z^5 + z^6\), so</p>
+<div class="tablewrap"><table><thead><tr><th>\(\bar x\)</th><th>1</th><th>5/3</th><th>7/3</th><th>3</th><th>11/3</th><th>13/3</th><th>5</th></tr></thead>
+<tbody><tr><td>probability (/27)</td><td>1</td><td>3</td><td>6</td><td>7</td><td>6</td><td>3</td><td>1</td></tr></tbody></table></div>
+<p>Variance: squared distances from 3 are \(4, \tfrac{16}{9}, \tfrac49, 0, \tfrac49, \tfrac{16}{9}, 4\); weighted sum \(\big(8 + \tfrac{96}{9} + \tfrac{48}{9}\big)/27 = \tfrac{24}{27} = \tfrac89 = \sigma^2/3\). ✓ Going from \(n = 2\) to \(n = 3\), the distribution got narrower and more bell-shaped (1, 3, 6, 7, 6, 3, 1 is already a hump), even though the population is three flat spikes.</p>
+</div>
+
+<div class="widget" id="w-enum">
+<p class="wtitle">Exact sampling distributions</p>
+<p class="wlead">Type a tiny population (2–5 integers) and pick \(n\). The widget lists every possible sample (with replacement) and shows the exact sampling distribution of the mean, plus the exact bias, variance, and MSE of two variance estimators.</p>
+<div class="controls">
+<label>Population <input type="text" id="e-pop" value="1, 3, 5"></label>
+<label>\(n\) <input type="range" id="e-n" min="1" max="5" value="2"><output for="e-n"></output></label>
+</div>
+<svg id="e-plot"></svg>
+<div class="readout" id="e-read"></div>
+<div class="tablewrap" id="e-table"></div>
+</div>
+
+<h2 id="mse">Bias, variance, MSE, and the divisor question</h2>
+<p>MSE splits into bias² plus variance (AoS Thm 6.9). The split matters because the two parts trade off: shrinking an estimator toward zero adds bias but can remove more variance than it adds. The cleanest example is the divisor in a variance estimator, \(\sum(x_i - \bar x)^2/d\).</p>
+
+<div class="story box"><span class="tag">Story proof · bias² + variance</span>
+<p>Every miss \(\hat\theta - \theta\) is the sum of a fixed leg (from \(\theta\) to the estimator's average, the bias) and a random leg (from the average to this estimate). The random leg averages to zero, so on average it's "perpendicular" to the fixed leg: the cross term \(2\,\text{bias}\cdot E[\hat\theta - E\hat\theta]\) vanishes, and the squared miss averages to bias² + variance.</p>
+</div>
+
+<div class="board box"><span class="tag">Work it by hand · which divisor wins on {1, 3, 5}, n = 2?</span>
+<p>Let \(SS = (x_1 - \bar x)^2 + (x_2 - \bar x)^2 = (x_1 - x_2)^2/2\), which is 0, 2, or 8 with probabilities \(\tfrac39, \tfrac49, \tfrac29\). So \(E[SS] = \tfrac{8 + 16}{9} = \tfrac83\) and \(E[SS^2] = \tfrac{4\cdot 4 + 2\cdot 64}{9} = 16\). For divisor \(d\): \(\text{MSE}(d) = E[SS^2]/d^2 - 2\sigma^2E[SS]/d + \sigma^4 = \tfrac{16}{d^2} - \tfrac{128}{9d} + \tfrac{64}{9}\).</p>
+<div class="tablewrap"><table><thead><tr><th>divisor \(d\)</th><th>1 (unbiased, \(s^2\))</th><th>2 (plug-in, \(\hat\sigma^2\))</th><th>2.25 (best)</th><th>3</th></tr></thead>
+<tbody><tr><td>MSE</td><td>8.89</td><td>4.00</td><td>3.95</td><td>4.15</td></tr></tbody></table></div>
+<p>Minimizing \(16/d^2 - 128/(9d)\): setting the derivative \(-32/d^3 + 128/(9d^2)\) to zero gives \(d = 32 \cdot 9/128 = 2.25\). For normal data the MSE-best divisor is \(n + 1\); here the population is flat, so it's a little different. The unbiased choice is the worst of the four.</p>
+</div>
+
+<div class="widget" id="w-divisor">
+<p class="wtitle">Bias–variance trade-off for the variance divisor</p>
+<p class="wlead">Simulated samples of size \(n\) from a normal population with \(\sigma^2 = 1\). For each divisor \(d\) the curves show bias², variance, and MSE of \(\sum(x_i - \bar x)^2/d\). The dashed lines mark \(d = n - 1\) (unbiased), \(d = n\) (plug-in), and \(d = n + 1\).</p>
+<div class="controls"><label>\(n\) <input type="range" id="d-n" min="2" max="20" value="5"><output for="d-n"></output></label></div>
+<svg id="d-plot"></svg>
+<div class="readout" id="d-read"></div>
+</div>
+
+<h2 id="consistency">Consistency</h2>
+<p>A consistent estimator gets close to the truth with high probability as \(n\) grows (AoS Def 6.7). Sufficient condition: bias → 0 and se → 0 (Thm 6.10). Unbiased estimators need not be consistent, and consistent estimators need not be unbiased.</p>
+<div class="example box"><span class="tag">Worked example · two estimators of \(\mu\)</span>
+<ul>
+<li>\(\hat\mu_1 = X_1\) (use only the first observation): unbiased, se \(= \sigma\) for every \(n\). Not consistent.</li>
+<li>\(\hat\mu_2 = \frac{1}{n+1}\sum X_i\): bias \(-\mu/(n+1) \to 0\), se \(= \sigma\sqrt n/(n+1) \to 0\). Biased but consistent.</li>
+<li>\(\hat\mu_3 = \bar X_n\): unbiased and consistent. With \(\sigma = 2\): se 1 at \(n = 4\), 0.2 at \(n = 100\).</li>
+</ul>
+</div>
+
+<h2 id="sdse">SD vs. SE, five ways</h2>
+<div class="tablewrap"><table><thead><tr><th>Setting</th><th>SD (of the data)</th><th>SE (of the estimate)</th></tr></thead><tbody>
+<tr><td>Toy data \(\{2, 4, 5, 6, 8\}\)</td><td>\(s = 2.24\)</td><td>\(2.24/\sqrt5 = 1.00\)</td></tr>
+<tr><td>92 car prices</td><td>$8.17k</td><td>$0.85k</td></tr>
+<tr><td>CASI gfr, 211 patients</td><td>≈ 13.8</td><td>0.95</td></tr>
+<tr><td>A poll, \(\hat p = 0.6\), \(n = 100\)</td><td>\(\sqrt{0.6 \times 0.4} = 0.49\)</td><td>0.049</td></tr>
+<tr><td>Same poll, \(n = 10{,}000\)</td><td>0.49 (unchanged)</td><td>0.0049</td></tr>
+</tbody></table></div>
+<div class="analogy box"><span class="tag">Analogy</span>
+<p>The SD is how much people's weights differ. The SE is how much the reading of a room's <em>average</em> weight would wobble if you redid the weigh-in with a different room. A bigger room doesn't make people more alike; it makes the average steadier.</p>
+</div>
+
+<h2 id="questions">Questions</h2>
+<details class="q"><summary><span class="qtag">Think about it</span>In the widget, why doesn't the top panel get narrower when \(n\) grows?</summary>
+<p>It shows the population and one sample. Neither depends on how many studies you run, and the spread of a sample estimates the population SD, which is fixed. Only the bottom panel, the spread of <em>averages</em>, shrinks like \(1/\sqrt n\).</p></details>
+<details class="q"><summary><span class="qtag">Think about it</span>With car prices and \(n = 2\), the sampling distribution is skewed. Is the sample mean still unbiased?</summary>
+<p>Yes. Unbiasedness is about the center (its mean is exactly \(\mu\)), not the shape. Skew in the sampling distribution means the typical study lands below \(\mu\) (median below mean) and a few land far above.</p></details>
+<details class="q"><summary><span class="qtag">Check your understanding</span>On {1, 3, 5} with \(n = 2\), what is the exact SE of the sample median?</summary>
+<p>With \(n = 2\) the median equals the mean, so it's also \(\sqrt{4/3} = 1.15\). With \(n = 3\) they differ: the median takes values 1, 3, 5 with probabilities 7/27, 13/27, 7/27 (same counting as the bootstrap example in the guide), so its SE is \(\sqrt{56/27} = 1.44\), larger than the mean's 0.94.</p></details>
+
+<script>
+(function () {
+  const POPS = {
+    cars: { draw: r => UU.pick(UU.CARS, r), mu: UU.mean(UU.CARS), sd: UU.sd(UU.CARS, 0), vals: UU.CARS, lo: 0, hi: 40 },
+    normal: { draw: r => 8.59 + 8.17 * UU.randn(r), mu: 8.59, sd: 8.17, lo: -20, hi: 37 },
+    unif: { draw: r => 17 * r(), mu: 8.5, sd: 17 / Math.sqrt(12), lo: 0, hi: 17 },
+    expo: { draw: r => -8.59 * Math.log(1 - r()), mu: 8.59, sd: 8.59, lo: 0, hi: 45 }
+  };
+  const r = UU.rng(5030);
+  let means = [], last = [];
+  function run(k) {
+    const P = POPS[document.getElementById("u-pop").value], n = UU.val("u-n");
+    for (let j = 0; j < k; j++) { last = Array.from({ length: n }, () => P.draw(r)); means.push(UU.mean(last)); }
+    draw();
+  }
+  function popDensity(P) {
+    if (P.vals) { const b = UU.hist(P.vals, P.lo, P.hi, 40); return b.map(z => [(z.x0 + z.x1) / 2, z.d]); }
+    const xs = Array.from({ length: 200 }, (_, i) => P.lo + (P.hi - P.lo) * i / 199);
+    return xs.map(x => [x, document.getElementById("u-pop").value === "normal" ? UU.normPdf((x - P.mu) / P.sd) / P.sd : document.getElementById("u-pop").value === "unif" ? (x >= 0 && x <= 17 ? 1 / 17 : 0) : (x >= 0 ? Math.exp(-x / 8.59) / 8.59 : 0)]);
+  }
+  function draw() {
+    const P = POPS[document.getElementById("u-pop").value], n = UU.val("u-n");
+    const dens = popDensity(P), ymax = Math.max(...dens.map(d => d[1])) * 1.15;
+    const f = UU.frame(document.getElementById("u-top"), { W: 640, H: 170, x: [P.lo, P.hi], y: [0, ymax], yaxis: false, grid: false, xlabel: "population (curve) and the latest sample (dots)" });
+    if (P.vals) UU.bars(f, UU.hist(P.vals, P.lo, P.hi, 40), { style: "fill:var(--c3);opacity:.35" });
+    else UU.path(f, dens, { style: "stroke:var(--c3);stroke-width:2" });
+    last.forEach((v, i) => UU.el("circle", { cx: f.x(Math.min(Math.max(v, P.lo), P.hi)), cy: f.y(ymax * (0.15 + 0.7 * ((i * 0.618) % 1))), r: 3.5, style: "fill:var(--c1)" }, f.g));
+    UU.vline(f, P.mu, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const se = P.sd / Math.sqrt(n), lo = P.mu - 4.5 * se, hi = P.mu + 4.5 * se;
+    const bins = UU.hist(means, lo, hi, 45), dmax = Math.max(UU.normPdf(0) / se, ...bins.map(b => b.d)) * 1.1;
+    const g = UU.frame(document.getElementById("u-bot"), { W: 640, H: 210, x: [lo, hi], y: [0, dmax], yaxis: false, xlabel: `sampling distribution of the mean (n = ${n}), ${means.length} studies` });
+    UU.bars(g, bins, { style: "fill:var(--c1);opacity:.55" });
+    const xs = Array.from({ length: 150 }, (_, i) => lo + (hi - lo) * i / 149);
+    UU.path(g, xs.map(x => [x, UU.normPdf((x - P.mu) / se) / se]), { style: "stroke:var(--ink);stroke-width:1.5;stroke-dasharray:5 4" });
+    UU.vline(g, P.mu, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    const emp = means.length > 1 ? UU.sd(means) : NaN;
+    document.getElementById("u-read").innerHTML =
+      `<div><span>population SD σ</span><b>${UU.fmt(P.sd, 2)}</b></div>` +
+      `<div><span>latest sample's SD s</span><b>${last.length > 1 ? UU.fmt(UU.sd(last), 2) : "—"}</b></div>` +
+      `<div><span>SD of the ${means.length} means</span><b>${UU.fmt(emp, 3)}</b></div>` +
+      `<div><span>theory σ/√n</span><b>${UU.fmt(se, 3)}</b></div>`;
+  }
+  ["u-pop", "u-n"].forEach(id => document.getElementById(id).addEventListener("input", () => { means = []; last = []; document.querySelector('output[for="u-n"]').textContent = UU.val("u-n"); draw(); }));
+  document.getElementById("u-1").onclick = () => run(1);
+  document.getElementById("u-1000").onclick = () => run(1000);
+  document.getElementById("u-reset").onclick = () => { means = []; last = []; draw(); };
+  document.querySelector('output[for="u-n"]').textContent = UU.val("u-n");
+  run(200);
+})();
+
+(function () {
+  function frac(x) { // nice fraction display for small denominators
+    for (const d of [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 25, 27, 64, 81, 125, 243]) { const k = Math.round(x * d); if (Math.abs(k / d - x) < 1e-9) return d === 1 ? `${k}` : `${k}/${d}`; }
+    return x.toFixed(3);
+  }
+  function update() {
+    const pop = document.getElementById("e-pop").value.split(/[ ,]+/).map(Number).filter(v => Number.isFinite(v)).slice(0, 5);
+    const n = UU.val("e-n"); document.querySelector('output[for="e-n"]').textContent = n;
+    if (pop.length < 2) { document.getElementById("e-read").innerHTML = "<div><span>Enter 2 to 5 numbers</span><b>—</b></div>"; return; }
+    const k = pop.length, total = Math.pow(k, n), mu = UU.mean(pop), s2 = UU.variance(pop, 0);
+    const dist = new Map(); let m1 = 0, m2 = 0, vh = [], vu = [];
+    for (let c = 0; c < total; c++) {
+      let t = c; const smp = []; for (let j = 0; j < n; j++) { smp.push(pop[t % k]); t = Math.floor(t / k); }
+      const m = UU.mean(smp), key = Math.round(m * 1e6) / 1e6;
+      dist.set(key, (dist.get(key) || 0) + 1);
+      if (n > 1) { const ss = smp.reduce((a, x) => a + (x - m) ** 2, 0); vh.push(ss / n); vu.push(ss / (n - 1)); }
+    }
+    const keys = [...dist.keys()].sort((a, b) => a - b);
+    const em = keys.reduce((a, x) => a + x * dist.get(x), 0) / total, ev = keys.reduce((a, x) => a + (x - em) ** 2 * dist.get(x), 0) / total;
+    const lo = Math.min(...pop), hi = Math.max(...pop), pad = (hi - lo) * 0.08 || 1, pmax = Math.max(...keys.map(x => dist.get(x))) / total;
+    const f = UU.frame(document.getElementById("e-plot"), { W: 640, H: 200, x: [lo - pad, hi + pad], y: [0, pmax * 1.15], xlabel: `exact distribution of the sample mean: ${total} equally likely samples`, yfmt: v => v.toFixed(2) });
+    const bw = Math.max(3, Math.min(26, 500 / keys.length));
+    keys.forEach(x => UU.el("rect", { x: f.x(x) - bw / 2, y: f.y(dist.get(x) / total), width: bw, height: f.y(0) - f.y(dist.get(x) / total), style: "fill:var(--c1);opacity:.7" }, f.g));
+    UU.vline(f, mu, { style: "stroke:var(--ink);stroke-dasharray:4 3" });
+    let html = `<div><span>population mean μ</span><b>${frac(mu)}</b></div><div><span>population σ² (divide by k)</span><b>${frac(s2)}</b></div>` +
+      `<div><span>E[sample mean]</span><b>${frac(em)}</b></div><div><span>V(sample mean)</span><b>${frac(ev)}</b></div><div><span>σ²/n</span><b>${frac(s2 / n)}</b></div><div><span>SE</span><b>${Math.sqrt(ev).toFixed(3)}</b></div>`;
+    document.getElementById("e-read").innerHTML = html;
+    if (n > 1) {
+      const row = (name, v) => { const m = UU.mean(v), va = UU.variance(v, 0), b = m - s2; return `<tr><td>${name}</td><td>${frac(m)}</td><td>${frac(b)}</td><td>${frac(va)}</td><td>${(b * b + va).toFixed(3)}</td></tr>`; };
+      document.getElementById("e-table").innerHTML = `<table><thead><tr><th>estimator of σ²</th><th>mean</th><th>bias</th><th>variance</th><th>MSE</th></tr></thead><tbody>${row("divide by n (plug-in)", vh)}${row("divide by n − 1 (unbiased)", vu)}</tbody></table>`;
+    } else document.getElementById("e-table").innerHTML = "";
+  }
+  document.getElementById("e-pop").addEventListener("input", update);
+  document.getElementById("e-n").addEventListener("input", update);
+  update();
+})();
+
+(function () {
+  const r = UU.rng(77);
+  function update() {
+    const n = UU.val("d-n"); document.querySelector('output[for="d-n"]').textContent = n;
+    const reps = 4000, ss = [];
+    for (let j = 0; j < reps; j++) { const x = Array.from({ length: n }, () => UU.randn(r)); const m = UU.mean(x); ss.push(x.reduce((a, v) => a + (v - m) ** 2, 0)); }
+    const ds = Array.from({ length: 121 }, (_, i) => Math.max(0.5, n - 1.5) + i * 4 / 120);
+    const pts = ds.map(d => { const v = ss.map(s => s / d), m = UU.mean(v), va = UU.variance(v, 0); return [d, (m - 1) ** 2, va, (m - 1) ** 2 + va]; });
+    const ymax = Math.max(...pts.map(p => p[3])) * 1.05;
+    const f = UU.frame(document.getElementById("d-plot"), { W: 640, H: 240, x: [ds[0], ds[ds.length - 1]], y: [0, ymax], xlabel: "divisor d", yfmt: v => v.toFixed(2) });
+    UU.path(f, pts.map(p => [p[0], p[1]]), { style: "stroke:var(--c3);stroke-width:2" });
+    UU.path(f, pts.map(p => [p[0], p[2]]), { style: "stroke:var(--c2);stroke-width:2" });
+    UU.path(f, pts.map(p => [p[0], p[3]]), { style: "stroke:var(--c1);stroke-width:2.5" });
+    [n - 1, n, n + 1].forEach(d => UU.vline(f, d, { style: "stroke:var(--muted);stroke-dasharray:3 3" }));
+    UU.text(f, ds[ds.length - 1], pts[pts.length - 1][1], "bias²", { "text-anchor": "end", dy: -4, style: "fill:var(--c3)" });
+    UU.text(f, ds[0], pts[0][2], "variance", { dx: 4, dy: 12, style: "fill:var(--c2)" });
+    UU.text(f, ds[0], pts[0][3], "MSE", { dx: 4, dy: -4, style: "fill:var(--c1)" });
+    const at = d => pts.reduce((b, p) => Math.abs(p[0] - d) < Math.abs(b[0] - d) ? p : b);
+    const best = pts.reduce((b, p) => p[3] < b[3] ? p : b);
+    document.getElementById("d-read").innerHTML = `<div><span>MSE, d = n − 1</span><b>${at(n - 1)[3].toFixed(3)}</b></div><div><span>MSE, d = n</span><b>${at(n)[3].toFixed(3)}</b></div><div><span>MSE, d = n + 1</span><b>${at(n + 1)[3].toFixed(3)}</b></div><div><span>best d (simulated)</span><b>${best[0].toFixed(2)}</b></div>`;
+  }
+  document.getElementById("d-n").addEventListener("input", update); update();
+})();
+</script>
+
+<div class="pager"><span></span><a href="deep-02-limits-student.html">§02 The LLN, the CLT, and the delta method →</a></div>
+<footer>Expanded companion to the inference study guide (Claude-generated background resource). Sources: Wasserman, <em>All of Statistics</em>; Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>. Widgets run in your browser with seeded random numbers.</footer>
+</div>
+</body>
+</html>

@@ -192,7 +192,7 @@ function renderExample(ex) {
         const t = answered.filter(v => v[i] === true).length, n = answered.length;
         li.append(h("div", { class: "tally" },
           n ? `${t}/${n} students thought statement ${i + 1} was true` : "No votes yet",
-          h("div", { class: "bar" }, h("span", { class: "bt", style: `width:${n ? (100 * t) / n : 0}%` }), h("span", { class: "bf", style: `width:${n ? (100 * (n - t)) / n : 0}%` }))));
+          h("div", { class: "bar" }, h("span", { class: "bt", style: `width:${n ? (100 * t) / n : 0}%` }))));
       }
       if (state.reveal) {
         const right = !HOST && mine[i] != null ? (mine[i] === it.ans ? " You got it." : " Not this time.") : "";
