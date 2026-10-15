@@ -69,6 +69,7 @@ if (missingQ.length) console.warn("quiz: examples without a question:", missingQ
 
 // Reworded statements (the deck keeps its original wording)
 const REWORD = {
+  "Reporting all three intervals gives three chances at a significant result.": "Reporting the 90%, 95% and 99% intervals for one estimate is like running three separate tests.",
   "If we redid the study many times, about 68% of bars built this way would cover the route’s true average.": "If we redid each study many times, about 68% of the bars would cover each route’s true average.",
   "The CIs overlap a lot, so the drug made no significant difference.": "Because the CIs overlap a lot, the drug made no significant difference.",
 };
