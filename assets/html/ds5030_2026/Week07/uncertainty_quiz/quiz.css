@@ -146,3 +146,15 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
   body.on-example .tally, body.on-example .answer { margin-top: 3px; }
   body.on-example .qs h2 { margin: 6px 0 6px; }
 }
+
+/* data behind the plot: plot left, its notes right */
+.data-row { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.data-row .story { margin-top: 0; font-size: 15px; }
+@media (max-width: 560px) { .data-row { grid-template-columns: 1fr; } }
+@media (min-width: 861px) and (min-height: 520px) {
+  body.on-example .data-row { flex: 1 1 0; min-height: 0; align-items: stretch; }
+  body.on-example .data-row .data-fig { min-height: 0; height: 100%; }
+  body.on-example .data-row .story { margin-top: 0; overflow-y: auto; }
+  body.on-example .data-row .story b { display: block; margin: 0; }
+  body.on-example .data-row .story p { margin: 0 0 8px; }
+}

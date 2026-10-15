@@ -169,7 +169,8 @@ function renderExample(ex) {
     const side = r.slide.blocks ? h("div", { class: "story" }, r.slide.blocks.map(([l, t]) => h("p", {}, h("b", {}, l), t))) : null;
     dataBox.replaceChildren(...[
       h("h2", {}, dv.heading || "The data behind the plot"),
-      h("div", { class: "figure data-fig" }, r.svg), side].filter(Boolean));
+      // with side notes: plot and notes side by side, so the plot can use the full height
+      side ? h("div", { class: "data-row" }, h("div", { class: "figure data-fig" }, r.svg), side) : h("div", { class: "figure data-fig" }, r.svg)]);
   }
 
   function myAnswers() { return store.get(key(state.round || 0)) || {}; }
