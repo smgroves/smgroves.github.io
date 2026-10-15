@@ -48,10 +48,21 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
   const [first] = sc.story;
   if (first[0] !== "Same data, one curve") console.warn("quiz: example 5 story changed in the deck; check the override");
   sc.cap = "The drug trial from Examples 2 and 3 (A = 10, B = 13 months). Curve: the gap B − A. Pink: below 0.";
-  sc.story = [["Back to the drug trial", "From Examples 2 and 3: patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)]
+  sc.story = [["The data", "Patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)]
     // the "SE of the gap" statement is skipped, so don't point the reader at it
     .map(([l, t]) => [l, t.replace(" How wide is it? That’s statement 1.", "")]);
 }
+// Every example opens with a highlighted question; these two reuse the drug trial and had none.
+const ADD_QUESTION = {
+  "Overlapping sampling distributions": "Same drug trial as Example 2: do patients on drug B live longer than patients on drug A?",
+  "Sampling distribution of the difference": "Same drug trial as Examples 2 and 3: how many extra months does drug B give, and could the true gap be 0?",
+};
+Q.scenarios.forEach(sc => {
+  if (!sc.story.some(([l]) => l === "The question") && ADD_QUESTION[sc.title]) sc.story = [["The question", ADD_QUESTION[sc.title]], ...sc.story];
+});
+const missingQ = Q.scenarios.filter(sc => !sc.story.some(([l]) => l === "The question")).map(sc => sc.title);
+if (missingQ.length) console.warn("quiz: examples without a question:", missingQ);
+
 // Reworded statements (the deck keeps its original wording)
 const REWORD = {
   "The CIs overlap a lot, so the drug made no significant difference.": "Because the CIs overlap a lot, the drug made no significant difference.",
