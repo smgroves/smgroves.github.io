@@ -163,7 +163,7 @@ function renderExample(ex) {
   function drawStatements() {
     const mine = myAnswers();
     const voters = Object.values(votes);
-    const showTally = HOST || state.show || state.reveal;
+    const showTally = !!state.show;   // hidden from everyone, host included, until the host clicks Show results
     list.replaceChildren(...sc.items.map((it, i) => {
       const li = h("li", { class: "stmt" }, h("div", { class: "row" }, h("span", { class: "n" }, i + 1), h("span", { class: "s" }, it.s)));
       if (!HOST) {
@@ -200,7 +200,7 @@ function renderExample(ex) {
     const toggle = (k, on, off) => h("button", { type: "button", class: state[k] ? "on" : "", onclick: () => set({ [k]: !state[k] }) }, state[k] ? off : on);
     hostBar.replaceChildren(
       h("span", { class: "count" }, `${Object.keys(votes).length} responding`),
-      toggle("show", "Show results to students", "Hide results"),
+      toggle("show", "Show results", "Hide results"),
       toggle("reveal", "Reveal answers", "Hide answers"),
       h("button", { type: "button", onclick: () => { if (confirm("Start a new round? Current votes will be cleared from the tally.")) set({ round: (state.round || 0) + 1, show: false, reveal: false }); } }, "New round"),
       backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(drawHost, e => { err.textContent = "Sign-in failed: " + e.message; }) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
