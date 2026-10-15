@@ -144,13 +144,14 @@ function renderExample(ex) {
     banner(),
     h("p", { class: "eyebrow" }, `Example ${ex} of ${Q.scenarios.length}`),
     h("h1", {}, sc.title),
-    h("div", { class: "layout" },
-      h("div", {}, h("p", { class: "cap" }, sc.cap), fig),
-      h("div", { class: "story" }, sc.story.map(([label, text]) => h("p", {}, h("b", {}, label), text)))),
-    dataBox,
-    h("h2", {}, "True or false?"),
-    list,
-    saved,
+    // plots on the left (sticky on wide screens), story and statements on the right
+    h("div", { class: "example" },
+      h("div", { class: "plots" }, h("p", { class: "cap" }, sc.cap), fig, dataBox),
+      h("div", { class: "qs" },
+        h("div", { class: "story" }, sc.story.map(([label, text]) => h("p", {}, h("b", {}, label), text))),
+        h("h2", {}, "True or false?"),
+        list,
+        saved)),
   );
   document.title = `${sc.title} · Reading Uncertainty Plots`;
 
@@ -165,7 +166,7 @@ function renderExample(ex) {
     const side = r.slide.blocks ? h("div", { class: "story" }, r.slide.blocks.map(([l, t]) => h("p", {}, h("b", {}, l), t))) : null;
     dataBox.replaceChildren(
       h("h2", {}, dv.heading || "The data behind the plot"),
-      side ? h("div", { class: "layout" }, h("div", { class: "figure" }, r.svg), side) : h("div", { class: "figure" }, r.svg));
+      h("div", { class: "figure" }, r.svg), side);
   }
 
   function myAnswers() { return store.get(key(state.round || 0)) || {}; }
@@ -217,6 +218,8 @@ function renderExample(ex) {
       backend.live && !who ? h("button", { type: "button", onclick: () => backend.signInHost().then(() => { hostErr = ""; drawHost(); }, e => fail("Sign-in failed: " + e.message)) }, "Sign in as instructor") : h("span", {}, `Signed in: ${who}`),
       h("span", { class: "link" }, "Students: " + studentURL()),
       hostErr ? h("span", { class: "err" }, hostErr) : null);
+    // keep the sticky plot column below the sticky host bar
+    document.documentElement.style.setProperty("--stick", hostBar.offsetHeight + 12 + "px");
   }
 
   unsubs.push(backend.onState(ex, s => {
