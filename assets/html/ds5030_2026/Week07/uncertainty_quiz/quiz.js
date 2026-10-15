@@ -52,6 +52,11 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
     // the "SE of the gap" statement is skipped, so don't point the reader at it
     .map(([l, t]) => [l, t.replace(" How wide is it? That’s statement 1.", "")]);
 }
+// Reworded statements (the deck keeps its original wording)
+const REWORD = {
+  "The CIs overlap a lot, so the drug made no significant difference.": "Because the CIs overlap a lot, the drug made no significant difference.",
+};
+Q.scenarios.forEach(sc => sc.items.forEach(it => { if (REWORD[it.s]) it.s = REWORD[it.s]; }));
 const app = document.getElementById("app");
 const params = new URLSearchParams(location.search);
 const HOST = params.has("host");
