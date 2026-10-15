@@ -221,3 +221,4 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
 .rules h2 { margin: 0 0 6px; font-size: 1.1rem; }
 .rules ul { margin: 0; padding-left: 1.2em; }
 .rules li { margin: 4px 0; }
+.rules p.fun { margin: 10px 0 0; font-weight: 600; }
