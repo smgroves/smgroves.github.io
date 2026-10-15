@@ -15,6 +15,30 @@ const NEEDS_MATH = [
 const dropped = Q.scenarios.reduce((n, sc) => n + sc.items.filter(it => NEEDS_MATH.includes(it.s)).length, 0);
 if (dropped !== NEEDS_MATH.length) console.warn(`quiz: expected to skip ${NEEDS_MATH.length} statements, matched ${dropped}`);
 Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.includes(it.s)); });
+
+// The quiz frames example 4 as a business problem (the deck uses fertilizer); same numbers and lesson.
+{
+  const sc = Q.scenarios.find(x => x.title === "Barely overlapping sampling distributions");
+  const data = Q.DATA[sc.title];
+  sc.cap = "Sales training A vs B: average monthly sales of 25 reps each, SE = $1k.";
+  sc.story = [
+    ["The question", "Does sales training program B produce reps who sell more than program A?"],
+    ["The data", "25 reps per program. A’s reps average $10k a month in sales and B’s $15k. Single reps vary a lot: SD = $5k."],
+    ["The plot", "Each curve shows where that program’s average sales would land if you trained 25 new reps: spread SE = 5/√25 = $1k."],
+  ];
+  const [, i2, i3] = sc.items;
+  Object.assign(i2, { s: "A random B rep almost certainly outsells a random A rep.",
+    why: "Single reps have SD 5, not 1, so P(B rep sells more) = Φ(5/√50) ≈ 0.76." });
+  Object.assign(i3, { s: "With 4× as many reps per program, each curve would be half as wide." });
+  SlideSVG.relabel = {
+    "average plant height (cm)": "average monthly sales ($ thousand)",
+    "plant height (cm)": "monthly sales ($ thousand)",
+  };
+  data.blocks = [
+    ["Averages", "Clearly apart: the black bars don’t come close."],
+    ["Single reps", "Overlap heavily. A random B rep outsells a random A rep only about 76% of the time."],
+  ];
+}
 const app = document.getElementById("app");
 const HOST = new URLSearchParams(location.search).has("host");
 const FB_VER = "10.12.2";
@@ -136,6 +160,7 @@ function renderExample(ex) {
   const list = h("ol", { class: "stmts" });
   const saved = h("p", { class: "saved", "aria-live": "polite" });
   const hostBar = HOST ? h("div", { class: "host" }) : null;
+  let qsEl;
 
   document.body.classList.add("on-example");
   show(
@@ -150,8 +175,8 @@ function renderExample(ex) {
     // plots on the left (sticky on wide screens), story and statements on the right
     h("div", { class: "example" },
       h("div", { class: "plots" }, h("p", { class: "cap" }, sc.cap), fig, dataBox),
-      h("div", { class: "qs" },
-        h("div", { class: "story" }, sc.story.map(([label, text]) => h("p", {}, h("b", {}, label), text))),
+      qsEl = h("div", { class: "qs" },
+        h("div", { class: "story" }, sc.story.map(([label, text]) => h("p", label === "The question" ? { class: "the-q" } : {}, h("b", {}, label), text))),
         h("h2", {}, "True or false?"),
         list,
         saved)),
@@ -166,7 +191,8 @@ function renderExample(ex) {
     const showData = dv && (dv.when === "story" || state.reveal);
     if (!showData) { dataBox.replaceChildren(); return; }
     const r = plot(s => dv.render(s));
-    const side = r.slide.blocks ? h("div", { class: "story" }, r.slide.blocks.map(([l, t]) => h("p", {}, h("b", {}, l), t))) : null;
+    const blocks = dv.blocks || r.slide.blocks;
+    const side = blocks ? h("div", { class: "story" }, blocks.map(([l, t]) => h("p", {}, h("b", {}, l), t))) : null;
     dataBox.replaceChildren(...[
       h("h2", {}, dv.heading || "The data behind the plot"),
       // with side notes: plot and notes side by side, so the plot can use the full height
@@ -175,10 +201,12 @@ function renderExample(ex) {
 
   function myAnswers() { return store.get(key(state.round || 0)) || {}; }
 
-  function drawStatements() {
+  // worst = draw as if results and answers were both showing (used only to size the text)
+  function drawStatements(worst = false) {
     const mine = myAnswers();
     const voters = Object.values(votes);
-    const showTally = !!state.show;   // hidden from everyone, host included, until the host clicks Show results
+    const showTally = worst || !!state.show;   // hidden from everyone, host included, until the host clicks Show results
+    const reveal = worst || !!state.reveal;
     list.replaceChildren(...sc.items.map((it, i) => {
       const li = h("li", { class: "stmt" }, h("div", { class: "row" }, h("span", { class: "n" }, i + 1), h("span", { class: "s" }, it.s)));
       if (!HOST) {
@@ -189,7 +217,7 @@ function renderExample(ex) {
             () => { saved.textContent = "Couldn't save your answer. Check your connection."; });
           drawStatements();
         };
-        const btn = (v, label, cls) => h("button", { type: "button", class: cls, "aria-pressed": String(mine[i] === v), onclick: pick(v), ...(state.reveal ? { disabled: "" } : {}) }, label);
+        const btn = (v, label, cls) => h("button", { type: "button", class: cls, "aria-pressed": String(mine[i] === v), onclick: pick(v), ...(reveal ? { disabled: "" } : {}) }, label);
         li.append(h("div", { class: "tf", role: "group", "aria-label": `Statement ${i + 1}` }, btn(true, "True", "t"), btn(false, "False", "f")));
       }
       if (showTally) {
@@ -199,13 +227,43 @@ function renderExample(ex) {
           n ? `${t}/${n} students thought statement ${i + 1} was true` : "No votes yet",
           h("div", { class: "bar" }, h("span", { class: "bt", style: `width:${n ? (100 * t) / n : 0}%` }), h("span", { class: "bf", style: `width:${n ? (100 * (n - t)) / n : 0}%` }))));
       }
-      if (state.reveal) {
+      if (reveal) {
         const right = !HOST && mine[i] != null ? (mine[i] === it.ans ? " You got it." : " Not this time.") : "";
         li.append(h("div", { class: "answer" }, h("span", { class: `pill ${it.ans ? "t" : "f"}` }, it.ans ? "TRUE" : "FALSE"), h("span", { class: "why" }, it.why + right)));
       }
       return li;
     }));
   }
+
+  // wide screens: the largest text size at which the right column fits with results and answers showing,
+  // so the text doesn't change size when the host reveals them
+  const wide = matchMedia("(min-width: 861px) and (min-height: 520px)");
+  // largest font size (px) at which el's content fits its own height
+  function fitBox(el, lo, hi) {
+    for (let k = 0; k < 9; k++) {
+      const mid = (lo + hi) / 2;
+      el.style.fontSize = mid + "px";
+      if (el.scrollHeight <= el.clientHeight) lo = mid; else hi = mid;
+    }
+    el.style.fontSize = Math.floor(lo * 2) / 2 + "px";
+  }
+  function fitNotes() {
+    const notes = dataBox.querySelector(".data-row .story");
+    if (!notes) return;
+    if (!wide.matches) { notes.style.fontSize = ""; return; }
+    fitBox(notes, 12, 20);
+  }
+  function fitText() {
+    fitNotes();
+    if (!wide.matches) { qsEl.style.fontSize = ""; drawStatements(); return; }
+    drawStatements(true);
+    fitBox(qsEl, 13, 30);
+    drawStatements();
+  }
+  let fitTimer;
+  const onResize = () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitText, 120); };
+  addEventListener("resize", onResize);
+  unsubs.push(() => removeEventListener("resize", onResize));
 
   function drawHost() {
     if (!hostBar) return;
@@ -235,7 +293,7 @@ function renderExample(ex) {
       unsubs.push(() => roundSub && roundSub());
       saved.textContent = "";
     }
-    drawFigure(); drawData(); drawStatements(); drawHost();
+    drawFigure(); drawData(); drawHost(); fitText();
   }));
 }
 

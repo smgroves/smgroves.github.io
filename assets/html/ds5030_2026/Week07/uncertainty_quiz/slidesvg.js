@@ -62,7 +62,9 @@
     box.className = "slide-text";
     box.style.justifyContent = { top: "flex-start", bottom: "flex-end" }[o.valign] || "center";
     box.style.textAlign = o.align || "left";
-    const runs = Array.isArray(text) ? text : [{ text, options: {} }];
+    // labels the quiz rewords (see RELABEL in quiz.js); the deck's plot code stays untouched
+    const swap = t => (window.SlideSVG.relabel || {})[t] ?? t;
+    const runs = Array.isArray(text) ? text.map(r => ({ ...r, text: swap(r.text) })) : [{ text: swap(text), options: {} }];
     let line = document.createElement("div");
     box.appendChild(line);
     runs.forEach(r => {
