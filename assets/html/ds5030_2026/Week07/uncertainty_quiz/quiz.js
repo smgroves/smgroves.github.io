@@ -42,24 +42,32 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
     ["Single reps", "Overlap heavily. A random B rep outsells a random A rep only about 76% of the time."],
   ];
 }
-// Example 5 comes right after example 4 (not a drug trial), so say which trial it returns to.
+// The gap example is the one single-distribution question: is a true gap of 0 plausible?
+// (Quiz-only rewrite of the deck's "Sampling distribution of the difference"; same plot and numbers.)
 {
   const sc = Q.scenarios.find(x => x.title === "Sampling distribution of the difference");
-  const [first] = sc.story;
-  if (first[0] !== "Same data, one curve") console.warn("quiz: example 5 story changed in the deck; check the override");
-  sc.cap = "The drug trial from Examples 2 and 3 (A = 10, B = 13 months). Curve: the gap B − A. Pink: below 0.";
-  sc.story = [["The data", "Patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)]
-    // the "SE of the gap" statement is skipped, so don't point the reader at it
-    .map(([l, t]) => [l, t.replace(" How wide is it? That’s statement 1.", "")]);
+  sc.cap = "The drug trial from Example 2 (A = 10, B = 13 months). Curve: the gap B − A. Pink: below 0.";
+  sc.story = [
+    ["The question", "Same drug trial as Example 2: could the true gap between the drugs be 0?"],
+    ["The data", "Drug A: 10 months on average, drug B: 13, SE = 1 each. The gap B − A = 3 months, with SE = √(1² + 1²) = 1.41."],
+    ["The plot", "Where the gap would land if you re-ran the trial many times. Pink: the 1.7% of re-runs below 0."],
+  ];
+  sc.items = [
+    { s: "Because the curve extends past 0, a true gap of 0 is plausible.", ans: false,
+      why: "0 is outside the middle 95%: 3 ± 1.96 × 1.41 = (0.23, 5.77). Only 1.7% is below 0, less than the 2.5% tail." },
+    { s: "The gap is significantly different from 0 at α = 0.05.", ans: true,
+      why: "z = (3 − 0)/1.41 = 2.12, so p ≈ 0.03 < 0.05." },
+    { s: "At α = 0.01, we could not rule out a gap of 0.", ans: true,
+      why: "z = 2.12 < 2.576, so p ≈ 0.03 > 0.01. The 99% interval (−0.64, 6.64) includes 0." },
+    { s: "There’s a 1.7% chance the new drug is truly worse than the standard one.", ans: false,
+      why: "The true gap is fixed; the 1.7% is about re-runs if the true gap were 3. (A flat-prior Bayesian would say 1.7%.)" },
+  ];
 }
-// Every example opens with a highlighted question; these two reuse the drug trial and had none.
-const ADD_QUESTION = {
-  "Overlapping sampling distributions": "Same drug trial as Example 2: do patients on drug B live longer than patients on drug A?",
-  "Sampling distribution of the difference": "Same drug trial as Examples 2 and 3: how many extra months does drug B give, and could the true gap be 0?",
-};
-Q.scenarios.forEach(sc => {
-  if (!sc.story.some(([l]) => l === "The question") && ADD_QUESTION[sc.title]) sc.story = [["The question", ADD_QUESTION[sc.title]], ...sc.story];
-});
+
+// Examples left out of the live challenge (still in the deck and in scenarios.js); the rest are renumbered 1, 2, ...
+const HIDE = ["Overlapping sampling distributions", "Picking the best of 20 drugs"];
+Q.scenarios = Q.scenarios.filter(sc => !HIDE.includes(sc.title));
+if (Q.scenarios.length !== 6) console.warn("quiz: expected 6 examples after hiding, got", Q.scenarios.length);
 const missingQ = Q.scenarios.filter(sc => !sc.story.some(([l]) => l === "The question")).map(sc => sc.title);
 if (missingQ.length) console.warn("quiz: examples without a question:", missingQ);
 
@@ -231,7 +239,7 @@ function rulesBox() {
       h("li", {}, "The final score for our section will be % correct answers, so only one person per group needs to submit or everyone can (but of course, many correct answers will outweigh incorrect answers)."),
       h("li", {}, "There will be a timer for each example; votes can't be input when the timer is up or when I reveal the answers."),
       h("li", {}, "You shouldn't need to do math, except possibly a z-score calculation with estimate, mean, and SE given."),
-      h("li", {}, "You can reference the slides.")),
+      h("li", {}, "This is only fun if you don’t look up the answers. You can check slides and notes from this class, but don’t google or use AI.")),
     h("p", { class: "fun" }, "This is supposed to be fun, not stressful! The time limit is purposefully short. Take advantage of being able to work together. If something still confuses you after the game, take a look at additional slides I’ll post after class for more in-depth answers."));
 }
 
