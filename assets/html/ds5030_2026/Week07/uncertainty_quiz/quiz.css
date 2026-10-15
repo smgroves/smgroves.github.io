@@ -177,13 +177,9 @@ h2 { font-size: 1.15rem; margin: 26px 0 10px; }
   body.on-example .plots .data-row { gap: 12px; }
 }
 
-/* the example's overall question stands out */
-.story p.the-q { background: #fff0f7; border-left: 4px solid var(--pink); border-radius: 6px; padding: 0.45em 0.7em; font-size: 1.15em; font-weight: 600; color: var(--ink); }
-.story p.the-q b { display: block; font-size: 0.75em; letter-spacing: .06em; text-transform: uppercase; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .story p.the-q { background: #3a2230; } }
-:root[data-theme="dark"] .story p.the-q { background: #3a2230; }
+/* the example's overall question stands out: bold and larger, no box */
+.story p.the-q { font-size: 1.15em; font-weight: 700; color: var(--ink); }
 @media (min-width: 861px) and (min-height: 520px) {
-  body.on-example .qs .story p.the-q b { display: block; margin: 0 0 2px; }
   body.on-example .plots .data-row .story { margin-top: 0; }
 }
 
