@@ -40,6 +40,14 @@ Q.scenarios.forEach(sc => { sc.items = sc.items.filter(it => !NEEDS_MATH.include
     ["Single reps", "Overlap heavily. A random B rep outsells a random A rep only about 76% of the time."],
   ];
 }
+// Example 5 comes right after example 4 (not a drug trial), so say which trial it returns to.
+{
+  const sc = Q.scenarios.find(x => x.title === "Sampling distribution of the difference");
+  const [first] = sc.story;
+  if (first[0] !== "Same data, one curve") console.warn("quiz: example 5 story changed in the deck; check the override");
+  sc.cap = "The drug trial from Examples 2 and 3 (A = 10, B = 13 months). Curve: the gap B − A. Pink: below 0.";
+  sc.story = [["Back to the drug trial", "From Examples 2 and 3: patients on drug A live an average of 10 months and on drug B 13, SE = 1 each. What we care about is the gap: B − A = 13 − 10 = 3 extra months."], ...sc.story.slice(1)];
+}
 const app = document.getElementById("app");
 const params = new URLSearchParams(location.search);
 const HOST = params.has("host");
