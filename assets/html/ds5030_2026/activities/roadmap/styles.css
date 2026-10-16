@@ -1,0 +1,100 @@
+/* ============================================================
+ * Roadmap · UU and SDS — page styles.
+ * Palette, typography, .callout chrome, presentation mode, and the
+ * glossary live in ../shared/lab-base.css. This sheet is purely
+ * additive: concept terms and the concept box.
+ * ============================================================ */
+
+/* Concept term — dotted underline like .gloss; hover opens its concept box. */
+.def {
+  cursor: help;
+  border-bottom: 1.5px dotted var(--accent);
+  padding: 0 1px;
+  border-radius: 2px;
+  transition: background 0.12s;
+}
+.def:hover, .def:focus, .def.def-active {
+  background: var(--accent-soft);
+  outline: none;
+}
+.def-demo { cursor: default; }
+
+/* Concept box — re-parented under the hovered term's paragraph. */
+.concept-box {
+  position: relative;
+  background: #f9f3fa;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 14px 44px 14px 18px;
+  margin: 0 0 22px 0;
+  animation: gloss-fade-in 0.18s ease-out;
+}
+.concept-box[hidden] { display: none; }
+.concept-title {
+  font-family: var(--sans); font-size: 17px; font-weight: 700;
+  color: var(--ink); margin-bottom: 10px;
+}
+.concept-close {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--sans); font-size: 20px; line-height: 1;
+  color: var(--ink-mute);
+}
+.concept-close:hover { color: var(--accent); }
+.concept-fields { margin: 0; display: grid; grid-template-columns: 11em 1fr; gap: 8px 16px; }
+.concept-fields dt {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent); padding-top: 4px;
+}
+.concept-fields dd {
+  margin: 0; font-family: var(--serif); font-size: 15px; line-height: 1.55; color: var(--ink);
+}
+.concept-fields dd.concept-empty { color: var(--ink-mute); font-style: italic; }
+.concept-fields dd a[href^="#def-"] { color: var(--link); border-bottom: 1px dotted var(--link); text-decoration: none; }
+@media (max-width: 640px) {
+  .concept-fields { grid-template-columns: 1fr; gap: 2px; }
+  .concept-fields dd { margin-bottom: 8px; }
+}
+#concept-data { display: none; }
+
+/* Roadmap network — one box per roadmap section, edges from data-next. */
+.roadmap-net { display: block; width: 100%; height: auto; max-width: 760px; margin: 0 auto; }
+.roadmap-net .net-edge {
+  fill: none; stroke: var(--ink-mute); stroke-width: 1.5;
+  transition: stroke 0.12s, stroke-width 0.12s;
+}
+.roadmap-net .net-head { fill: var(--ink-mute); }
+.roadmap-net .net-edge.lit { stroke: var(--accent); stroke-width: 2.25; }
+.roadmap-net .net-node { cursor: pointer; outline: none; }
+.roadmap-net .net-node rect {
+  fill: var(--bg); stroke: var(--accent); stroke-width: 1.5;
+  transition: fill 0.12s;
+}
+.roadmap-net .net-node text {
+  font-family: var(--sans); font-size: 13.5px; font-weight: 600; fill: var(--ink);
+  pointer-events: none;
+}
+.roadmap-net .net-node.lit rect,
+.roadmap-net .net-node:focus-visible rect { fill: var(--accent-soft); stroke-width: 2; }
+.roadmap-net .net-frame {
+  fill: var(--highlight); fill-opacity: 0.5;
+  stroke: var(--accent-soft); stroke-width: 1.5;
+  transition: stroke 0.12s;
+}
+.roadmap-net .net-frame.lit { stroke: var(--accent); }
+.roadmap-net .net-frame-label {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; fill: var(--ink-mute);
+}
+.net-legend {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px;
+  margin: 10px 0 4px; font-family: var(--sans); font-size: 12px; color: var(--ink-soft);
+}
+.net-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.net-legend-swatch { display: inline-block; width: 16px; height: 12px; border-radius: 4px; }
+.roadmap-net .net-node text.net-node-sub {
+  font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 13px; fill: var(--ink-soft);
+}
+.roadmap-net .net-accent { fill: none; stroke: var(--ink-soft); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }

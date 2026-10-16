@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap · UU and SDS — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=9">
+<link rel="stylesheet" href="styles.css?v=8">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'code'] }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+</head>
+<body>
+
+<!--
+  AUTHORING GUIDE — concepts and concept boxes
+  --------------------------------------------
+  1. Mark a concept: wrap the term in the prose with
+       <span class="def" id="def-SLUG">term</span>
+     The id must start with "def-" and be unique on the page. The term
+     gets a dotted underline; hovering (or tapping) it opens its concept
+     box just below that paragraph.
+
+  2. Fill in the concept box: at the bottom of <main>, inside
+     <section id="concept-data">, add (or edit) one block per concept:
+       <div class="concept" data-for="def-SLUG">
+         <div data-field="definition">…</div>
+         <div data-field="why">…</div>        (Why you'll use it)
+         <div data-field="where">…</div>      (Where you'll see it)
+         <div data-field="example">…</div>
+       </div>
+     Any HTML and MathJax (\( … \)) works inside a field. A field left
+     empty, or a concept with no block at all, is left blank.
+     Optional: data-title="…" on the .concept div overrides the box title
+     (default: the underlined term's text).
+
+  3. Link to another concept from inside a field with an ordinary anchor:
+       <a href="#def-bootstrap">bootstrap</a>
+     Clicking it scrolls to that concept and opens its box.
+
+  4. Roadmap network: every <h3 id="…"> under "Roadmap for this course"
+     becomes a box in the network diagram, labelled with the heading text
+     (or data-node-label="…" for a shorter label; data-node-sub="…" adds a
+     small italic second line, e.g. notation; x_{t+1} or x_t makes a
+     subscript). Connect boxes by listing
+     the ids each section leads to, space-separated, in data-next:
+       <h3 id="unit-sampling" data-next="unit-inference unit-likelihood">…</h3>
+     Rows are laid out automatically: a box sits one row below the lowest
+     box that leads into it. To force a box onto a specific row (0 = top),
+     add data-row="N". Boxes in a row are centred; to place a box in a
+     specific column instead, add data-col="N" (0 = leftmost; halves like
+     1.5 sit between columns). Use data-col on every box or on none.
+     Clicking a box scrolls to that section.
+
+  5. Frames: boxes with the same data-group="NAME" are drawn inside one
+     frame (optional caption: data-group-label="…" on any one of them).
+     A box points at the whole frame with data-next="group:NAME".
+
+  6. Side entry: data-enter="left" on a box makes arrows arrive on its
+     left side instead of its top (except from a box straight above it).
+     A source above and to the right that straddles the spot just right
+     of the box sends its line down the right side instead.
+
+  7. Regions: data-region="frequentist" (or "fisherian", "bayesian";
+     several allowed, space-separated) puts a box inside that school's
+     coloured region; data-region-dotted="bayesian" gives it a dotted
+     outline instead. Colours and labels live in REGIONS in viz.js.
+-->
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<aside class="toc">
+  <div class="toc-title">Roadmap</div>
+  <ul>
+    <li><a href="#connections">Connections to other classes</a></li>
+    <li><a href="#roadmap">Roadmap for this course</a></li>
+    <li><a href="#unit-probability">Probability key concepts</a></li>
+    <li><a href="#unit-linalg">Linear algebra key concepts</a></li>
+    <li><a href="#unit-wrangling">Data wrangling</a></li>
+    <li><a href="#unit-distributions">Representing distributions and densities</a></li>
+    <li><a href="#unit-estimation">Estimation</a></li>
+    <li><a href="#unit-sampling">Sampling and the bootstrap</a></li>
+    <li><a href="#unit-inference">Standard errors</a></li>
+    <li><a href="#unit-clt">The CLT</a></li>
+    <li><a href="#unit-ci">Confidence intervals &amp; hypothesis tests</a></li>
+    <li><a href="#unit-conditioning">Conditional probability/expectation</a></li>
+    <li><a href="#unit-like">Likelihood</a></li>
+    <li><a href="#unit-markov">Markov chains</a></li>
+    <li><a href="#unit-likelihood">Maximum likelihood</a></li>
+    <li><a href="#unit-bayes">Bayesian inference</a></li>
+  </ul>
+  <div class="toc-foot">Understanding Uncertainty · Fall 2026</div>
+</aside>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Roadmap</div>
+    <h1>Roadmap for this course and Roadmap within SDS</h1>
+    <div class="subtitle">Why are we teaching these concepts in an MSDS program?</div>
+    <div class="byline">Understanding Uncertainty · Fall 2026</div>
+  </header>
+
+  <p class="glossary-hint">
+    <span class="def def-demo">Underlined concepts</span> open a concept box when you hover or tap
+    them: its definition, why you'll use it, where you'll see it, and an example.
+  </p>
+  <div class="glossary-panel" id="glossary-panel" hidden>
+    <button class="glossary-close" id="glossary-close" aria-label="Close">×</button>
+    <div id="glossary-content"></div>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <h2 id="connections">Connections to other classes</h2>
+  <p>As a data scientist, you will generally do these steps:</p>
+  <ol>
+    <li>Have a question you want to answer</li>
+    <li>Gather data</li>
+    <li>Put that data somewhere</li>
+    <li>Make a guess about the underlying population based on your data (your sample) [<b>estimation</b>]</li>
+    <li>Figure out how accurate you can expect your guess to be [<b>inference</b>]</li>
+    <li>Predict things based on the more accurate estimates [<b>predictive modeling, ML</b>]</li>
+    <li>Sometimes we will go back and check our model [<b>inference</b>]</li>
+    <li>Present these predictions to someone who has more responsibilities than you, or shareholders, or make a decision yourself based on the predictions; or deploying the model for use by others</li>
+  </ol>
+
+  <p>This process goes wrong if:</p>
+  <ol>
+    <li>You don’t have a good question or aren’t asking the right question</li>
+    <li>You gather data in a biased way that doesn’t actually address your question or is skewed from the true population</li>
+    <li>You store the data improperly</li>
+    <li>You didn’t find a good estimate (it’s biased, it doesn’t fit the data you were given, etc)</li>
+    <li>Your estimate has a lot of uncertainty (variance)</li>
+    <li>Your predictive model is based on these estimates that are not accurate or certain</li>
+    <li>You misrepresent the results of the model (for example, by being overconfident in your conclusions and predictions).</li>
+  </ol>
+
+  <p>Real companies have lost money at every step. Successful companies do at least one of these steps really well. Data scientists who miss a few steps will make bad predictions, mislead people, lose money, and not truly learn about the world. Data scientists who can do all of the steps (or some of them really well, while understanding the others) are successful.</p>
+
+  <p>In UU, we are most interested in steps 4, 5, and 7. Of course, the interplay between inference and predictive modeling will relate what you are learning in ML and this class—sometimes you will do inference first and model after you have quantified your uncertainty; sometimes you will do predictive modeling first and then check how certain you are about the parameters in the model. But to be effective as a data scientist, you need to be able to do both. Predictive modeling without inference leads to overconfidence in our models [see Zillow Offers iBuying program] and not understanding the why behind the model. Inference without predictive modeling feels less satisfying because you may understand something about the world better (or understand that you don’t understand), but you haven’t done anything with that information. There are data scientists that do entirely one side. Our goal is to get you to do, or at least appreciate, both.</p>
+
+  <p>Inference requires a deep understanding of probability and statistics. There is no way around that. Predictive modeling requires a deep understanding of machine learning algorithms (and therefore, more indirectly, probability and statistics).</p>
+
+  <!-- ============================================================ -->
+  <h2 id="roadmap">Roadmap for this course</h2>
+  <p>How are all of the concepts in UU connected? The course has two main halves. The first half is building up your statistical toolkit. These ideas build on each other and relate, and they will keep coming back over and over. The early statistical ideas we will start with are important for both frequentist and Bayesian approaches (for example, everyone agrees on Bayes’ rule), but we will quickly dive into <span class="def" id="def-frequentism">frequentist</span> ideas  for <b><span class="def" id="def-nonparametric">non-parametric inference</span></b> and <b><span class="def" id="def-parametric">parametric inference</span></b>. This includes sampling distributions and resampling our data (bootstrapping) to calculate how uncertain our estimates are. Then we'll move to Fisherian inference, a subset of frequentism. This includes hypothesis testing and confidence intervals. We'll detour into Markov chains to understand how conditional probabilities work in practice and can model temporal data. Then, we'll focus on several implementations of another Fisherian approach that needs conditional probabilities: maximum likelihood estimation, which is a key method for fitting statistical models. When you fit a statistical model with Python, many standard packages will solve an MLE problem under the hood (including <code>statsmodels</code>, <code>scipy</code>, and <code>scikit-learn</code>). Finally, we'll end the course with a survey of Bayesian inference methods, and use <code>PyMC</code></p>
+
+  <div class="viz" id="viz-roadmap-network">
+    <div class="viz-description">Click a box to jump to that section.</div>
+  </div>
+
+
+  <h3 id="unit-probability" data-next="unit-distributions unit-conditioning" data-group="probability" data-col="1.6">Probability key concepts</h3>
+  <ul>
+    <li><span class="def" id="def-set-theory">Basic set theory</span></li>
+    <li><span class="def" id="def-kolmogorov">Kolmogorov’s axioms</span></li>
+    <li><span class="def" id="def-probability-space">Probability spaces, events, and outcomes</span></li>
+    <li><span class="def" id="def-independence">Independence</span></li>
+    <li><span class="def" id="def-conditional-probability">Conditional probability</span></li>
+    <li><span class="def" id="def-bayes">Bayes’ theorem</span></li>
+  </ul>
+
+  <h3 id="unit-linalg" data-next="group:probability" data-col="0.6">Linear algebra key concepts</h3>
+  <ul>
+    <li><span class="def" id="def-vectors">Vectors</span></li>
+    <li><span class="def" id="def-matrices">Matrices</span></li>
+    <li><span class="def" id="def-dot-product">Dot Product</span></li>
+    <li><span class="def" id="def-cosine-similarity">Cosine Similarity</span></li>
+    <li><span class="def" id="def-correlation">Correlation</span></li>
+    <li><span class="def" id="def-orthogonality">Orthogonality</span></li>
+    <li><span class="def" id="def-covariance">Covariance</span></li>
+  </ul>
+
+  <h3 id="unit-wrangling" data-next="group:probability" data-col="2.6">Data wrangling</h3>
+  <ul>
+    <li><span class="def" id="def-one-hot">One-hot encoding</span></li>
+    <li><span class="def" id="def-type-casting">Type casting</span></li>
+    <li><span class="def" id="def-missing-values">Missing values</span></li>
+    <li><span class="def" id="def-groupby">Groupby</span></li>
+    <li><span class="def" id="def-filtering">Filtering</span></li>
+  </ul>
+
+  <h3 id="unit-distributions" data-next="unit-estimation" data-group="probability" data-col="0.5" data-node-sub="F(x), f(x)">Representing distributions and densities</h3>
+  <ul>
+    <li><span class="def" id="def-pmf">PMF</span></li>
+    <li><span class="def" id="def-pdf">PDF</span></li>
+    <li><span class="def" id="def-kde">KDE</span></li>
+    <li><span class="def" id="def-ecdf">ECDF</span></li>
+    <li><span class="def" id="def-cdf">CDF</span></li>
+    <li><span class="def" id="def-iid">iid</span></li>
+    <li><span class="def" id="def-binomial">binomial variables &amp; bernoulli trials</span></li>
+    <li><span class="def" id="def-indicator">indicator function</span></li>
+  </ul>
+
+  <h3 id="unit-estimation" data-next="unit-sampling unit-clt unit-likelihood" data-group="probability" data-col="0.5" data-node-sub="θ̂">Estimation</h3>
+
+  <h3 id="unit-sampling" data-next="unit-inference" data-group="probability" data-col="0" data-region="frequentist" data-node-sub="F̂_n">Sampling and the bootstrap</h3>
+  <p>Example: the <span class="def" id="def-bootstrap">bootstrap</span> is …</p>
+
+  <h3 id="unit-inference" data-next="unit-ci" data-group="probability" data-col="0" data-region="frequentist" data-node-sub="se(x̄) = σ/√n">Standard errors</h3>
+  <p>Example: a <span class="def" id="def-standard-error">standard error</span> is …</p>
+
+  <h3 id="unit-clt" data-next="unit-inference unit-ci unit-likelihood" data-group="probability" data-col="1" data-region="frequentist" data-node-sub="x̄ ≈ N(μ, σ²/n)">The CLT</h3>
+
+  <h3 id="unit-ci" data-group="probability" data-col="1" data-row="5" data-region="frequentist fisherian" data-node-sub="θ̂ ± 1.96 · se">Confidence intervals &amp; hypothesis tests</h3>
+
+  <h3 id="unit-conditioning" data-next="unit-markov unit-like" data-group="probability" data-col="2.7" data-node-sub="P(A | B)">Conditional probability/expectation</h3>
+
+  <h3 id="unit-like" data-next="unit-bayes unit-likelihood" data-group="probability" data-col="2.2" data-node-sub="L(θ | data) = p(data | θ)">Likelihood</h3>
+
+  <h3 id="unit-markov" data-next="unit-bayes" data-group="probability" data-col="3.2" data-region-dotted="bayesian" data-node-sub="p(x_{t+1} | x_t)">Markov chains</h3>
+
+  <h3 id="unit-likelihood" data-group="probability" data-row="5" data-col="2.2" data-region="frequentist fisherian" data-node-sub="θ̂ = argmax L(θ)">Maximum likelihood</h3>
+  <p>Example: the <span class="def" id="def-likelihood">likelihood</span> is …</p>
+
+  <h3 id="unit-bayes" data-group="probability" data-row="4" data-col="3.2" data-region="bayesian" data-node-sub="p(θ | data)">Bayesian inference</h3>
+  <p>Example: the <span class="def" id="def-posterior">posterior</span> is …</p>
+
+  <!-- ============================================================
+       CONCEPT BOX CONTENT — one .concept block per <span class="def">.
+       Never displayed directly; viz.js copies it into the box on hover.
+       ============================================================ -->
+  <section id="concept-data" hidden>
+    <div class="concept" data-for="def-nonparametric">
+      <!-- non-parametric inference -->
+      <div data-field="definition">learning something about your data when you don’t want to make assumptions</div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-parametric">
+      <!-- parametric inference -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-set-theory">
+      <!-- Basic set theory -->
+      <div data-field="definition">This gives us the tools to talk about when two or more events happen together (A <em>and</em> B, the intersection), when at least one of them happens (A <em>or</em> B, the union), and when an event does not happen (<em>not</em> A, the complement). A set is a collection of outcomes, and these three operations combine sets into new ones.</div>
+      <div data-field="why">How do we talk about two sets of outcomes (or more)?</div>
+      <div data-field="where">Independence, conditional probability, the probability axioms</div>
+      <div data-field="example">P(A and B) = P(A) × P(B) if A and B are independent</div>
+    </div>
+    <div class="concept" data-for="def-kolmogorov">
+      <!-- Kolmogorov’s axioms -->
+      <div data-field="definition">Fancy name for three rules of probability: every probability is non-negative; the probability of anything happening at all is 1; and the probability of A, B, C, etc., if A, B, and C don’t overlap, is equal to the sum of the individual probabilities. A result of these is the complement rule: the probabilities of A happening and A not happening add to 1.</div>
+      <div data-field="why">everyone agrees on these axioms as basic rules of probability.</div>
+      <div data-field="where">indirectly, when we calculate any probabilities.</div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-probability-space">
+      <!-- Probability spaces, events, and outcomes -->
+      <div data-field="definition">a probability space is the full setup for a random experiment, made of three pieces: the <em>sample space</em>, which is the set of every possible outcome (for one die roll, {1, 2, 3, 4, 5, 6}); the <em>events</em>, which are the collections of outcomes we might ask about (“roll an even number” is the event {2, 4, 6}); and a <em>probability</em> for each event, assigned so that Kolmogorov’s axioms hold. An <em>outcome</em> is one single result of the experiment; an <em>event</em> is a set of outcomes.</div>
+      <div data-field="why">When you get a random variable, you need a probability space to assign probabilities to its values. </div>
+      <div data-field="where">After that, we can sort of pretend the probability space doesn't exist anymore, but it's in the background of any problem you do.</div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-independence">
+      <!-- Independence -->
+      <div data-field="definition">Two events A and B are independent when knowing that one of them happened does not change the probability of the other. In symbols, \(P(A \text{ and } B) = P(A)\,P(B)\): the probability that both happen is the product of their separate probabilities.</div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-conditional-probability">
+      <!-- Conditional probability -->
+      <div data-field="definition">The probability that A happens given that we already know B happened, written \(P(A \mid B)\) and read “the probability of A given B.” Knowing B happened shrinks the set of possible outcomes down to B, so we ask what fraction of B is also A: \(P(A \mid B) = P(A \text{ and } B)\,/\,P(B)\), as long as \(P(B) > 0\).</div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-bayes">
+      <!-- Bayes’ theorem -->
+      <div data-field="definition">A rule for flipping a conditional probability around. It turns \(P(B \mid A)\), which is often easy to know, into \(P(A \mid B)\), which is often what we want: \(P(A \mid B) = P(B \mid A)\,P(A)\,/\,P(B)\). It follows from writing the definition of conditional probability both ways, since \(P(A \text{ and } B) = P(A \mid B)\,P(B) = P(B \mid A)\,P(A)\).</div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+        <div class="concept" data-for="def-frequentism">
+      <!-- frequentism -->
+      <div data-field="definition">You only ever get one dataset, so you only ever get one estimate. A frequentist asks: if I could go back and collect the data again, and again, and again, how much would my estimate jump around? Each rerun would give a slightly different number. How spread out those numbers are (and whether they center on the truth) is how a frequentist says how much to trust the one estimate you actually have. That’s where bias, variance, and standard errors come from. In CASI’s words, frequentists ask “What would I see if I reran the same situation again?” (Efron &amp; Hastie, <em>Computer Age Statistical Inference</em>, Ch. 2.)</div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-ecdf">
+      <!-- ECDF -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-bootstrap">
+      <!-- bootstrap -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-standard-error">
+      <!-- standard error -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-likelihood">
+      <!-- likelihood -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-posterior">
+      <!-- posterior -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-vectors">
+      <!-- Vectors -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-matrices">
+      <!-- Matrices -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-dot-product">
+      <!-- Dot Product -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-cosine-similarity">
+      <!-- Cosine Similarity -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-correlation">
+      <!-- Correlation -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-orthogonality">
+      <!-- Orthogonality -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-covariance">
+      <!-- Covariance -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-one-hot">
+      <!-- One-hot encoding -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-type-casting">
+      <!-- Type casting -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-missing-values">
+      <!-- Missing values -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-groupby">
+      <!-- Groupby -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-filtering">
+      <!-- Filtering -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-pmf">
+      <!-- PMF -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-pdf">
+      <!-- PDF -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-kde">
+      <!-- KDE -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-cdf">
+      <!-- CDF -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-iid">
+      <!-- iid -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-binomial">
+      <!-- binomial variables & bernoulli trials -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-indicator">
+      <!-- indicator function -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+  </section>
+
+  <footer>
+    Understanding Uncertainty · Course roadmap.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=33"></script>
+</body>
+</html>
