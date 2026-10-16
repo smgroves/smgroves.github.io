@@ -157,7 +157,7 @@
 
   <!-- ============================================================ -->
   <h2 id="roadmap">Roadmap for this course</h2>
-  <p>How are all of the concepts in UU connected? The course has two main halves. The first half is building up your statistical toolkit. These ideas build on each other and relate, and they will keep coming back over and over. The early statistical ideas we will start with are important for both frequentist and Bayesian approaches (for example, everyone agrees on <span class="def" id="def-bayes-rule-roadmap" data-concept="def-bayes">Bayes’ rule</span>), but we will quickly dive into <span class="def" id="def-frequentism">frequentist</span> ideas  for <b><span class="def" id="def-nonparametric">non-parametric inference</span></b> and <b><span class="def" id="def-parametric">parametric inference</span></b>. This includes sampling distributions and resampling our data (bootstrapping) to calculate how uncertain our estimates are. Then we'll move to Fisherian inference, a subset of frequentism. This includes hypothesis testing and confidence intervals. We'll detour into Markov chains to understand how <span class="def" id="def-cond-prob-roadmap" data-concept="def-conditional-probability">conditional probabilities</span> work in practice and can model temporal data. Then, we'll focus on several implementations of another Fisherian approach that needs conditional probabilities: maximum likelihood estimation, which is a key method for fitting statistical models. When you fit a statistical model with Python, many standard packages will solve an MLE problem under the hood (including <code>statsmodels</code>, <code>scipy</code>, and <code>scikit-learn</code>). Finally, we'll end the course with a survey of Bayesian inference methods, and use <code>PyMC</code> (a package relying on Markov Chain Monte Carlo) to implement Bayesian inference. </p>
+  <p>How are all of the concepts in UU connected? The course has two main halves. The first half is building up your statistical toolkit. These ideas build on each other and relate, and they will keep coming back over and over. The early statistical ideas we will start with are important for both frequentist and Bayesian approaches (for example, everyone agrees on <span class="def" id="def-bayes-rule-roadmap" data-concept="def-bayes">Bayes’ rule</span>), but we will quickly dive into <span class="def" id="def-frequentism">frequentist</span> ideas  for <b><span class="def" id="def-nonparametric">non-parametric inference</span></b> and <b><span class="def" id="def-parametric">parametric inference</span></b>. This includes sampling distributions and resampling our data (bootstrapping) to calculate how uncertain our estimates are. Then we'll move to Fisherian inference, a subset of frequentism. This includes <span class="def" id="def-hypothesis-testing">hypothesis testing</span> and <span class="def" id="def-confidence-intervals">confidence intervals</span>. We'll detour into <span class="def" id="def-markov-chains">Markov chains</span> to understand how <span class="def" id="def-cond-prob-roadmap" data-concept="def-conditional-probability">conditional probabilities</span> work in practice and can model temporal data. Then, we'll focus on several implementations of another Fisherian approach that needs conditional probabilities: <span class="def" id="def-mle">maximum likelihood estimation</span>, which is a key method for fitting statistical models. When you fit a statistical model with Python, many standard packages will solve an MLE problem under the hood (including <code>statsmodels</code>, <code>scipy</code>, and <code>scikit-learn</code>). Finally, we'll end the course with a survey of <span class="def" id="def-bayesian-inference">Bayesian inference</span> methods, and use <code>PyMC</code> (a package relying on Markov Chain Monte Carlo) to implement Bayesian inference. </p>
 
   <div class="viz" id="viz-roadmap-network">
     <div class="viz-description">Click a box to jump to that section.</div>
@@ -217,17 +217,30 @@
   <h3 id="unit-clt" data-next="unit-inference unit-ci unit-likelihood" data-group="probability" data-col="1" data-region="frequentist" data-node-sub="x̄ ≈ N(μ, σ²/n)">The CLT</h3>
 
   <h3 id="unit-ci" data-group="probability" data-col="1" data-row="5" data-region="frequentist fisherian" data-node-sub="θ̂ ± 1.96 · se">Confidence intervals &amp; hypothesis tests</h3>
+  <ul>
+    <li><span class="def" id="def-hypothesis-testing-list" data-concept="def-hypothesis-testing">hypothesis testing</span></li>
+    <li><span class="def" id="def-confidence-intervals-list" data-concept="def-confidence-intervals">confidence intervals</span></li>
+  </ul>
 
   <h3 id="unit-conditioning" data-next="unit-markov unit-like" data-group="probability" data-col="2.7" data-node-sub="P(A | B)">Conditional probability/expectation</h3>
 
   <h3 id="unit-like" data-next="unit-bayes unit-likelihood" data-group="probability" data-col="2.2" data-node-sub="L(θ | data) = p(data | θ)">Likelihood</h3>
 
   <h3 id="unit-markov" data-next="unit-bayes" data-group="probability" data-col="3.2" data-region-dotted="bayesian" data-node-sub="p(x_{t+1} | x_t)">Markov chains</h3>
+  <ul>
+    <li><span class="def" id="def-markov-chains-list" data-concept="def-markov-chains">Markov chains</span></li>
+  </ul>
 
   <h3 id="unit-likelihood" data-group="probability" data-row="5" data-col="2.2" data-region="frequentist fisherian" data-node-sub="θ̂ = argmax L(θ)">Maximum likelihood</h3>
+  <ul>
+    <li><span class="def" id="def-mle-list" data-concept="def-mle">maximum likelihood estimation</span></li>
+  </ul>
   <p>Example: the <span class="def" id="def-likelihood">likelihood</span> is …</p>
 
   <h3 id="unit-bayes" data-group="probability" data-row="4" data-col="3.2" data-region="bayesian" data-node-sub="p(θ | data)">Bayesian inference</h3>
+  <ul>
+    <li><span class="def" id="def-bayesian-inference-list" data-concept="def-bayesian-inference">Bayesian inference</span></li>
+  </ul>
   <p>Example: the <span class="def" id="def-posterior">posterior</span> is …</p>
 
   <!-- ============================================================
@@ -235,6 +248,41 @@
        Never displayed directly; viz.js copies it into the box on hover.
        ============================================================ -->
   <section id="concept-data" hidden>
+    <div class="concept" data-for="def-hypothesis-testing">
+      <!-- hypothesis testing -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-confidence-intervals">
+      <!-- confidence intervals -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-markov-chains">
+      <!-- Markov chains -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-mle">
+      <!-- maximum likelihood estimation -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
+    <div class="concept" data-for="def-bayesian-inference">
+      <!-- Bayesian inference -->
+      <div data-field="definition"></div>
+      <div data-field="why"></div>
+      <div data-field="where"></div>
+      <div data-field="example"></div>
+    </div>
     <div class="concept" data-for="def-nonparametric">
       <!-- non-parametric inference -->
       <div data-field="definition">learning something about your data when you don’t want to make assumptions</div>
