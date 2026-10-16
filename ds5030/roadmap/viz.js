@@ -43,8 +43,10 @@ window.GLOSSARY = {
     if (b && b.tagName === 'LI') return b.closest('ul, ol') || b;
     return b || node;
   }
+  // A repeat mention can share another term's box: data-concept="def-…".
+  const conceptKey = def => def.getAttribute('data-concept') || def.id;
   function termName(def) {
-    const c = conceptData.get(def.id);
+    const c = conceptData.get(conceptKey(def));
     return (c && c.getAttribute('data-title')) || def.textContent.trim();
   }
 
@@ -55,7 +57,7 @@ window.GLOSSARY = {
     active = def;
     def.classList.add('def-active');
 
-    const c = conceptData.get(def.id);
+    const c = conceptData.get(conceptKey(def));
     let html = '<button type="button" class="concept-close" aria-label="Close">×</button>' +
       '<div class="concept-title">' + termName(def) + '</div><dl class="concept-fields">';
     FIELDS.forEach(([key, label]) => {
