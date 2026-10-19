@@ -325,7 +325,6 @@
     history = [cur];
     if (P) longRun = computeLongRun(P, cur);
     drawDiagram();
-    renderDrawBar(null);
     renderHistory();
   }
 
@@ -344,7 +343,6 @@
     cur = next; steps += 1; counts[next] += 1;
     history.push(next); if (history.length > 200) history.shift();
     if (animate) {
-      renderDrawBar(u, from);
       moveToken(from, next);
     }
   }
@@ -372,27 +370,7 @@
     anim = requestAnimationFrame(frame);
   }
 
-  function renderDrawBar(u, from) {
-    const bar = $('draw-bar');
-    bar.innerHTML = '';
-    if (!P) return;
-    const i = from === undefined ? cur : from;
-    P[i].forEach((p, j) => {
-      if (p < 1e-9) return;
-      const seg = document.createElement('div');
-      seg.className = 'seg';
-      seg.style.width = (100 * p) + '%';
-      seg.style.background = color(j);
-      seg.title = `${names[j]}: ${fmt(p, 3)}`;
-      if (p >= 0.08) seg.textContent = `${names[j]} ${fmt(p)}`;
-      bar.appendChild(seg);
-    });
-    if (u !== null) {
-      const m = document.createElement('div');
-      m.className = 'u'; m.style.left = (100 * u) + '%';
-      bar.appendChild(m);
-    }
-  }
+
 
   // Scrolling strip of visited states: the newest state enters on the right and
   // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
@@ -534,8 +512,7 @@
   $('btn-step').addEventListener('click', () => { stop(); step(true); });
   $('btn-jump').addEventListener('click', () => {
     stop();
-    for (let k = 0; k < 1000; k++) step(false);
-    renderDrawBar(null); drawDiagram(); renderHistory();
+    for (let k = 0; k < 1000; k++) step(false); drawDiagram(); renderHistory();
   });
   $('btn-reset').addEventListener('click', resetWalk);
   $('start-state').addEventListener('change', resetWalk);
