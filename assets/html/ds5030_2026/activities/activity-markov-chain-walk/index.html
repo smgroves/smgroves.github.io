@@ -6,7 +6,7 @@
 <title>Markov Chain Walk — Understanding Uncertainty</title>
 
 <link rel="stylesheet" href="../shared/lab-base.css?v=9">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=4">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
 </head>
 <body class="mc-page">
@@ -34,6 +34,16 @@
         <div class="mc-diagram-wrap">
           <svg id="mc-diagram" viewBox="0 0 600 600" role="img" aria-label="State diagram of the Markov chain"></svg>
         </div>
+        <div class="mc-walk">
+          <div class="viz-title">Where the walk has been</div>
+          <div class="mc-stat-row">
+            <div><span class="mc-big mono" id="step-count">0</span> <span class="mc-unit">steps</span></div>
+            <span class="mc-unit">newest on the right</span>
+          </div>
+          <div class="mc-ticker" aria-label="Most recent states visited, newest on the right">
+            <div class="mc-seq" id="seq"></div>
+          </div>
+        </div>
         <div class="mc-controls" role="group" aria-label="Walk controls">
           <button type="button" class="btn primary" id="btn-play">Play</button>
           <button type="button" class="btn" id="btn-step">Step</button>
@@ -52,24 +62,14 @@
           <label class="mc-check" for="show-labels"><input type="checkbox" id="show-labels" checked> Show probabilities</label>
         </div>
 
-        <div class="mc-draw" aria-live="polite">
-          <div class="mc-draw-head">
-            <span id="draw-text">Press Step to take the first step.</span>
-          </div>
+        <div class="mc-draw">
           <div class="mc-draw-bar" id="draw-bar"></div>
           <div class="viz-caption">How a step is drawn: the current row splits [0, 1) into one piece per state, sized by its probability. A uniform random number u lands in one piece, and that piece is tomorrow.</div>
         </div>
       </div>
 
       <div class="viz" id="viz-history">
-        <div class="viz-title">Where the walk has been</div>
-        <div class="mc-stat-row">
-          <div><span class="mc-big mono" id="step-count">0</span> <span class="mc-unit">steps</span></div>
-          <span class="mc-unit">newest on the right</span>
-        </div>
-        <div class="mc-ticker" aria-label="Most recent states visited, newest on the right">
-          <div class="mc-seq" id="seq"></div>
-        </div>
+        <div class="viz-title">Time spent in each state</div>
         <div class="mc-bars" id="share-bars"></div>
         <div class="viz-caption">Bars: the share of steps the walk has spent in each state so far. Black tick: the long-run share the transition matrix predicts from this start. Run +1,000 steps a few times and the bars settle onto the ticks.</div>
       </div>
@@ -115,6 +115,6 @@
 </main>
 
 <script src="../shared/lab-base.js?v=7"></script>
-<script src="viz.js?v=5"></script>
+<script src="viz.js?v=6"></script>
 </body>
 </html>

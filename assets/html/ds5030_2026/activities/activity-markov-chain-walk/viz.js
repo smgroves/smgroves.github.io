@@ -324,7 +324,6 @@
     counts = new Array(names.length).fill(0);
     history = [cur];
     if (P) longRun = computeLongRun(P, cur);
-    $('draw-text').textContent = P ? `Starting in ${names[cur]}. Press Step or Play.` : '';
     drawDiagram();
     renderDrawBar(null);
     renderHistory();
@@ -346,7 +345,6 @@
     history.push(next); if (history.length > 200) history.shift();
     if (animate) {
       renderDrawBar(u, from);
-      $('draw-text').innerHTML = `In <strong>${esc(names[from])}</strong>: u = <span class="mono">${u.toFixed(3)}</span> lands in <strong>${esc(names[next])}</strong>'s piece, so tomorrow is <strong>${esc(names[next])}</strong>.`;
       moveToken(from, next);
     }
   }
@@ -537,7 +535,6 @@
   $('btn-jump').addEventListener('click', () => {
     stop();
     for (let k = 0; k < 1000; k++) step(false);
-    $('draw-text').innerHTML = `Took 1,000 steps without animation. Now in <strong>${esc(names[cur])}</strong>.`;
     renderDrawBar(null); drawDiagram(); renderHistory();
   });
   $('btn-reset').addEventListener('click', resetWalk);
