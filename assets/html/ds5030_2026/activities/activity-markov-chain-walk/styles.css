@@ -1,0 +1,145 @@
+/* ============================================================
+ * Markov Chain Walk — page styles.
+ * Palette, type, .viz / .btn chrome come from ../shared/lab-base.css;
+ * this sheet is additive. State colors s0–s9 are drawn from the
+ * site's theme colors (purple, cyan, orange, blue, green, ...).
+ * ============================================================ */
+:root {
+  --s0: #b509ac; --s1: #2698ba; --s2: #f29105; --s3: #00369f; --s4: #00ab37;
+  --s5: #f92080; --s6: #b8960a; --s7: #b71c1c; --s8: #7f9418; --s9: #6b6b73;
+  --edge: #b9b9c2;
+}
+
+/* This page is a tool: give it more width than a reading page. */
+body.mc-page main { padding-top: 64px; max-width: 1180px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+body.mc-page .lede { max-width: 760px; }
+
+.mc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.mc-main, .mc-side { min-width: 0; }
+.mc-layout .viz { margin: 0 0 22px 0; }
+@media (max-width: 920px) { .mc-layout { grid-template-columns: minmax(0, 1fr); } }
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ---------------- diagram ---------------- */
+.mc-diagram-wrap { background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; }
+#mc-diagram { display: block; width: 100%; height: auto; max-height: 560px; }
+#mc-diagram .edge { fill: none; stroke: var(--edge); transition: stroke 0.15s, opacity 0.15s; }
+#mc-diagram .edge-label {
+  font-family: var(--mono); font-size: 13px; fill: var(--ink-soft);
+  paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round;
+}
+#mc-diagram .edge-label.dim { fill: var(--ink-mute); opacity: 0.55; }
+#mc-diagram .node circle { stroke: var(--bg); stroke-width: 3; transition: stroke 0.15s; }
+#mc-diagram .node.current circle.ring { stroke: var(--ink); stroke-width: 3.5; fill: none; }
+#mc-diagram .node text {
+  font-family: var(--sans); font-weight: 700; fill: #fff; pointer-events: none;
+}
+#mc-diagram .token { stroke: #fff; stroke-width: 2.5; }
+
+/* ---------------- controls ---------------- */
+.mc-controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin-top: 14px;
+}
+.mc-field {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--sans); font-size: 13px; color: var(--ink-soft);
+}
+.mc-field input[type="number"] { width: 6.5em; }
+.mc-field input, .mc-field select, .mc-input input {
+  font-family: var(--mono); font-size: 13px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; padding: 4px 6px;
+}
+.mc-field input[type="range"] { padding: 0; width: 110px; accent-color: var(--accent); }
+.mc-field select { font-family: var(--sans); }
+.mc-block { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.mc-block select { width: 100%; }
+.mc-check { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 13px; color: var(--ink-soft); }
+.mc-check input { accent-color: var(--accent); }
+#speed-out { min-width: 3.2em; color: var(--ink); }
+.btn:focus-visible, .mc-field input:focus-visible, .mc-field select:focus-visible, .mc-input input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+
+/* ---------------- the draw ---------------- */
+.mc-draw { margin-top: 16px; }
+.mc-draw-head { font-family: var(--sans); font-size: 14px; color: var(--ink); margin-bottom: 6px; min-height: 1.4em; }
+.mc-draw-head .mono { font-size: 13px; }
+.mc-draw-bar {
+  position: relative; display: flex; height: 30px; border-radius: 5px; overflow: hidden;
+  border: 1px solid var(--rule); background: var(--zero);
+}
+.mc-draw-bar .seg {
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; color: #fff; overflow: hidden; white-space: nowrap;
+  border-right: 1px solid var(--bg);
+}
+.mc-draw-bar .seg:last-of-type { border-right: none; }
+.mc-draw-bar .u {
+  position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px;
+  background: var(--ink); border-radius: 2px; box-shadow: 0 0 0 1.5px var(--bg);
+  transition: left 0.25s ease-out;
+}
+
+/* ---------------- history ---------------- */
+.mc-stat-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 12px; }
+.mc-big { font-size: 28px; font-weight: 600; color: var(--ink); }
+.mc-unit { font-family: var(--sans); font-size: 13px; color: var(--ink-mute); }
+.mc-seq { display: flex; flex-wrap: wrap; gap: 3px; min-width: 0; flex: 1; }
+.mc-seq .chip {
+  font-family: var(--mono); font-size: 11px; color: #fff; border-radius: 3px;
+  padding: 1px 5px; line-height: 1.5; max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mc-seq .chip.latest { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+.mc-bars { display: grid; gap: 7px; }
+.mc-bar-row { display: grid; grid-template-columns: minmax(3.5em, 7.5em) minmax(0, 1fr) 7.5em; gap: 10px; align-items: center; }
+.mc-bar-name { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-bar-track { position: relative; height: 18px; background: var(--zero); border-radius: 3px; }
+.mc-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; transition: width 0.2s; }
+.mc-bar-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink); }
+.mc-bar-num { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------------- input + P tables ---------------- */
+.mc-preset-note { font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 6px 0 12px 0; }
+.mc-n-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px 0; }
+.mc-label { font-family: var(--sans); font-size: 13px; color: var(--ink-soft); margin-right: 2px; }
+.mc-sq { width: 30px; padding: 4px 0; text-align: center; font-weight: 700; }
+.mc-n { min-width: 1.6em; text-align: center; font-size: 15px; }
+.mc-hint { font-family: var(--sans); font-size: 12px; color: var(--ink-mute); }
+
+.mc-table-wrap { overflow-x: auto; max-width: 100%; }
+.mc-input, .mc-p { border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+.mc-input th, .mc-p th {
+  font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--ink-soft);
+  padding: 3px 5px; text-align: center; white-space: nowrap;
+}
+.mc-input th.corner, .mc-p th.corner { font-weight: 400; color: var(--ink-mute); font-size: 11px; text-align: left; }
+.mc-input td { padding: 2px; }
+.mc-input input { width: 4.6em; text-align: right; padding: 3px 5px; }
+.mc-input input.name { width: 6.5em; text-align: left; font-family: var(--sans); font-weight: 700; }
+.mc-input input.bad { border-color: var(--s7); background: #fbe9e9; }
+.mc-input .rowsum { color: var(--ink-mute); padding-left: 8px; text-align: right; }
+.mc-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+.mc-p td { padding: 4px 7px; text-align: right; font-variant-numeric: tabular-nums; border: 1px solid var(--bg-viz); }
+.mc-p td.sum { color: var(--ink-mute); background: none; }
+.mc-p th.rowh { text-align: left; }
+
+.mc-error {
+  margin-top: 10px; padding: 8px 12px; border-radius: 6px;
+  background: #fbe9e9; border-left: 3px solid var(--s7);
+  font-family: var(--sans); font-size: 13px; color: var(--ink);
+}
+
+/* Presentation mode: keep everything, just bigger. */
+body.presentation-mode.mc-page main { max-width: 1400px; }
+@media (prefers-reduced-motion: reduce) {
+  .mc-draw-bar .u, .mc-bar-fill, #mc-diagram .edge { transition: none; }
+}

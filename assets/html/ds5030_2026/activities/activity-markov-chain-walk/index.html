@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markov Chain Walk — Understanding Uncertainty</title>
+
+<link rel="stylesheet" href="../shared/lab-base.css?v=9">
+<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+</head>
+<body class="mc-page">
+
+<button type="button" id="present-toggle" class="present-toggle" title="Toggle presentation mode (P)">
+  <span class="present-icon">◧</span>
+  <span class="present-label">Present</span>
+</button>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Understanding Uncertainty · Interactive · Week 9: Markov chains</div>
+    <h1>Markov Chain Walk</h1>
+    <div class="subtitle">Type in a transition matrix or a joint table, then watch one random walk move through it</div>
+  </header>
+
+  <p class="lede keep-in-present">Each row of the table is <strong>today's state</strong>; each column is <strong>tomorrow's</strong>. You can enter a transition matrix, a joint table, or raw counts: the page divides every row by its row sum, so each row becomes the conditional PMF pr[tomorrow | today]. That row is all the chain uses to pick its next step.</p>
+
+  <div class="mc-layout">
+    <!-- ======================= left: the chain ======================= -->
+    <section class="mc-main">
+      <div class="viz" id="viz-chain">
+        <div class="viz-title">The chain</div>
+        <div class="viz-description">Arrows go from today's state to tomorrow's, labeled with pr[tomorrow | today]; thicker arrows are more likely. The colored arrows leave the current state: they are the row the next step is drawn from. With more than three states, only those arrows are labeled.</div>
+        <div class="mc-diagram-wrap">
+          <svg id="mc-diagram" viewBox="0 0 600 600" role="img" aria-label="State diagram of the Markov chain"></svg>
+        </div>
+        <div class="mc-controls" role="group" aria-label="Walk controls">
+          <button type="button" class="btn primary" id="btn-play">Play</button>
+          <button type="button" class="btn" id="btn-step">Step</button>
+          <button type="button" class="btn" id="btn-jump">+1,000 steps</button>
+          <button type="button" class="btn" id="btn-reset">Reset walk</button>
+          <label class="mc-field" for="speed">Speed
+            <input type="range" id="speed" min="0" max="100" value="35">
+            <span class="mono" id="speed-out">2/s</span>
+          </label>
+          <label class="mc-field" for="start-state">Start in
+            <select id="start-state"></select>
+          </label>
+          <label class="mc-field" for="seed">Seed
+            <input type="number" id="seed" value="5030" min="0" step="1">
+          </label>
+          <label class="mc-check" for="show-labels"><input type="checkbox" id="show-labels" checked> Show probabilities</label>
+        </div>
+
+        <div class="mc-draw" aria-live="polite">
+          <div class="mc-draw-head">
+            <span id="draw-text">Press Step to take the first step.</span>
+          </div>
+          <div class="mc-draw-bar" id="draw-bar"></div>
+          <div class="viz-caption">How a step is drawn: the current row splits [0, 1) into one piece per state, sized by its probability. A uniform random number u lands in one piece, and that piece is tomorrow.</div>
+        </div>
+      </div>
+
+      <div class="viz" id="viz-history">
+        <div class="viz-title">Where the walk has been</div>
+        <div class="mc-stat-row">
+          <div><span class="mc-big mono" id="step-count">0</span> <span class="mc-unit">steps</span></div>
+          <div class="mc-seq" id="seq" aria-label="Most recent states visited"></div>
+        </div>
+        <div class="mc-bars" id="share-bars"></div>
+        <div class="viz-caption">Bars: the share of steps the walk has spent in each state so far. Black tick: the long-run share the transition matrix predicts from this start. Run +1,000 steps a few times and the bars settle onto the ticks.</div>
+      </div>
+    </section>
+
+    <!-- ======================= right: the input ======================= -->
+    <aside class="mc-side">
+      <div class="viz" id="viz-input">
+        <div class="viz-title">Your table</div>
+        <label class="mc-field mc-block" for="preset">Load an example
+          <select id="preset"></select>
+        </label>
+        <div class="mc-preset-note" id="preset-note"></div>
+
+        <div class="mc-n-row">
+          <span class="mc-label">States</span>
+          <button type="button" class="btn mc-sq" id="n-minus" aria-label="Remove a state">−</button>
+          <span class="mono mc-n" id="n-out">2</span>
+          <button type="button" class="btn mc-sq" id="n-plus" aria-label="Add a state">+</button>
+          <span class="mc-hint">up to 10</span>
+        </div>
+
+        <div class="mc-table-wrap">
+          <table class="mc-input" id="mc-input"></table>
+        </div>
+        <div class="viz-caption">Rows: today. Columns: tomorrow. Entries can be fractions (1/3), decimals (0.25), or counts (86). Edit a state's name in the left column.</div>
+        <div class="mc-error" id="mc-error" hidden></div>
+      </div>
+
+      <div class="viz" id="viz-matrix">
+        <div class="viz-title">Transition matrix used</div>
+        <div class="mc-table-wrap">
+          <table class="mc-p" id="mc-p"></table>
+        </div>
+        <div class="viz-caption">Each row divided by its row sum, so every row sums to 1: pr[tomorrow = column | today = row].</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    DS 5030 · Understanding Uncertainty · Fall 2026. Inspired by Victor Powell and Lewis Lehe's <a href="https://setosa.io/ev/markov-chains/">Markov Chains, explained visually</a>.
+  </footer>
+</main>
+
+<script src="../shared/lab-base.js?v=7"></script>
+<script src="viz.js?v=4"></script>
+</body>
+</html>
