@@ -91,12 +91,21 @@ body.mc-page .lede { max-width: 760px; }
 .mc-stat-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 12px; }
 .mc-big { font-size: 28px; font-weight: 600; color: var(--ink); }
 .mc-unit { font-family: var(--sans); font-size: 13px; color: var(--ink-mute); }
-.mc-seq { display: flex; flex-wrap: wrap; gap: 3px; min-width: 0; flex: 1; }
-.mc-seq .chip {
-  font-family: var(--mono); font-size: 11px; color: #fff; border-radius: 3px;
-  padding: 1px 5px; line-height: 1.5; max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.mc-stat-row { justify-content: space-between; }
+.mc-ticker {
+  position: relative; overflow: hidden; margin-bottom: 16px;
+  padding: 6px 6px 6px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 64px);
+          mask-image: linear-gradient(to right, transparent 0, #000 64px);
 }
-.mc-seq .chip.latest { outline: 2px solid var(--ink); outline-offset: 1px; }
+.mc-seq { display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: 3px; width: 100%; will-change: transform; }
+.mc-seq .chip {
+  flex: 0 0 26px; width: 26px; height: 26px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--sans); font-size: 10px; font-weight: 700; color: #fff;
+  overflow: hidden; white-space: nowrap;
+}
+.mc-seq .chip.latest { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
 
 .mc-bars { display: grid; gap: 7px; }
 .mc-bar-row { display: grid; grid-template-columns: minmax(3.5em, 7.5em) minmax(0, 1fr) 7.5em; gap: 10px; align-items: center; }

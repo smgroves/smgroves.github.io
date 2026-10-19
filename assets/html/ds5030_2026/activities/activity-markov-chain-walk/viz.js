@@ -314,8 +314,10 @@
   }
 
   // ---------------------------------------------------------------- walk
+  let walkId = 0;
   function resetWalk() {
     stop();
+    walkId += 1;
     rng = makeRng(parseInt($('seed').value, 10) || 0);
     cur = Math.min(parseInt($('start-state').value, 10) || 0, names.length - 1);
     steps = 0;
@@ -394,18 +396,44 @@
     }
   }
 
+  // Scrolling strip of visited states: the newest state enters on the right and
+  // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
+  const TICK_W = 29, TICK_KEEP = 80;
+  let tickerShown = -1, tickerWalk = -1;
+  function tickerChip(s) {
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.style.background = color(s);
+    c.textContent = names[s].slice(0, 3);
+    c.title = names[s];
+    return c;
+  }
+  function renderTicker() {
+    const row = $('seq');
+    const fresh = steps - tickerShown;
+    if (fresh === 0 && tickerWalk === walkId) return;
+    const slide = tickerWalk === walkId && fresh === 1 && !reduceMotion && stepInterval() >= 120;
+    if (slide) {
+      row.appendChild(tickerChip(history[history.length - 1]));
+      while (row.children.length > TICK_KEEP) row.firstChild.remove();
+      row.style.transition = 'none';
+      row.style.transform = `translateX(${TICK_W}px)`;
+      void row.offsetWidth;                       // commit the start position before animating
+      row.style.transition = `transform ${Math.min(350, stepInterval() * 0.6)}ms ease-out`;
+      row.style.transform = 'translateX(0)';
+    } else {
+      row.innerHTML = '';
+      history.slice(-TICK_KEEP).forEach((st) => row.appendChild(tickerChip(st)));
+      row.style.transition = 'none';
+      row.style.transform = 'translateX(0)';
+    }
+    Array.from(row.children).forEach((c, k, all) => c.classList.toggle('latest', k === all.length - 1));
+    tickerShown = steps; tickerWalk = walkId;
+  }
+
   function renderHistory() {
     $('step-count').textContent = steps.toLocaleString();
-    const seq = $('seq');
-    seq.innerHTML = '';
-    const recent = history.slice(-36);
-    recent.forEach((s, k) => {
-      const c = document.createElement('span');
-      c.className = 'chip' + (k === recent.length - 1 ? ' latest' : '');
-      c.style.background = color(s);
-      c.textContent = names[s];
-      seq.appendChild(c);
-    });
+    renderTicker();
     const bars = $('share-bars');
     bars.innerHTML = '';
     if (!P) return;
