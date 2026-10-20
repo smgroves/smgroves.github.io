@@ -6,7 +6,7 @@
 <title>Markov Chain Walk — Understanding Uncertainty</title>
 
 <link rel="stylesheet" href="../shared/lab-base.css?v=9">
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
 </head>
 <body class="mc-page">
@@ -17,48 +17,6 @@
 </button>
 
 <main>
-  <section class="viz mc-walk" id="viz-walk">
-    <div class="viz-title">Two walks, same long-run mix of states</div>
-    <div class="mc-stat-row">
-      <div><span class="mc-big mono" id="step-count">0</span> <span class="mc-unit">steps</span></div>
-      <span class="mc-unit">newest on the right</span>
-    </div>
-    <div class="mc-strip-head">
-      <span class="mc-strip-name" id="name-ind">Independent draws</span>
-      <span class="mc-strip-sub" id="sub-ind"></span>
-      <span class="mc-stay mono" id="stay-ind"></span>
-    </div>
-    <div class="mc-ticker" aria-label="Independent draws, newest on the right">
-      <div class="mc-seq" id="seq-ind"></div>
-    </div>
-    <div class="mc-strip-head">
-      <span class="mc-strip-name" id="name-mc">Markov chain</span>
-      <span class="mc-strip-sub" id="sub-mc"></span>
-      <span class="mc-stay mono" id="stay-mc"></span>
-    </div>
-    <div class="mc-ticker" aria-label="Markov chain walk, newest on the right">
-      <div class="mc-seq" id="seq"></div>
-    </div>
-    <div class="mc-controls" role="group" aria-label="Walk controls">
-      <button type="button" class="btn primary" id="btn-play">Play</button>
-      <button type="button" class="btn" id="btn-step">Step</button>
-      <button type="button" class="btn" id="btn-jump">+1,000 steps</button>
-      <button type="button" class="btn" id="btn-reset">Reset walk</button>
-      <label class="mc-field" for="speed">Speed
-        <input type="range" id="speed" min="0" max="100" value="35">
-        <span class="mono" id="speed-out">2/s</span>
-      </label>
-      <label class="mc-field" for="start-state">Start in
-        <select id="start-state"></select>
-      </label>
-      <label class="mc-field" for="seed">Seed
-        <input type="number" id="seed" value="5030" min="0" step="1">
-      </label>
-      <label class="mc-check" for="label-strips"><input type="checkbox" id="label-strips" checked> Label the strips</label>
-      <label class="mc-check" for="show-chain"><input type="checkbox" id="show-chain" checked> Show the chain and table</label>
-    </div>
-  </section>
-
   <header class="hero">
     <div class="eyebrow">Understanding Uncertainty · Interactive · Week 9: Markov chains</div>
     <h1>Markov Chain Walk</h1>
@@ -76,7 +34,33 @@
         <div class="mc-diagram-wrap">
           <svg id="mc-diagram" viewBox="0 0 600 600" role="img" aria-label="State diagram of the Markov chain"></svg>
         </div>
-        <label class="mc-check mc-under" for="show-labels"><input type="checkbox" id="show-labels" checked> Show probabilities on the arrows</label>
+        <div class="mc-walk">
+          <div class="viz-title">Where the walk has been</div>
+          <div class="mc-stat-row">
+            <div><span class="mc-big mono" id="step-count">0</span> <span class="mc-unit">steps</span></div>
+            <span class="mc-unit">newest on the right</span>
+          </div>
+          <div class="mc-ticker" aria-label="Most recent states visited, newest on the right">
+            <div class="mc-seq" id="seq"></div>
+          </div>
+        </div>
+        <div class="mc-controls" role="group" aria-label="Walk controls">
+          <button type="button" class="btn primary" id="btn-play">Play</button>
+          <button type="button" class="btn" id="btn-step">Step</button>
+          <button type="button" class="btn" id="btn-jump">+1,000 steps</button>
+          <button type="button" class="btn" id="btn-reset">Reset walk</button>
+          <label class="mc-field" for="speed">Speed
+            <input type="range" id="speed" min="0" max="100" value="35">
+            <span class="mono" id="speed-out">2/s</span>
+          </label>
+          <label class="mc-field" for="start-state">Start in
+            <select id="start-state"></select>
+          </label>
+          <label class="mc-field" for="seed">Seed
+            <input type="number" id="seed" value="5030" min="0" step="1">
+          </label>
+          <label class="mc-check" for="show-labels"><input type="checkbox" id="show-labels" checked> Show probabilities</label>
+        </div>
 
       </div>
 
@@ -127,6 +111,6 @@
 </main>
 
 <script src="../shared/lab-base.js?v=7"></script>
-<script src="viz.js?v=11"></script>
+<script src="viz.js?v=12"></script>
 </body>
 </html>

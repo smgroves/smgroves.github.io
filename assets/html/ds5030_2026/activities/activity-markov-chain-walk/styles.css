@@ -92,17 +92,10 @@ body.mc-page .lede { max-width: 760px; }
 .mc-big { font-size: 28px; font-weight: 600; color: var(--ink); }
 .mc-unit { font-family: var(--sans); font-size: 13px; color: var(--ink-mute); }
 .mc-stat-row { justify-content: space-between; }
-.mc-walk { margin: 0 0 22px 0; }
-.mc-under { margin-top: 10px; }
-body.mc-hide-chain .mc-layout { display: none; }
+.mc-walk { margin-top: 14px; }
 .mc-walk .mc-stat-row { margin-bottom: 8px; }
-.mc-walk .mc-big { font-size: 26px; }
-.mc-walk .mc-seq .chip { flex-basis: 30px; width: 30px; height: 30px; font-size: 11px; }
-.mc-walk .mc-ticker { margin-bottom: 14px; }
-.mc-strip-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 6px; }
-.mc-strip-name { font-family: var(--sans); font-size: 15px; font-weight: 700; color: var(--ink); }
-.mc-strip-sub { font-family: var(--serif); font-size: 13.5px; font-style: italic; color: var(--ink-soft); flex: 1; min-width: 12em; }
-.mc-stay { font-size: 12px; color: var(--ink-soft); }
+.mc-walk .mc-big { font-size: 22px; }
+.mc-walk .mc-ticker { margin-bottom: 0; }
 .mc-ticker {
   position: relative; overflow: hidden; margin-bottom: 16px;
   padding: 6px 6px 6px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);

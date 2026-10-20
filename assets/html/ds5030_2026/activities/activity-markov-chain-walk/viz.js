@@ -73,8 +73,6 @@
   let P = null;          // n x n row-normalized, or null if invalid
   let longRun = [];
   let cur = 0, steps = 0, counts = [], history = [];
-  // Comparison walk: every step drawn independently from the chain's long-run shares (no memory).
-  let indRng = null, indCur = 0, indHistory = [], indStays = 0, mcStays = 0;
   let rng = null;
   let playing = false, timer = null, anim = null;
   let edgePaths = {};    // "i-j" -> SVG path element
@@ -326,31 +324,8 @@
     counts = new Array(names.length).fill(0);
     history = [cur];
     if (P) longRun = computeLongRun(P, cur);
-    indRng = makeRng(((parseInt($('seed').value, 10) || 0) ^ 0x9e3779b9) >>> 0);
-    indStays = 0; mcStays = 0;
-    indCur = P ? drawFrom(longRun, indRng()) : 0;
-    indHistory = [indCur];
-    renderStripLabels();
     drawDiagram();
     renderHistory();
-  }
-
-  // Index of the piece of [0, 1) that u lands in, for probabilities p.
-  function drawFrom(p, u) {
-    let acc = 0;
-    for (let j = 0; j < p.length; j++) { acc += p[j]; if (u < acc) return j; }
-    return p.length - 1;
-  }
-
-  function renderStripLabels() {
-    const labeled = $('label-strips').checked;
-    $('name-ind').textContent = labeled ? 'Independent draws' : 'Sequence A';
-    $('name-mc').textContent = labeled ? 'Markov chain' : 'Sequence B';
-    const pi = P ? names.map((nm, i) => `pr[${nm}] = ${fmt(longRun[i])}`).join(', ') : '';
-    $('sub-ind').textContent = labeled ? `each step drawn fresh from ${pi}, ignoring today` : '';
-    $('sub-mc').textContent = labeled ? "each step drawn from today's row of the transition matrix" : '';
-    // Unlabeled = quiz mode: hide the stay shares too, since they give the answer away.
-    $('stay-ind').hidden = !labeled; $('stay-mc').hidden = !labeled;
   }
 
   function draw() {
@@ -366,12 +341,7 @@
     const from = cur;
     const { u, next } = draw();
     cur = next; steps += 1; counts[next] += 1;
-    if (next === from) mcStays += 1;
     history.push(next); if (history.length > 200) history.shift();
-    const indNext = drawFrom(longRun, indRng());
-    if (indNext === indCur) indStays += 1;
-    indCur = indNext;
-    indHistory.push(indNext); if (indHistory.length > 200) indHistory.shift();
     if (animate) {
       moveToken(from, next);
     }
@@ -404,7 +374,7 @@
 
   // Scrolling strip of visited states: the newest state enters on the right and
   // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
-  const TICK_W = 33, TICK_KEEP = 80;
+  const TICK_W = 29, TICK_KEEP = 80;
   let tickerShown = -1, tickerWalk = -1;
   function tickerChip(s) {
     const c = document.createElement('span');
@@ -414,9 +384,13 @@
     c.title = names[s];
     return c;
   }
-  function renderTickerRow(row, hist, fresh, slide) {
+  function renderTicker() {
+    const row = $('seq');
+    const fresh = steps - tickerShown;
+    if (fresh === 0 && tickerWalk === walkId) return;
+    const slide = tickerWalk === walkId && fresh === 1 && !reduceMotion && stepInterval() >= 120;
     if (slide) {
-      row.appendChild(tickerChip(hist[hist.length - 1]));
+      row.appendChild(tickerChip(history[history.length - 1]));
       while (row.children.length > TICK_KEEP) row.firstChild.remove();
       row.style.transition = 'none';
       row.style.transform = `translateX(${TICK_W}px)`;
@@ -425,21 +399,11 @@
       row.style.transform = 'translateX(0)';
     } else {
       row.innerHTML = '';
-      hist.slice(-TICK_KEEP).forEach((st) => row.appendChild(tickerChip(st)));
+      history.slice(-TICK_KEEP).forEach((st) => row.appendChild(tickerChip(st)));
       row.style.transition = 'none';
       row.style.transform = 'translateX(0)';
     }
     Array.from(row.children).forEach((c, k, all) => c.classList.toggle('latest', k === all.length - 1));
-  }
-  function renderTicker() {
-    const fresh = steps - tickerShown;
-    if (fresh === 0 && tickerWalk === walkId) return;
-    const slide = tickerWalk === walkId && fresh === 1 && !reduceMotion && stepInterval() >= 120;
-    renderTickerRow($('seq-ind'), indHistory, fresh, slide);
-    renderTickerRow($('seq'), history, fresh, slide);
-    const stay = (k) => (steps ? `stayed in the same state on ${Math.round(100 * k / steps)}% of steps` : '');
-    $('stay-ind').textContent = stay(indStays);
-    $('stay-mc').textContent = stay(mcStays);
     tickerShown = steps; tickerWalk = walkId;
   }
 
@@ -554,8 +518,6 @@
   $('start-state').addEventListener('change', resetWalk);
   $('seed').addEventListener('change', resetWalk);
   $('show-labels').addEventListener('change', drawDiagram);
-  $('label-strips').addEventListener('change', renderStripLabels);
-  $('show-chain').addEventListener('change', () => document.body.classList.toggle('mc-hide-chain', !$('show-chain').checked));
   $('speed').addEventListener('input', updateSpeedLabel);
 
   updateSpeedLabel();
