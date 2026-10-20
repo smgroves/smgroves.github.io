@@ -18,10 +18,10 @@
       note: 'The joint table of (today, tomorrow) from the 10 days S S S R R R S S R R. Rows normalize to pr[S | S] = 3/5 and pr[R | R] = 3/4, matching the cross tab from class.'
     },
     {
-      id: 'cville', label: 'Charlottesville precipitation: Dry / Wet (counts)',
-      names: ['Dry', 'Wet'],
+      id: 'cville', label: 'Charlottesville precipitation: Dry / Rainy (counts)',
+      names: ['Dry', 'Rainy'],
       table: [['86', '35'], ['37', '98']],
-      note: 'Raw counts of (current, next) observations at station US1VACRC002, 2024–2025. Wet spells persist: pr[Wet next | Wet] ≈ 0.73.'
+      note: 'Raw counts of (current, next) observations at station US1VACRC002, 2024–2025. Rainy spells persist: pr[Rainy next | Rainy] ≈ 0.73.'
     },
     {
       id: 'market', label: 'Daily market returns: Down / Up (counts)',
