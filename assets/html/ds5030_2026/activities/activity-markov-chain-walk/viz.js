@@ -374,7 +374,7 @@
 
   // Scrolling strip of visited states: the newest state enters on the right and
   // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
-  const TICK_W = 29, TICK_KEEP = 80;
+  const TICK_W = 33, TICK_KEEP = 80;
   let tickerShown = -1, tickerWalk = -1;
   function tickerChip(s) {
     const c = document.createElement('span');
@@ -518,6 +518,7 @@
   $('start-state').addEventListener('change', resetWalk);
   $('seed').addEventListener('change', resetWalk);
   $('show-labels').addEventListener('change', drawDiagram);
+  $('show-chain').addEventListener('change', () => document.body.classList.toggle('mc-hide-chain', !$('show-chain').checked));
   $('speed').addEventListener('input', updateSpeedLabel);
 
   updateSpeedLabel();

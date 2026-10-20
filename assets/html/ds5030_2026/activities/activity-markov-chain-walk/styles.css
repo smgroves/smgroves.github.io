@@ -92,9 +92,12 @@ body.mc-page .lede { max-width: 760px; }
 .mc-big { font-size: 28px; font-weight: 600; color: var(--ink); }
 .mc-unit { font-family: var(--sans); font-size: 13px; color: var(--ink-mute); }
 .mc-stat-row { justify-content: space-between; }
-.mc-walk { margin-top: 14px; }
+.mc-walk { margin: 0 0 22px 0; }
+.mc-under { margin-top: 10px; }
+body.mc-hide-chain .mc-layout { display: none; }
 .mc-walk .mc-stat-row { margin-bottom: 8px; }
-.mc-walk .mc-big { font-size: 22px; }
+.mc-walk .mc-big { font-size: 26px; }
+.mc-walk .mc-seq .chip { flex-basis: 30px; width: 30px; height: 30px; font-size: 11px; }
 .mc-walk .mc-ticker { margin-bottom: 0; }
 .mc-ticker {
   position: relative; overflow: hidden; margin-bottom: 16px;
