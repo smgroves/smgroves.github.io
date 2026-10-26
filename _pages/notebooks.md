@@ -43,7 +43,7 @@ permalink: /notebooks/
 
 <script>
 const metadata = {{ site.data.notebooks | jsonify }};
-const INTERACTIVE_BASE = "https://pluto-slider-server-production.up.railway.app/";
+const INTERACTIVE_BASE = "{{ site.pluto_server_url }}/";
 const STATIC_BASE = "https://smgroves.github.io/julia/";
 
 let allNotebooks = [];
@@ -60,7 +60,7 @@ function normalizeMeta() {
       type,
       date: new Date(dateStr),
       url: data.url || (type === "interactive"
-        ? `https://pluto-slider-server-production.up.railway.app/${key}.html`
+        ? `${INTERACTIVE_BASE}${key}.html`
         : data.static_url || `https://smgroves.github.io/julia/${key}.html`),
       binder_url: data.binder_url || null
     };

@@ -1,0 +1,43 @@
+name: deploy Pluto notebooks to Hugging Face
+
+# Needs a repository secret HF_TOKEN (Hugging Face token with write access)
+# and a repository variable HF_SPACE (e.g. "smgroves/pluto-notebooks").
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'julia/**.jl'
+      - 'hf-space/**'
+      - 'pluto-deployment-environment/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Assemble Space files
+      run: |
+        mkdir -p space/notebooks
+        cp hf-space/Dockerfile hf-space/README.md space/
+        cp -r pluto-deployment-environment space/
+        cp julia/*.jl space/notebooks/
+    - name: Upload to Space
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_SPACE: ${{ vars.HF_SPACE }}
+      run: |
+        pip install --quiet huggingface_hub
+        python - <<'PY'
+        import os
+        from huggingface_hub import HfApi
+        HfApi(token=os.environ["HF_TOKEN"]).upload_folder(
+            folder_path="space",
+            repo_id=os.environ["HF_SPACE"],
+            repo_type="space",
+            delete_patterns=["notebooks/*.jl"],
+            commit_message=f"Deploy from {os.environ['GITHUB_SHA'][:7]}",
+        )
+        PY

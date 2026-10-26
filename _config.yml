@@ -178,6 +178,9 @@ kramdown:
       line_numbers: false
       start_line: 1
 
+# Live Pluto notebooks (Hugging Face Space deployed by .github/workflows/pluto-space.yml)
+pluto_server_url: https://smgroves-pluto-notebooks.hf.space
+
 # Includes & excludes
 include: 
   - '_pages'
@@ -189,6 +192,7 @@ exclude:
   - vendor
   - pluto-deployment-environment/
   - Dockerfile.pluto
+  - hf-space/
   - Dockerfile.jekyll
   - explainers/
   - unused/
