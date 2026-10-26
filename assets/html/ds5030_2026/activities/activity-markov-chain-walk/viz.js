@@ -54,6 +54,11 @@
       note: 'Random entries from the seed. Change the seed and reload this example for a different chain.'
     },
     {
+      id: 'taxi', label: 'New York taxicabs: 38 neighborhoods (counts)',
+      map: true, start: 'Midtown',
+      note: 'Counts of (current neighborhood, next neighborhood) for 1,000 taxicabs: 38 states and 22,962,396 moves, from taxicab.pkl in class. Repeats are kept (a step can stay in the same neighborhood), and Outside Manhattan is a state, drawn east of the island. The map is schematic: each dot sits at the approximate center of its neighborhood. From Midtown the row starts Midtown 0.361, Upper East Side 0.126, Chelsea 0.072.'
+    },
+    {
       id: 'bach', label: 'Bach chorales, order 1: the state is one chord',
       chords: true, start: 'D7',
       note: 'Counts of (current chord, next chord) in 62 Bach chorales: 99 chords, 5,603 moves. Too many states to type in, so the table on the right shows only the current chord\'s row. The walk starts in D7, whose row is G 0.34, D7 0.33, Gm 0.19. Tick "Play the chords" under the chain to hear the walk.'
@@ -76,6 +81,8 @@
   let edgePaths = {};    // "i-j" -> SVG path element
   let soundable = false; // true while the loaded example's states are chord names
   let pairMode = false;  // true for the order-2 Bach example: each state is "previous current"
+  let mapMode = false;   // true for the taxicab example: drawn as a map of Manhattan
+  let bigSource = '';    // file the big example's counts come from (bach.js, taxi.js)
 
   const $ = (id) => document.getElementById(id);
   const svg = $('mc-diagram');
@@ -90,7 +97,17 @@
     if (q === 'dim' || q === 'dim7') return 'var(--s9)';           // diminished
     return 'var(--s6)';                                            // sus4, added sixth
   }
-  const color = (i) => (isBig() ? qualityColor(String(names[i]).split(' ').pop()) : `var(--s${i % 10})`);
+  // Taxicabs: color by part of the city, from the latitude of the neighborhood.
+  function regionColor(nm) {
+    if (nm === 'Outside Manhattan') return 'var(--s9)';
+    const lat = window.MC_TAXI.pos[nm][0];
+    if (lat >= 40.795) return 'var(--s0)';   // upper Manhattan
+    if (lat >= 40.761) return 'var(--s1)';   // Upper East and West Sides, Central Park
+    if (lat >= 40.736) return 'var(--s3)';   // Midtown to Gramercy
+    if (lat >= 40.700) return 'var(--s2)';   // downtown
+    return 'var(--s4)';                      // harbor islands
+  }
+  const color = (i) => (mapMode ? regionColor(names[i]) : isBig() ? qualityColor(String(names[i]).split(' ').pop()) : `var(--s${i % 10})`);
 
   // ---------------------------------------------------------------- sound
   // Chord name -> MIDI notes: root in the bass (E2 to D#3), the chord tones
@@ -221,7 +238,7 @@
     if (isBig()) {
       const td = t.insertRow().insertCell();
       td.className = 'mc-big-note';
-      td.textContent = `${n} states: too many to type in or edit here. The counts are loaded from bach.js. The row for the current chord is shown below.`;
+      td.textContent = `${n} states: too many to type in or edit here. The counts are loaded from ${bigSource}. The row for the current state is shown below.`;
       $('n-out').textContent = n;
       return;
     }
@@ -347,7 +364,8 @@
       t.textContent = 'Fix the table to draw the chain';
       return;
     }
-    if (isBig()) { drawNetwork(); renderP(); return; }
+    svg.classList.toggle('map', mapMode);
+    if (isBig()) { if (mapMode) drawMap(); else drawNetwork(); renderP(); return; }
     const { pos, r } = layout(n);
     // Two states sit side by side: crop the empty top and bottom of the square.
     svg.setAttribute('viewBox', n <= 2 ? `0 ${CY - 150} 600 300` : '0 0 600 600');
@@ -544,6 +562,112 @@
     el('circle', { id: 'token', r: 7, cx: pos[cc].x, cy: pos[cc].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
   }
 
+  // Taxicabs: a schematic map of Manhattan. Neighborhoods sit at their approximate
+  // centers (taxi.js); the shoreline is a simplified outline, not survey-accurate.
+  const MAP_K = 3400, LON0 = -74.065, LAT0 = 40.885, COSLAT = Math.cos(40.78 * Math.PI / 180);
+  const proj = ([lat, lon]) => ({ x: 12 + (lon - LON0) * COSLAT * MAP_K, y: 12 + (LAT0 - lat) * MAP_K });
+  // Manhattan's shoreline, clockwise from Spuyten Duyvil: down the Hudson, round the
+  // Battery, up the East River and the Harlem River.
+  const SHORE = [
+    [40.8780, -73.9260], [40.8725, -73.9310], [40.8650, -73.9330], [40.8600, -73.9380], [40.8517, -73.9510],
+    [40.8350, -73.9500], [40.8200, -73.9600], [40.7980, -73.9770], [40.7810, -73.9890], [40.7710, -73.9940],
+    [40.7610, -74.0020], [40.7490, -74.0090], [40.7410, -74.0100], [40.7280, -74.0110], [40.7170, -74.0140],
+    [40.7100, -74.0180], [40.7020, -74.0170], [40.7005, -74.0130], [40.7015, -74.0110], [40.7050, -74.0030],
+    [40.7080, -73.9990], [40.7095, -73.9920], [40.7100, -73.9850], [40.7120, -73.9760], [40.7200, -73.9730],
+    [40.7300, -73.9730], [40.7360, -73.9740], [40.7440, -73.9710], [40.7480, -73.9680], [40.7570, -73.9590],
+    [40.7660, -73.9500], [40.7750, -73.9430], [40.7830, -73.9410], [40.7920, -73.9350], [40.8030, -73.9300],
+    [40.8200, -73.9330], [40.8290, -73.9350], [40.8470, -73.9280], [40.8620, -73.9180], [40.8690, -73.9140],
+    [40.8760, -73.9200]
+  ];
+  const PARK = [[40.7644, -73.9730], [40.7681, -73.9819], [40.8005, -73.9582], [40.7968, -73.9493]];
+  // Small islands drawn as land patches: [lat, lon, radius in map units].
+  // Marble Hill is on the Bronx side of the Harlem River, so it gets a patch too.
+  const ISLANDS = [[40.7932, -73.9213, 11], [40.6895, -74.0168, 8], [40.6995, -74.0396, 4], [40.6892, -74.0445, 4], [40.8762, -73.9104, 6]];
+  const ROOSEVELT = [[40.7720, -73.9400], [40.7520, -73.9590]];
+  // The island's spine (Battery to Inwood): labels go on the far side of it from the center line.
+  const SPINE = [proj([40.7010, -74.0130]), proj([40.8700, -73.9200])];
+  const westOfSpine = (p) => (SPINE[1].x - SPINE[0].x) * (p.y - SPINE[0].y) - (SPINE[1].y - SPINE[0].y) * (p.x - SPINE[0].x) < 0;
+
+  function drawMap() {
+    const T = window.MC_TAXI;
+    const totals = raw.map((r) => r.map(parseEntry).reduce((a, b) => a + b, 0));
+    const tmax = Math.max(...totals);
+    const pos = names.map((nm, i) => Object.assign(proj(T.pos[nm]), { r: 2.5 + 8 * Math.sqrt(totals[i] / tmax), n: totals[i] }));
+    svg.setAttribute('viewBox', '-50 0 570 700');
+    const showLabels = $('show-labels').checked;
+    const defs = el('defs', {}, svg);
+    const mk = el('marker', { id: 'arr-cur', viewBox: '0 0 10 10', refX: '8.5', refY: '5', markerWidth: '6', markerHeight: '6', markerUnits: 'userSpaceOnUse', orient: 'auto-start-reverse' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', style: `fill:${color(cur)}` }, mk);
+
+    const poly = (pts) => pts.map((q, k) => { const p = proj(q); return `${k ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ') + ' Z';
+    el('rect', { x: -50, y: 0, width: 570, height: 700, class: 'map-water' }, svg);
+    el('path', { d: poly(SHORE), class: 'map-land' }, svg);
+    el('path', { d: poly(PARK), class: 'map-park' }, svg);
+    ISLANDS.forEach(([lat, lon, rr]) => { const p = proj([lat, lon]); el('circle', { cx: p.x, cy: p.y, r: rr, class: 'map-land' }, svg); });
+    const r0 = proj(ROOSEVELT[0]), r1 = proj(ROOSEVELT[1]);
+    el('line', { x1: r0.x, y1: r0.y, x2: r1.x, y2: r1.y, class: 'map-roosevelt' }, svg);
+    const om = pos[names.indexOf('Outside Manhattan')];
+    const note = el('text', { x: om.x, y: om.y + om.r + 36, 'text-anchor': 'middle', class: 'map-note' }, svg);
+    note.textContent = '(the rest of NYC and beyond)';
+
+    // Curved edge between two neighborhoods; a self-move is a small loop above the dot.
+    const edgeD = (i, j) => {
+      const p0 = pos[i], p1 = pos[j];
+      if (i === j) {
+        const R = p0.r;
+        return `M${(p0.x - R * 0.6).toFixed(1)},${(p0.y - R * 0.8).toFixed(1)} C${(p0.x - R - 9).toFixed(1)},${(p0.y - R - 20).toFixed(1)} ${(p0.x + R + 9).toFixed(1)},${(p0.y - R - 20).toFixed(1)} ${(p0.x + R * 0.6).toFixed(1)},${(p0.y - R * 0.8).toFixed(1)}`;
+      }
+      const dx = p1.x - p0.x, dy = p1.y - p0.y, L = Math.hypot(dx, dy) || 1;
+      const c = { x: (p0.x + p1.x) / 2 - dy / L * L * 0.15, y: (p0.y + p1.y) / 2 + dx / L * L * 0.15 };
+      const unit = (f, t) => { const ux = t.x - f.x, uy = t.y - f.y, m = Math.hypot(ux, uy) || 1; return { x: ux / m, y: uy / m }; };
+      const u0 = unit(p0, c), u1 = unit(p1, c);
+      const s = { x: p0.x + u0.x * p0.r, y: p0.y + u0.y * p0.r };
+      const e = { x: p1.x + u1.x * (p1.r + 1.5), y: p1.y + u1.y * (p1.r + 1.5) };
+      return `M${s.x.toFixed(1)},${s.y.toFixed(1)} Q${c.x.toFixed(1)},${c.y.toFixed(1)} ${e.x.toFixed(1)},${e.y.toFixed(1)}`;
+    };
+
+    const gBg = el('g', {}, svg), gCur = el('g', {}, svg), gNodes = el('g', {}, svg), gLab = el('g', {}, svg);
+    for (let i = 0; i < names.length; i++) {
+      for (let j = 0; j < names.length; j++) {
+        if (i === cur || i === j || P[i][j] < BG_EDGE) continue;
+        el('path', { d: edgeD(i, j), class: 'edge net-faint', 'stroke-width': (0.5 + 1.5 * P[i][j]).toFixed(2) }, gBg);
+      }
+    }
+    const targets = [];
+    P[cur].forEach((p, j) => {
+      if (p <= 0) return;
+      targets.push({ p, j });
+      const path = el('path', { d: edgeD(cur, j), class: 'edge', 'stroke-width': (0.6 + 5 * p).toFixed(2), 'marker-end': 'url(#arr-cur)', style: `stroke:${color(cur)};opacity:${(0.35 + 0.65 * Math.min(1, p * 3)).toFixed(2)}` }, gCur);
+      edgePaths[`${cur}-${j}`] = path;
+    });
+    targets.sort((a, b) => b.p - a.p);
+    const labelled = new Set(targets.slice(0, 6).map((t) => t.j));
+
+    names.forEach((nm, i) => {
+      const isCur = i === cur;
+      const g = el('g', { class: 'node' + (isCur ? ' current' : '') }, gNodes);
+      el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: pos[i].r.toFixed(1), style: `fill:${color(i)}` }, g);
+      if (isCur) el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: (pos[i].r + 4).toFixed(1), class: 'ring' }, g);
+      el('title', {}, g).textContent = `${nm}: ${pos[i].n.toLocaleString()} moves out`;
+      // Name the current neighborhood, the likeliest next ones, and the busiest ones.
+      if (isCur || labelled.has(i) || totals[i] / tmax > 0.3 || nm === 'Outside Manhattan') {
+        // West-side labels go left of the dot, east-side ones right; Outside Manhattan's sits below it.
+        const below = nm === 'Outside Manhattan', left = !below && westOfSpine(pos[i]);
+        const gap = pos[i].r + (isCur ? 7 : 3);
+        const x = below ? pos[i].x : pos[i].x + (left ? -gap : gap);
+        const y = below ? pos[i].y + pos[i].r + (isCur ? 16 : 12) : pos[i].y + 3.5;
+        const t = el('text', { x: x.toFixed(1), y: y.toFixed(1), 'text-anchor': below ? 'middle' : left ? 'end' : 'start', class: 'net-label map-label' + (isCur ? ' cur' : '') }, gLab);
+        t.textContent = nm + (!isCur && showLabels && labelled.has(i) ? ` ${fmt(P[cur][i])}` : '');
+        // The current neighborhood's stay probability goes on a second, smaller line.
+        if (isCur && showLabels && P[cur][cur] > 0) {
+          const ts = el('tspan', { x: x.toFixed(1), dy: 12, class: 'net-label-sub' }, t);
+          ts.textContent = `stays ${fmt(P[cur][cur])}`;
+        }
+      }
+    });
+    el('circle', { id: 'token', r: 6, cx: pos[cur].x, cy: pos[cur].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
+  }
+
   // ---------------------------------------------------------------- walk
   let walkId = 0;
   function resetWalk() {
@@ -608,13 +732,25 @@
   // Scrolling strip of visited states: the newest state enters on the right and
   // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
   const TICK_KEEP = 80;
+  // Ticker chips are small: short names for the neighborhoods (the full name is the tooltip).
+  const TAXI_ABBR = {
+    'Battery Park City': 'BPC', 'Central Park': 'CPk', 'Chelsea': 'Chel', 'Chinatown': 'Chin', 'Civic Center': 'Civ',
+    'East Harlem': 'EHar', 'East Village': 'EV', 'Ellis Island': 'Ellis', 'Financial District': 'FiDi',
+    'Flatiron District': 'Flat', 'Governors Island': 'Gov', 'Gramercy': 'Gram', 'Greenwich Village': 'GV',
+    'Harlem': 'Harl', "Hell's Kitchen": 'HK', 'Inwood': 'Inw', 'Kips Bay': 'Kips', 'Liberty Island': 'Lib',
+    'Little Italy': 'LIt', 'Lower East Side': 'LES', 'Marble Hill': 'Marb', 'Midtown': 'Mid',
+    'Morningside Heights': 'Morn', 'Murray Hill': 'MH', 'NoHo': 'NoHo', 'Nolita': 'Nol', 'Outside Manhattan': 'Out',
+    "Randall's Island": 'Rand', 'Roosevelt Island': 'Roos', 'SoHo': 'SoHo', 'Stuyvesant Town': 'Stuy',
+    'Theater District': 'Thtr', 'Tribeca': 'Tri', 'Two Bridges': '2Br', 'Upper East Side': 'UES',
+    'Upper West Side': 'UWS', 'Washington Heights': 'WaHt', 'West Village': 'WV'
+  };
   const tickW = () => (isBig() ? 45 : 29);   // chip width + gap; chord names need wider chips
   let tickerShown = -1, tickerWalk = -1;
   function tickerChip(s) {
     const c = document.createElement('span');
     c.className = 'chip' + (isBig() ? ' wide' : '');
     c.style.background = color(s);
-    c.textContent = isBig() ? curChord(s) : names[s].slice(0, 3);
+    c.textContent = mapMode ? (TAXI_ABBR[names[s]] || names[s].slice(0, 4)) : isBig() ? curChord(s) : names[s].slice(0, 3);
     c.title = names[s];
     return c;
   }
@@ -708,25 +844,27 @@
   }
 
   // Panel titles and captions that differ between drawn chains and big ones.
-  // Panel text for [small chains, Bach order 1, Bach order 2].
+  // Panel text for [small chains, Bach order 1, Bach order 2, taxicab map]; null keeps the page's own text.
   const NET_DESC = 'Each dot is a chord. Its angle is its root on the circle of fifths (C at the top, then G, D, A, ...); its distance from the center is its quality, from major on the outside through dominant seventh, added sixth, sus4, minor, minor seventh, minor sixth and diminished to diminished seventh in the middle. Bigger dots are more common chords. Faint lines are the likelier moves (p ≥ 0.10). Colors mark quality: blue major, cyan minor, red dominant seventh, gray diminished, gold sus4 or added sixth.';
   const TEXTS = [
-    ['#viz-chain > .viz-title', 'The chain', 'The chain: 99 chords', 'The chain: pairs of chords (order 2)'],
+    ['#viz-chain > .viz-title', 'The chain', 'The chain: 99 chords', 'The chain: pairs of chords (order 2)', 'The chain: a map of Manhattan'],
     ['#viz-chain > .viz-description', null,
       NET_DESC + ' The colored arrows leave the current chord: they are the row the next step is drawn from, and the six likeliest are labeled.',
-      'The state is the last two chords: the solid ring is the current chord, the dashed ring the chord before it. The same chord can have different next chords depending on what came before, so the arrows change with both. ' + NET_DESC + ' The colored arrows leave the current chord: they are the row of the current pair, and the six likeliest are labeled.'],
-    ['.mc-walk .mc-stat-row > span.mc-unit', null, null, 'newest on the right · the state is the last two chords (outlined)'],
-    ['#viz-matrix > .viz-title', 'Transition matrix used', 'Row of the transition matrix for the current chord', 'Row of the transition matrix for the current pair'],
+      'The state is the last two chords: the solid ring is the current chord, the dashed ring the chord before it. The same chord can have different next chords depending on what came before, so the arrows change with both. ' + NET_DESC + ' The colored arrows leave the current chord: they are the row of the current pair, and the six likeliest are labeled.',
+      'Each dot is a neighborhood, placed at its approximate center on a simplified map of Manhattan; Outside Manhattan sits to the east. Bigger dots are busier neighborhoods. Faint lines are the likelier moves (p ≥ 0.10). The colored arrows leave the current neighborhood: they are the row the next step is drawn from, and the six likeliest are labeled. Colors mark the part of the city: purple upper Manhattan, cyan Upper East and West Sides, blue Midtown to Gramercy, orange downtown, green the harbor islands, gray Outside Manhattan.'],
+    ['.mc-walk .mc-stat-row > span.mc-unit', null, null, 'newest on the right · the state is the last two chords (outlined)', null],
+    ['#viz-matrix > .viz-title', 'Transition matrix used', 'Row of the transition matrix for the current chord', 'Row of the transition matrix for the current pair', 'Row of the transition matrix for the current neighborhood'],
     ['#viz-matrix > .viz-caption', null,
       'Each count divided by the row total, as on the "Where does D7 go?" slide. The row changes every time the walk moves.',
-      'Each count divided by the row total for the current pair (previous chord, current chord). The next state is (current chord, next chord).']
+      'Each count divided by the row total for the current pair (previous chord, current chord). The next state is (current chord, next chord).',
+      'Each count divided by the row total: pr[next neighborhood | current neighborhood]. The row changes every time the walk moves.']
   ];
   function setModeText() {
     TEXTS.forEach((t) => {
       const node = document.querySelector(t[0]);
       if (!node) return;
       if (t[1] === null) t[1] = node.textContent;   // remember the original once
-      const pick = pairMode ? t[3] : isBig() ? t[2] : t[1];
+      const pick = mapMode ? t[4] : pairMode ? t[3] : isBig() ? t[2] : t[1];
       node.textContent = pick === null ? t[1] : pick;
     });
     $('play-chords-wrap').hidden = !soundable;
@@ -753,7 +891,14 @@
     const pr = PRESETS.find((p) => p.id === id) || PRESETS[0];
     soundable = !!pr.chords;
     pairMode = !!pr.pairs;
-    if (pr.chords) {
+    mapMode = !!pr.map;
+    bigSource = pr.map ? 'taxi.js' : 'bach.js';
+    if (pr.map) {
+      // 38 x 38 counts built from the sparse rows in taxi.js.
+      const T = window.MC_TAXI;
+      names = T.states.slice();
+      raw = names.map((a) => { const r = T.rows[a] || {}; return names.map((b) => (r[b] ? String(r[b]) : '0')); });
+    } else if (pr.chords) {
       // Dense count tables built from the sparse rows in bach.js:
       // 99 x 99 chords for order 1, 747 x 747 pairs for order 2.
       const B = window.MC_BACH;
@@ -803,6 +948,7 @@
     }
     soundable = false;
     pairMode = false;
+    mapMode = false;
     setLink('');
     $('preset-note').textContent = 'Your own table. New states start as absorbing (a 1 on the diagonal) until you fill in their row.';
     $('preset').value = '';

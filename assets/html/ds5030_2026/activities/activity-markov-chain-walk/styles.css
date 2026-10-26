@@ -179,3 +179,13 @@ body.mc-page [hidden] { display: none !important; }
 #mc-diagram .net-state-sub { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); }
 .mc-seq .chip.prev { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink-soft); }
 #mc-diagram .net-label .net-label-sub { font-size: 10px; font-weight: 400; fill: var(--ink-soft); }
+
+/* Taxicab example: a schematic map of Manhattan. */
+#mc-diagram.map { max-height: 900px; }
+#mc-diagram .map-water { fill: #e6eef3; }
+#mc-diagram .map-land { fill: var(--bg); stroke: #c9d3da; stroke-width: 1; }
+#mc-diagram .map-park { fill: #dcebd6; }
+#mc-diagram .map-roosevelt { stroke: var(--bg); stroke-width: 5; stroke-linecap: round; }
+#mc-diagram .map-note { font-family: var(--sans); font-size: 10px; fill: var(--ink-mute); }
+#mc-diagram .map-label { font-size: 9.5px; }
+#mc-diagram .map-label.cur { font-size: 12px; }
