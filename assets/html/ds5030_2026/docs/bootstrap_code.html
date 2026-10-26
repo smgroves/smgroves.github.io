@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Three Ways to Bootstrap with Code</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Three Ways to Bootstrap with Code</h1>
+</header>
+<h1 id="three-ways-to-bootstrap-with-code">Three ways to bootstrap with
+code</h1>
+<p>Every bootstrap does the same thing: draw n rows WITH replacement
+from your n rows, recompute the statistic, repeat R times, and look at
+the spread of the R values (its SD is the bootstrap SE). The three
+methods below differ only in HOW they draw the rows.</p>
+<ul>
+<li>Method 1
+<ul>
+<li>pandas .sample(frac=1.0, replace=True)<br />
+</li>
+<li>Week 6 Tuesday (bootstrapping), Lab 6, A/B testing bridge</li>
+</ul></li>
+<li>Method 2
+<ul>
+<li>np.random.randint(0, n, n) -&gt; .iloc[idx]<br />
+</li>
+<li>Week 8 inference notebooks</li>
+</ul></li>
+<li>Method 3
+<ul>
+<li>rng.integers(0, n, size=(R, n))<br />
+</li>
+<li>Lab 7 extra help (and the Week 4 rng notebook)</li>
+</ul></li>
+<li>Other options
+<ul>
+<li>rng.choice</li>
+</ul></li>
+</ul>
+<p>By the way, Methods 1 and 3 give identical numbers because
+pandas.sample(replace=True, random_state=rng) calls rng.integers(0, n,
+size=n) under the hood, so 5,000 calls of size n use the same random
+stream as one (5,000, n) draw. Method 2 uses numpy’s older random
+generator, so its draws (and computes its SE) differ slightly.</p>
+<pre><code>import os
+import numpy as np
+import pandas as pd
+R = 5_000</code></pre>
+<h2
+id="before-the-bootstrap-sampling-from-a-distribution-you-know-weeks-45">Before
+the bootstrap: sampling from a distribution you KNOW (Weeks 4–5)</h2>
+<p>Where <code>rng</code> first showed up (<code>rng.ipynb</code>,
+<code>cdf_and_pdf.ipynb</code>, <code>kernel_densities.ipynb</code>, Lab
+5). There was no data yet: we told numpy the distribution, drew samples
+from it, and watched how a statistic behaves across many samples. That
+is <strong>simulation</strong> (Monte Carlo), and it is the same move
+the bootstrap makes later. - Make one stream with
+<code>rng = np.random.default_rng(seed)</code>, then draw everything
+from it - Draw B samples of size K at once with
+<code>size=(B, K)</code>: each <strong>row</strong> is one simulated
+sample, so <code>.mean(axis=1)</code> gives B sample means. This is
+where Method 3’s <code>(R, n)</code> matrix comes from - Or use a loop
+that appends one sample at a time (the first version in
+<code>rng.ipynb</code>). Same numbers, just slower</p>
+<pre><code>rng = np.random.default_rng(100)
+K, B = 100, 5_000
+
+# Integers: a fair die. integers(low, high) EXCLUDES high, so 1..6 needs (1, 7)
+rolls = rng.integers(1, 7, size=(B, K))
+rolls.mean(axis=1).std()                 # ≈ 0.171 = sqrt(35/12) / sqrt(100)
+
+# Normal: standard normal draws
+z = rng.standard_normal(size=(B, K))     # or rng.normal(loc=mu, scale=sd, size=(B, K))
+z.mean(axis=1).std()                     # ≈ 0.100 = 1 / sqrt(100)
+
+# Choice with probabilities: categories with a PMF p
+rng.choice(cars, size=1000, p=p)         # the car-brand example
+
+# Bernoulli and binomial: yes/no trials
+flips  = rng.binomial(1, 0.1, size=(B, 200))   # B samples of 200 individual 0/1 trials
+counts = rng.binomial(200, 0.1, size=B)        # B success counts out of 200, in one step
+# flips.sum(axis=1) and counts have the same distribution</code></pre>
+<p><strong>From simulation to the bootstrap.</strong> In real life we
+don’t know the distribution, only our n data points. The bootstrap uses
+the data’s own <strong>empirical distribution</strong> in its place:
+each observed value gets probability 1/n, and we sample n values from it
+with replacement. We’ve done 3 different methods to do this
+resampling.</p>
+<h2 id="method-1-pandas-.sample">Method 1: pandas .sample()</h2>
+<p>Resample whole ROWS of a DataFrame (or values of a Series) - frac=1.0
+means “draw n rows” (same as .sample(len(df), replace=True), which the
+A/B bridge used) - replace=True is what makes it a bootstrap: without it
+you just get the same rows shuffled - Seeding: pass random_state=rng to
+make it reproducible. Our Week 6 notebooks made an rng but never passed
+it to .sample(), so those results change every run.</p>
+<pre><code>rng = np.random.default_rng(5030)
+reps_1 = []
+for r in range(R):
+    df_r = df.sample(frac=1.0, replace=True, random_state=rng)
+    reps_1.append(df_r[&#39;Overall Survival (Months)&#39;].mean())
+reps_1 = np.array(reps_1)</code></pre>
+<h2 id="method-2-np.random.randint-indices-.iloc">Method 2:
+np.random.randint() indices + .iloc</h2>
+<p>Draw n random row positions from 0, 1, …, n-1 (randint excludes the
+upper bound n), then pull those rows. Using the SAME idx for every
+column keeps rows together, which is what you want for a regression:
+mlr(X.iloc[idx], y.iloc[idx]). This is numpy’s older “global” random
+state. np.random.seed() once, ABOVE the loop, makes the whole run
+reproducible while every resample is still different.</p>
+<pre><code>np.random.seed(5030)
+reps_2 = []
+for r in range(R):
+    idx = np.random.randint(0, n, n)
+    reps_2.append(x.iloc[idx].mean())
+reps_2 = np.array(reps_2)</code></pre>
+<h2 id="method-3-rng.integers-with-an-r-n-matrix-of-indices">Method 3:
+rng.integers() with an (R, n) matrix of indices</h2>
+<p>Same idea as Method 2, but with the newer Generator (rng) and all R
+resamples drawn at once: row r of idx is the r-th bootstrap sample’s row
+positions. No loop needed when the statistic can be computed along
+axis=1 (means, proportions, SDs). This works with a numpy array
+(x.to_numpy()), since x_np[idx] indexes by position.</p>
+<pre><code>rng = np.random.default_rng(5030)
+x_np = x.to_numpy()
+idx = rng.integers(0, n, size=(R, n))
+reps_3 = x_np[idx].mean(axis=1)
+# For a statistic that isn&#39;t vectorized (like a regression), Loop over the rows of idx:
+# reps = np.array([mlr(X.iloc[i], y.iloc[i]) for i in idx])</code></pre>
+<h2 id="also-fine-rng.choice">Also fine: rng.choice()</h2>
+<pre><code>rng.choice(x_np, size=n, replace=True) draws values directly instead of indices.</code></pre>
+<p>This is equivalent for a single column; for several columns, draw
+indices (Methods 2 and 3) so rows stay together.</p>
+</body>
+</html>
