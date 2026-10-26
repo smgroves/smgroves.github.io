@@ -156,3 +156,18 @@ body.presentation-mode.mc-page main { max-width: 1400px; }
 @media (prefers-reduced-motion: reduce) {
   .mc-draw-bar .u, .mc-bar-fill, #mc-diagram .edge { transition: none; }
 }
+
+/* ---------------- big chains (Bach chorales, 99 chords) ---------------- */
+#mc-diagram .net-faint { stroke: var(--edge); opacity: 0.35; }
+#mc-diagram .net-root { font-family: var(--sans); font-size: 15px; font-weight: 700; fill: var(--ink-soft); }
+#mc-diagram .net-label {
+  font-family: var(--mono); font-size: 10.5px; fill: var(--ink);
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; pointer-events: none;
+}
+#mc-diagram .net-label.cur { font-size: 13px; font-weight: 700; }
+#mc-diagram .node circle { cursor: default; }
+.mc-seq .chip.wide { flex-basis: 42px; width: 42px; font-size: 10px; }
+.mc-bar-more { font-family: var(--sans); font-size: 12px; color: var(--ink-mute); }
+.mc-input td.mc-big-note { font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; padding: 4px 0; white-space: normal; }
+/* .mc-check and .mc-n-row set display, which would override the hidden attribute. */
+body.mc-page [hidden] { display: none !important; }

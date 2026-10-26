@@ -42,6 +42,11 @@
       note: 'pr[next category | current category] for the Charlottesville station, from the crosstab with normalize="index".'
     },
     {
+      id: 'bach', label: 'Bach chorales: 99 chords (counts)',
+      big: true, chords: true, start: 'D7',
+      note: 'Counts of (current chord, next chord) in 62 Bach chorales: 99 chords, 5,603 moves. That is too many states to draw or edit, so the chain panel shows the row of the current chord instead. The walk starts in D7, whose row is G 0.34, D7 0.33, Gm 0.19. Tick "Play the chords" under the chain to hear the walk.'
+    },
+    {
       id: 'ruin', label: 'Gambler’s ruin: $0 to $4 (absorbing ends)',
       names: ['$0', '$1', '$2', '$3', '$4'],
       table: [
@@ -76,10 +81,79 @@
   let rng = null;
   let playing = false, timer = null, anim = null;
   let edgePaths = {};    // "i-j" -> SVG path element
+  let soundable = false; // true while the loaded example's states are chord names
 
   const $ = (id) => document.getElementById(id);
   const svg = $('mc-diagram');
-  const color = (i) => `var(--s${i % 10})`;
+  // More than MAX_N states (the Bach chorales): no diagram, no editable table.
+  const isBig = () => names.length > MAX_N;
+  // With 99 chords, color by chord quality instead of by state index.
+  function qualityColor(nm) {
+    const q = String(nm).replace(/^[A-G][#-]?/, '');
+    if (q === '') return 'var(--s3)';                              // major
+    if (q === 'm' || q === 'm6' || q === 'm7') return 'var(--s1)'; // minor
+    if (q === '7') return 'var(--s7)';                             // dominant seventh
+    if (q === 'dim' || q === 'dim7') return 'var(--s9)';           // diminished
+    return 'var(--s6)';                                            // sus4, added sixth
+  }
+  const color = (i) => (isBig() ? qualityColor(names[i]) : `var(--s${i % 10})`);
+
+  // ---------------------------------------------------------------- sound
+  // Chord name -> MIDI notes: root in the bass (E2 to D#3), the chord tones
+  // close together from G3 up to F#4. Qualities follow the cleaned Bach labels.
+  const PITCH = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const QUALITY = {
+    '': [0, 4, 7], m: [0, 3, 7], '7': [0, 4, 7, 10], m7: [0, 3, 7, 10],
+    dim: [0, 3, 6], dim7: [0, 3, 6, 9], '4': [0, 5, 7], '6': [0, 4, 7, 9], m6: [0, 3, 7, 9]
+  };
+  function chordMidi(nm) {
+    const m = /^([A-G])([#-]?)(.*)$/.exec(nm);
+    if (!m || !(m[3] in QUALITY)) return null;
+    const pc = (PITCH[m[1]] + (m[2] === '#' ? 1 : m[2] === '-' ? -1 : 0) + 12) % 12;
+    let bass = 36 + pc; if (bass < 40) bass += 12;
+    const upper = QUALITY[m[3]].map((iv) => 55 + (((pc + iv - 55) % 12) + 12) % 12).sort((a, b) => a - b);
+    return [bass].concat(upper);
+  }
+
+  let actx = null, voices = [];
+  function audio() {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      actx = new AC();
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+  function silence() {
+    if (!actx) return;
+    const t = actx.currentTime;
+    voices.forEach((v) => { v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.02); v.o.stop(t + 0.15); });
+    voices = [];
+  }
+  function playChord(nm, dur) {
+    const notes = chordMidi(nm);
+    const ctx = audio();
+    if (!notes || !ctx) return;
+    silence();
+    const t = ctx.currentTime + 0.01;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+    lp.connect(ctx.destination);
+    notes.forEach((midi, k) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+      const peak = (k === 0 ? 0.16 : 0.1);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(peak, t + 0.02);
+      g.gain.setTargetAtTime(peak * 0.6, t + 0.05, 0.2);
+      g.gain.setTargetAtTime(0, t + dur * 0.8, dur * 0.12);
+      o.connect(g); g.connect(lp);
+      o.start(t); o.stop(t + dur + 0.4);
+      voices.push({ o, g });
+    });
+  }
+  const soundOn = () => soundable && $('play-chords').checked;
 
   // Seeded RNG (mulberry32), so a seed reproduces the same walk.
   function makeRng(seed) {
@@ -130,7 +204,7 @@
   // distributions after 1, 2, ..., K steps. Equals the stationary distribution
   // for an irreducible chain, and still makes sense for periodic or absorbing ones.
   function computeLongRun(Pm, start) {
-    const n = Pm.length, K = 4000;
+    const n = Pm.length, K = n > MAX_N ? 1500 : 4000;   // 99 states: fewer, costlier steps
     let d = new Array(n).fill(0); d[start] = 1;
     const avg = new Array(n).fill(0);
     for (let k = 0; k < K; k++) {
@@ -147,6 +221,14 @@
     const n = names.length;
     const t = $('mc-input');
     t.innerHTML = '';
+    document.querySelector('.mc-n-row').hidden = isBig();
+    if (isBig()) {
+      const td = t.insertRow().insertCell();
+      td.className = 'mc-big-note';
+      td.textContent = `${n} states: too many to type in or edit here. The counts are loaded from bach.js. The row for the current chord is shown below.`;
+      $('n-out').textContent = n;
+      return;
+    }
     const head = t.insertRow();
     const corner = document.createElement('th'); corner.className = 'corner'; corner.textContent = 'today ↓  tomorrow →'; head.appendChild(corner);
     names.forEach((nm, j) => { const th = document.createElement('th'); th.innerHTML = `<span class="mc-swatch" style="background:${color(j)}"></span>`; th.appendChild(document.createTextNode(nm)); head.appendChild(th); });
@@ -187,10 +269,34 @@
     }
   }
 
+  // Big chains: show one row of P, the current chord's, as next | count | p̂.
+  function renderCurrentRow() {
+    const t = $('mc-p');
+    t.innerHTML = '';
+    const counts = raw[cur].map(parseEntry);
+    const total = counts.reduce((a, b) => a + b, 0);
+    const head = t.insertRow();
+    ['next chord', 'count', `p̂(next | ${names[cur]})`].forEach((h) => { const th = document.createElement('th'); th.textContent = h; head.appendChild(th); });
+    counts.map((c, j) => ({ c, j })).filter((e) => e.c > 0).sort((a, b) => b.c - a.c).forEach(({ c, j }) => {
+      const tr = t.insertRow();
+      const th = document.createElement('th'); th.className = 'rowh';
+      th.innerHTML = `<span class="mc-swatch" style="background:${color(j)}"></span>`; th.appendChild(document.createTextNode(names[j]));
+      tr.appendChild(th);
+      const tc = tr.insertCell(); tc.textContent = c;
+      const tp = tr.insertCell(); tp.textContent = `${c}/${total} = ${fmt(P[cur][j], 2)}`;
+      tp.style.background = `color-mix(in srgb, var(--accent) ${Math.round(P[cur][j] * 55)}%, var(--bg))`;
+    });
+    const tr = t.insertRow();
+    const th = document.createElement('th'); th.className = 'rowh'; th.textContent = 'total'; tr.appendChild(th);
+    tr.insertCell().textContent = total;
+    const ts = tr.insertCell(); ts.className = 'sum'; ts.textContent = '1';
+  }
+
   function renderP() {
     const t = $('mc-p');
     t.innerHTML = '';
     if (!P) return;
+    if (isBig()) { renderCurrentRow(); return; }
     const head = t.insertRow();
     const c = document.createElement('th'); c.className = 'corner'; c.textContent = 'today \\ tomorrow'; head.appendChild(c);
     names.forEach((nm) => { const th = document.createElement('th'); th.textContent = nm; head.appendChild(th); });
@@ -245,6 +351,7 @@
       t.textContent = 'Fix the table to draw the chain';
       return;
     }
+    if (isBig()) { drawNetwork(); renderP(); return; }
     const { pos, r } = layout(n);
     // Two states sit side by side: crop the empty top and bottom of the square.
     svg.setAttribute('viewBox', n <= 2 ? `0 ${CY - 150} 600 300` : '0 0 600 600');
@@ -313,6 +420,102 @@
     el('circle', { id: 'token', r: 9, cx: pos[cur].x, cy: pos[cur].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
   }
 
+  // Big chains (the 99 Bach chords): a network laid out by music theory.
+  // Angle: the chord's root on the circle of fifths, C at the top, then G, D, A, ...
+  // Radius: its quality, major on the outside down to diminished seventh in the middle.
+  // Sharp and flat spellings of one root (A# and B-) sit just either side of it.
+  const RING = { '': 250, '7': 224, '6': 202, '4': 182, m: 158, m7: 136, m6: 116, dim: 94, dim7: 72 };
+  const FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#/D♭', 'G#/A♭', 'D#/E♭', 'A#/B♭', 'F'];
+  const BG_EDGE = 0.10;                        // faint background edges: moves with p >= 0.10
+  let netPos = null, netFor = null;
+  function networkLayout() {
+    if (netFor === names) return netPos;
+    const totals = raw.map((r) => r.map(parseEntry).reduce((a, b) => a + b, 0));
+    const tmax = Math.max(...totals);
+    netPos = names.map((nm, i) => {
+      const m = /^([A-G])([#-]?)(.*)$/.exec(nm);
+      const pc = (PITCH[m[1]] + (m[2] === '#' ? 1 : m[2] === '-' ? -1 : 0) + 12) % 12;
+      const slot = (pc * 7) % 12;              // position on the circle of fifths
+      const a = -Math.PI / 2 + (2 * Math.PI * slot) / 12 + (m[2] === '#' ? 0.09 : m[2] === '-' ? -0.09 : 0);
+      const rr = RING[m[3]] || 250;
+      return { x: CX + rr * Math.cos(a), y: CY + rr * Math.sin(a), a, r: 3 + 9 * Math.sqrt(totals[i] / tmax), n: totals[i] };
+    });
+    netFor = names;
+    return netPos;
+  }
+
+  function drawNetwork() {
+    const pos = networkLayout();
+    const n = names.length;
+    svg.setAttribute('viewBox', '-30 0 660 600');   // a little wider: the root names at 9 and 3 o'clock
+    const showLabels = $('show-labels').checked;
+    const defs = el('defs', {}, svg);
+    const m = el('marker', { id: 'arr-cur', viewBox: '0 0 10 10', refX: '8.5', refY: '5', markerWidth: '7', markerHeight: '7', markerUnits: 'userSpaceOnUse', orient: 'auto-start-reverse' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', style: `fill:${color(cur)}` }, m);
+
+    // Root names around the outside.
+    FIFTHS.forEach((root, k) => {
+      const a = -Math.PI / 2 + (2 * Math.PI * k) / 12;
+      const side = Math.cos(a) < -0.3 ? 'end' : Math.cos(a) > 0.3 ? 'start' : 'middle';
+      const t = el('text', { x: (CX + 274 * Math.cos(a)).toFixed(1), y: (CY + 278 * Math.sin(a) + 5).toFixed(1), 'text-anchor': side, class: 'net-root' }, svg);
+      t.textContent = root;
+    });
+
+    // Curved edge from i to j, bowed toward the center; self-moves are small outward loops.
+    const edgeD = (i, j) => {
+      const p0 = pos[i], p1 = pos[j];
+      if (i === j) {
+        const a = p0.a, R = p0.r;
+        const pt = (ang, rad) => ({ x: p0.x + rad * Math.cos(ang), y: p0.y + rad * Math.sin(ang) });
+        const s = pt(a - 0.6, R), e = pt(a + 0.6, R + 1.5), c1 = pt(a - 0.9, R + 22), c2 = pt(a + 0.9, R + 22);
+        return `M${s.x.toFixed(1)},${s.y.toFixed(1)} C${c1.x.toFixed(1)},${c1.y.toFixed(1)} ${c2.x.toFixed(1)},${c2.y.toFixed(1)} ${e.x.toFixed(1)},${e.y.toFixed(1)}`;
+      }
+      const c = { x: (p0.x + p1.x) / 2 * 0.6 + CX * 0.4, y: (p0.y + p1.y) / 2 * 0.6 + CY * 0.4 };
+      const unit = (f, t) => { const dx = t.x - f.x, dy = t.y - f.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
+      const u0 = unit(p0, c), u1 = unit(p1, c);
+      const s = { x: p0.x + u0.x * p0.r, y: p0.y + u0.y * p0.r };
+      const e = { x: p1.x + u1.x * (p1.r + 1.5), y: p1.y + u1.y * (p1.r + 1.5) };
+      return `M${s.x.toFixed(1)},${s.y.toFixed(1)} Q${c.x.toFixed(1)},${c.y.toFixed(1)} ${e.x.toFixed(1)},${e.y.toFixed(1)}`;
+    };
+
+    const gBg = el('g', { class: 'net-bg' }, svg), gCur = el('g', {}, svg), gNodes = el('g', {}, svg), gLab = el('g', {}, svg);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        const p = P[i][j];
+        if (i === cur || i === j || p < BG_EDGE) continue;
+        el('path', { d: edgeD(i, j), class: 'edge net-faint', 'stroke-width': (0.5 + 1.5 * p).toFixed(2) }, gBg);
+      }
+    }
+    // The current chord's row: every move out of it, thick for likely moves.
+    const targets = [];
+    P[cur].forEach((p, j) => {
+      if (p <= 0) return;
+      targets.push({ p, j });
+      const path = el('path', { d: edgeD(cur, j), class: 'edge', 'stroke-width': (0.8 + 6 * p).toFixed(2), 'marker-end': 'url(#arr-cur)', style: `stroke:${color(cur)};opacity:${(0.35 + 0.65 * Math.min(1, p * 3)).toFixed(2)}` }, gCur);
+      edgePaths[`${cur}-${j}`] = path;
+    });
+    targets.sort((a, b) => b.p - a.p);
+    const labelled = new Set(targets.slice(0, 6).map((t) => t.j));
+
+    for (let i = 0; i < n; i++) {
+      const g = el('g', { class: 'node' + (i === cur ? ' current' : '') }, gNodes);
+      el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: pos[i].r.toFixed(1), style: `fill:${color(i)}` }, g);
+      if (i === cur) el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: (pos[i].r + 4).toFixed(1), class: 'ring' }, g);
+      el('title', {}, g).textContent = `${names[i]}: ${pos[i].n} moves out`;
+      // Name the current chord, the likeliest next chords, and the common chords.
+      // Common major chords sit next to their root's name already, so skip those.
+      const major = /^[A-G][#-]?$/.test(names[i]);
+      if (i === cur || labelled.has(i) || (pos[i].n >= 120 && !major)) {
+        // Labels sit on the outer side of the dot: left of it on the left half.
+        const left = Math.cos(pos[i].a) < -0.2, gap = pos[i].r + (i === cur ? 8 : 3);
+        const t = el('text', { x: (pos[i].x + (left ? -gap : gap)).toFixed(1), y: (pos[i].y + 4).toFixed(1), 'text-anchor': left ? 'end' : 'start', class: 'net-label' + (i === cur ? ' cur' : '') }, gLab);
+        if (i === cur) t.textContent = showLabels && P[cur][cur] > 0 ? `${names[i]} (stays ${fmt(P[cur][cur])})` : names[i];
+        else t.textContent = showLabels && labelled.has(i) ? `${names[i]} ${fmt(P[cur][i])}` : names[i];
+      }
+    }
+    el('circle', { id: 'token', r: 7, cx: pos[cur].x, cy: pos[cur].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
+  }
+
   // ---------------------------------------------------------------- walk
   let walkId = 0;
   function resetWalk() {
@@ -343,6 +546,8 @@
     cur = next; steps += 1; counts[next] += 1;
     history.push(next); if (history.length > 200) history.shift();
     if (animate) {
+      // Sound plays only on Step and Play, never during +1,000 steps.
+      if (soundOn()) playChord(names[next], Math.min(1.4, stepInterval() / 1000 * 0.95));
       moveToken(from, next);
     }
   }
@@ -374,13 +579,14 @@
 
   // Scrolling strip of visited states: the newest state enters on the right and
   // everything slides left one slot, like a ticker. Jumps and fast play redraw it whole.
-  const TICK_W = 29, TICK_KEEP = 80;
+  const TICK_KEEP = 80;
+  const tickW = () => (isBig() ? 45 : 29);   // chip width + gap; chord names need wider chips
   let tickerShown = -1, tickerWalk = -1;
   function tickerChip(s) {
     const c = document.createElement('span');
-    c.className = 'chip';
+    c.className = 'chip' + (isBig() ? ' wide' : '');
     c.style.background = color(s);
-    c.textContent = names[s].slice(0, 3);
+    c.textContent = isBig() ? names[s] : names[s].slice(0, 3);
     c.title = names[s];
     return c;
   }
@@ -393,7 +599,7 @@
       row.appendChild(tickerChip(history[history.length - 1]));
       while (row.children.length > TICK_KEEP) row.firstChild.remove();
       row.style.transition = 'none';
-      row.style.transform = `translateX(${TICK_W}px)`;
+      row.style.transform = `translateX(${tickW()}px)`;
       void row.offsetWidth;                       // commit the start position before animating
       row.style.transition = `transform ${Math.min(350, stepInterval() * 0.6)}ms ease-out`;
       row.style.transform = 'translateX(0)';
@@ -413,7 +619,12 @@
     const bars = $('share-bars');
     bars.innerHTML = '';
     if (!P) return;
-    names.forEach((nm, i) => {
+    // Big chains: only the states with the largest long-run share get a bar.
+    const BAR_SHOW = 12;
+    let idx = names.map((_, i) => i);
+    if (isBig()) idx = idx.sort((a, b) => longRun[b] - longRun[a]).slice(0, BAR_SHOW);
+    idx.forEach((i) => {
+      const nm = names[i];
       const share = steps ? counts[i] / steps : 0;
       const row = document.createElement('div'); row.className = 'mc-bar-row';
       row.innerHTML = `<div class="mc-bar-name"><span class="mc-swatch" style="background:${color(i)}"></span>${esc(nm)}</div>
@@ -422,6 +633,11 @@
         <div class="mc-bar-num">${fmt(share, 3)} <span style="color:var(--ink-mute)">/ ${fmt(longRun[i], 3)}</span></div>`;
       bars.appendChild(row);
     });
+    if (isBig()) {
+      const more = document.createElement('div'); more.className = 'mc-bar-more';
+      more.textContent = `The ${idx.length} chords with the largest long-run share, of ${names.length}.`;
+      bars.appendChild(more);
+    }
   }
 
   // ---------------------------------------------------------------- play loop
@@ -448,6 +664,26 @@
     playing = false; $('btn-play').textContent = 'Play';
     clearTimeout(timer); timer = null;
     if (anim) { cancelAnimationFrame(anim); anim = null; }
+    silence();
+  }
+
+  // Panel titles and captions that differ between drawn chains and big ones.
+  const TEXTS = [
+    ['#viz-chain > .viz-title', 'The chain', 'The chain: 99 chords'],
+    ['#viz-chain > .viz-description',
+      null,
+      'Each dot is a chord. Its angle is its root on the circle of fifths (C at the top, then G, D, A, ...); its distance from the center is its quality, from major on the outside through dominant seventh, added sixth, sus4, minor, minor seventh, minor sixth and diminished to diminished seventh in the middle. Bigger dots are more common chords. Faint lines are the likelier moves (p ≥ 0.10). The colored arrows leave the current chord: they are the row the next step is drawn from, and the six likeliest are labeled. Colors mark quality: blue major, cyan minor, red dominant seventh, gray diminished, gold sus4 or added sixth.'],
+    ['#viz-matrix > .viz-title', 'Transition matrix used', 'Row of the transition matrix for the current chord'],
+    ['#viz-matrix > .viz-caption', null, 'Each count divided by the row total, as on the "Where does D7 go?" slide. The row changes every time the walk moves.']
+  ];
+  function setModeText() {
+    TEXTS.forEach((t) => {
+      const node = document.querySelector(t[0]);
+      if (!node) return;
+      if (t[1] === null) t[1] = node.textContent;   // remember the original once
+      node.textContent = isBig() ? t[2] : t[1];
+    });
+    $('play-chords-wrap').hidden = !soundable;
   }
 
   // ---------------------------------------------------------------- rebuild
@@ -461,6 +697,7 @@
     const box = $('mc-error');
     if (errs.length) { box.hidden = false; box.innerHTML = errs.map(esc).join('<br>'); } else { box.hidden = true; }
     ['btn-play', 'btn-step', 'btn-jump'].forEach((id) => { $(id).disabled = !P; });
+    setModeText();
     renderP();
     renderStartSelect();
     resetWalk();
@@ -468,15 +705,23 @@
 
   function loadPreset(id) {
     const pr = PRESETS.find((p) => p.id === id) || PRESETS[0];
-    names = pr.names.slice();
-    if (pr.table) raw = pr.table.map((r) => r.slice());
-    else {
+    soundable = !!pr.chords;
+    if (pr.id === 'bach') {
+      // 99 x 99 counts built from the sparse rows in bach.js.
+      const B = window.MC_BACH;
+      names = B.states.slice();
+      raw = names.map((a) => names.map((b) => String((B.rows[a] || {})[b] || 0)));
+    } else if (pr.table) {
+      names = pr.names.slice();
+      raw = pr.table.map((r) => r.slice());
+    } else {
+      names = pr.names.slice();
       const g = makeRng(parseInt($('seed').value, 10) || 1);
       raw = names.map(() => names.map(() => (g() < 0.35 ? '0' : (Math.round(g() * 9) + 1).toString())));
       raw.forEach((r, i) => { if (r.every((v) => v === '0')) r[i] = '1'; });
     }
     $('preset-note').textContent = pr.note;
-    cur = 0;
+    cur = pr.start ? Math.max(0, names.indexOf(pr.start)) : 0;
     rebuild(true);
   }
 
@@ -495,6 +740,7 @@
       names = names.slice(0, n);
       raw = raw.slice(0, n).map((r) => r.slice(0, n));
     }
+    soundable = false;
     $('preset-note').textContent = 'Your own table. New states start as absorbing (a 1 on the diagonal) until you fill in their row.';
     $('preset').value = '';
     rebuild(true);
@@ -518,6 +764,11 @@
   $('start-state').addEventListener('change', resetWalk);
   $('seed').addEventListener('change', resetWalk);
   $('show-labels').addEventListener('change', drawDiagram);
+  // Ticking the box is a user gesture, which browsers require before audio
+  // can start; play the current chord so the reader hears that sound is on.
+  $('play-chords').addEventListener('change', () => {
+    if ($('play-chords').checked) playChord(names[cur], 1.0); else silence();
+  });
   $('speed').addEventListener('input', updateSpeedLabel);
 
   updateSpeedLabel();
@@ -525,5 +776,5 @@
   loadPreset('class-weather');
 
   // exposed for testing in the console
-  window.MarkovWalk = { get P() { return P; }, get longRun() { return longRun; }, get counts() { return counts; }, get steps() { return steps; }, step, computeLongRun, parseEntry };
+  window.MarkovWalk = { get P() { return P; }, get names() { return names; }, get cur() { return cur; }, get longRun() { return longRun; }, get counts() { return counts; }, get steps() { return steps; }, get audioState() { return actx ? actx.state : null; }, step, computeLongRun, parseEntry, chordMidi, loadPreset };
 })();
