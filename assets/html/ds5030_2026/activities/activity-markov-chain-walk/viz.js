@@ -42,23 +42,6 @@
       note: 'pr[next category | current category] for the Charlottesville station, from the crosstab with normalize="index".'
     },
     {
-      id: 'bach', label: 'Bach chorales: 99 chords (counts)',
-      big: true, chords: true, start: 'D7',
-      note: 'Counts of (current chord, next chord) in 62 Bach chorales: 99 chords, 5,603 moves. That is too many states to draw or edit, so the chain panel shows the row of the current chord instead. The walk starts in D7, whose row is G 0.34, D7 0.33, Gm 0.19. Tick "Play the chords" under the chain to hear the walk.'
-    },
-    {
-      id: 'ruin', label: 'Gambler’s ruin: $0 to $4 (absorbing ends)',
-      names: ['$0', '$1', '$2', '$3', '$4'],
-      table: [
-        ['1', '0', '0', '0', '0'],
-        ['1/2', '0', '1/2', '0', '0'],
-        ['0', '1/2', '0', '1/2', '0'],
-        ['0', '0', '1/2', '0', '1/2'],
-        ['0', '0', '0', '0', '1']
-      ],
-      note: 'Bet $1 on a fair coin until you hit $0 or $4. Once the walk reaches an end it never leaves, so the long run depends on where you start. Try starting in $1 and in $3.'
-    },
-    {
       id: 'cycle', label: 'A deterministic cycle: A → B → C → A',
       names: ['A', 'B', 'C'],
       table: [['0', '1', '0'], ['0', '0', '1'], ['1', '0', '0']],
@@ -69,6 +52,16 @@
       names: ['A', 'B', 'C', 'D', 'E', 'F'],
       table: null,
       note: 'Random entries from the seed. Change the seed and reload this example for a different chain.'
+    },
+    {
+      id: 'bach', label: 'Bach chorales, order 1: the state is one chord',
+      chords: true, start: 'D7',
+      note: 'Counts of (current chord, next chord) in 62 Bach chorales: 99 chords, 5,603 moves. Too many states to type in, so the table on the right shows only the current chord\'s row. The walk starts in D7, whose row is G 0.34, D7 0.33, Gm 0.19. Tick "Play the chords" under the chain to hear the walk.'
+    },
+    {
+      id: 'bach2', label: 'Bach chorales, order 2: the state is two chords',
+      chords: true, pairs: true, start: 'D D7',
+      note: 'The same chorales with a bigger state: the last two chords. 747 pairs, 5,532 moves from (a, b) to (b, c). The next chord depends on the previous chord as well as the current one: compare the row of (D, D7) with order 1\'s D7 row. 10 pairs that only end a chorale, or lead only to such a pair, are left out, with the 11 moves into them, so every pair has somewhere to go.'
     }
   ];
 
@@ -82,6 +75,7 @@
   let playing = false, timer = null, anim = null;
   let edgePaths = {};    // "i-j" -> SVG path element
   let soundable = false; // true while the loaded example's states are chord names
+  let pairMode = false;  // true for the order-2 Bach example: each state is "previous current"
 
   const $ = (id) => document.getElementById(id);
   const svg = $('mc-diagram');
@@ -96,7 +90,7 @@
     if (q === 'dim' || q === 'dim7') return 'var(--s9)';           // diminished
     return 'var(--s6)';                                            // sus4, added sixth
   }
-  const color = (i) => (isBig() ? qualityColor(names[i]) : `var(--s${i % 10})`);
+  const color = (i) => (isBig() ? qualityColor(String(names[i]).split(' ').pop()) : `var(--s${i % 10})`);
 
   // ---------------------------------------------------------------- sound
   // Chord name -> MIDI notes: root in the bass (E2 to D#3), the chord tones
@@ -204,12 +198,14 @@
   // distributions after 1, 2, ..., K steps. Equals the stationary distribution
   // for an irreducible chain, and still makes sense for periodic or absorbing ones.
   function computeLongRun(Pm, start) {
-    const n = Pm.length, K = n > MAX_N ? 1500 : 4000;   // 99 states: fewer, costlier steps
+    const n = Pm.length, K = 4000;
+    // Only the non-zero entries of each row: the Bach chains are 92% to 99.7% zeros.
+    const nz = Pm.map((row) => row.reduce((acc, p, j) => { if (p > 0) acc.push([j, p]); return acc; }, []));
     let d = new Array(n).fill(0); d[start] = 1;
     const avg = new Array(n).fill(0);
     for (let k = 0; k < K; k++) {
       const nd = new Array(n).fill(0);
-      for (let i = 0; i < n; i++) if (d[i]) for (let j = 0; j < n; j++) nd[j] += d[i] * Pm[i][j];
+      for (let i = 0; i < n; i++) if (d[i]) for (const [j, p] of nz[i]) nd[j] += d[i] * p;
       d = nd;
       for (let j = 0; j < n; j++) avg[j] += d[j];
     }
@@ -276,7 +272,7 @@
     const counts = raw[cur].map(parseEntry);
     const total = counts.reduce((a, b) => a + b, 0);
     const head = t.insertRow();
-    ['next chord', 'count', `p̂(next | ${names[cur]})`].forEach((h) => { const th = document.createElement('th'); th.textContent = h; head.appendChild(th); });
+    [pairMode ? 'next pair' : 'next chord', 'count', `p̂(next | ${pairMode ? '(' + names[cur].replace(' ', ', ') + ')' : names[cur]})`].forEach((h) => { const th = document.createElement('th'); th.textContent = h; head.appendChild(th); });
     counts.map((c, j) => ({ c, j })).filter((e) => e.c > 0).sort((a, b) => b.c - a.c).forEach(({ c, j }) => {
       const tr = t.insertRow();
       const th = document.createElement('th'); th.className = 'rowh';
@@ -420,19 +416,25 @@
     el('circle', { id: 'token', r: 9, cx: pos[cur].x, cy: pos[cur].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
   }
 
-  // Big chains (the 99 Bach chords): a network laid out by music theory.
+  // Big chains (the Bach chorales): a network of the 99 chords, laid out by music theory.
   // Angle: the chord's root on the circle of fifths, C at the top, then G, D, A, ...
   // Radius: its quality, major on the outside down to diminished seventh in the middle.
   // Sharp and flat spellings of one root (A# and B-) sit just either side of it.
+  // The nodes are always chords. In the order-2 example the state is a pair of
+  // chords, so the walk is drawn as two highlighted nodes: previous and current.
   const RING = { '': 250, '7': 224, '6': 202, '4': 182, m: 158, m7: 136, m6: 116, dim: 94, dim7: 72 };
   const FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#/D♭', 'G#/A♭', 'D#/E♭', 'A#/B♭', 'F'];
-  const BG_EDGE = 0.10;                        // faint background edges: moves with p >= 0.10
-  let netPos = null, netFor = null;
-  function networkLayout() {
-    if (netFor === names) return netPos;
-    const totals = raw.map((r) => r.map(parseEntry).reduce((a, b) => a + b, 0));
+  const BG_EDGE = 0.10;                        // faint background edges: order-1 moves with p >= 0.10
+  let net = null;                              // { chords, index, pos, bg }, built once
+  function network() {
+    if (net) return net;
+    const B = window.MC_BACH;
+    const chords = B.states;
+    const index = {};
+    chords.forEach((c, k) => { index[c] = k; });
+    const totals = chords.map((c) => Object.values(B.rows[c] || {}).reduce((a, b) => a + b, 0));
     const tmax = Math.max(...totals);
-    netPos = names.map((nm, i) => {
+    const pos = chords.map((nm, i) => {
       const m = /^([A-G])([#-]?)(.*)$/.exec(nm);
       const pc = (PITCH[m[1]] + (m[2] === '#' ? 1 : m[2] === '-' ? -1 : 0) + 12) % 12;
       const slot = (pc * 7) % 12;              // position on the circle of fifths
@@ -440,13 +442,24 @@
       const rr = RING[m[3]] || 250;
       return { x: CX + rr * Math.cos(a), y: CY + rr * Math.sin(a), a, r: 3 + 9 * Math.sqrt(totals[i] / tmax), n: totals[i] };
     });
-    netFor = names;
-    return netPos;
+    // Background edges come from the order-1 chord counts in both examples.
+    const bg = [];
+    chords.forEach((c, i) => {
+      const row = B.rows[c] || {}, tot = totals[i];
+      for (const d in row) { const j = index[d], p = row[d] / tot; if (j !== i && p >= BG_EDGE) bg.push({ i, j, p }); }
+    });
+    net = { chords, index, pos, bg };
+    return net;
   }
+  // A state's chords: [previous, current] for pairs, [null, chord] otherwise.
+  const stateChords = (s) => (pairMode ? names[s].split(' ') : [null, names[s]]);
+  const curChord = (s) => stateChords(s)[1];
 
   function drawNetwork() {
-    const pos = networkLayout();
-    const n = names.length;
+    const { chords, index, pos, bg } = network();
+    const nC = chords.length;
+    const [prevName, curName] = stateChords(cur);
+    const cc = index[curName], pc = prevName === null ? -1 : index[prevName];
     svg.setAttribute('viewBox', '-30 0 660 600');   // a little wider: the root names at 9 and 3 o'clock
     const showLabels = $('show-labels').checked;
     const defs = el('defs', {}, svg);
@@ -460,8 +473,14 @@
       const t = el('text', { x: (CX + 274 * Math.cos(a)).toFixed(1), y: (CY + 278 * Math.sin(a) + 5).toFixed(1), 'text-anchor': side, class: 'net-root' }, svg);
       t.textContent = root;
     });
+    if (pairMode) {
+      const t = el('text', { x: -22, y: 22, class: 'net-state' }, svg);
+      t.textContent = `State: (${prevName}, ${curName})`;
+      const t2 = el('text', { x: -22, y: 40, class: 'net-state-sub' }, svg);
+      t2.textContent = 'previous chord dashed, current chord solid';
+    }
 
-    // Curved edge from i to j, bowed toward the center; self-moves are small outward loops.
+    // Curved edge from chord i to chord j, bowed toward the center; self-moves are small outward loops.
     const edgeD = (i, j) => {
       const p0 = pos[i], p1 = pos[j];
       if (i === j) {
@@ -479,41 +498,50 @@
     };
 
     const gBg = el('g', { class: 'net-bg' }, svg), gCur = el('g', {}, svg), gNodes = el('g', {}, svg), gLab = el('g', {}, svg);
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        const p = P[i][j];
-        if (i === cur || i === j || p < BG_EDGE) continue;
-        el('path', { d: edgeD(i, j), class: 'edge net-faint', 'stroke-width': (0.5 + 1.5 * p).toFixed(2) }, gBg);
-      }
-    }
-    // The current chord's row: every move out of it, thick for likely moves.
-    const targets = [];
+    bg.forEach(({ i, j, p }) => {
+      if (i === cc) return;
+      el('path', { d: edgeD(i, j), class: 'edge net-faint', 'stroke-width': (0.5 + 1.5 * p).toFixed(2) }, gBg);
+    });
+    // The current state's row: every move out of it, drawn from the current chord to the
+    // next chord (for a pair state (a, b), the next state (b, c) is drawn as b -> c).
+    const pNext = {};
     P[cur].forEach((p, j) => {
       if (p <= 0) return;
-      targets.push({ p, j });
-      const path = el('path', { d: edgeD(cur, j), class: 'edge', 'stroke-width': (0.8 + 6 * p).toFixed(2), 'marker-end': 'url(#arr-cur)', style: `stroke:${color(cur)};opacity:${(0.35 + 0.65 * Math.min(1, p * 3)).toFixed(2)}` }, gCur);
+      const tc = index[curChord(j)];
+      pNext[tc] = (pNext[tc] || 0) + p;
+      const path = el('path', { d: edgeD(cc, tc), class: 'edge', 'stroke-width': (0.8 + 6 * p).toFixed(2), 'marker-end': 'url(#arr-cur)', style: `stroke:${color(cur)};opacity:${(0.35 + 0.65 * Math.min(1, p * 3)).toFixed(2)}` }, gCur);
       edgePaths[`${cur}-${j}`] = path;
     });
-    targets.sort((a, b) => b.p - a.p);
-    const labelled = new Set(targets.slice(0, 6).map((t) => t.j));
+    const labelled = new Set(Object.keys(pNext).map(Number).sort((a, b) => pNext[b] - pNext[a]).slice(0, 6));
 
-    for (let i = 0; i < n; i++) {
-      const g = el('g', { class: 'node' + (i === cur ? ' current' : '') }, gNodes);
-      el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: pos[i].r.toFixed(1), style: `fill:${color(i)}` }, g);
-      if (i === cur) el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: (pos[i].r + 4).toFixed(1), class: 'ring' }, g);
-      el('title', {}, g).textContent = `${names[i]}: ${pos[i].n} moves out`;
-      // Name the current chord, the likeliest next chords, and the common chords.
+    for (let i = 0; i < nC; i++) {
+      const isCur = i === cc, isPrev = i === pc && !isCur;
+      const g = el('g', { class: 'node' + (isCur ? ' current' : '') }, gNodes);
+      el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: pos[i].r.toFixed(1), style: `fill:${qualityColor(chords[i])}` }, g);
+      if (isCur) el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: (pos[i].r + 4).toFixed(1), class: 'ring' }, g);
+      // Previous chord of a pair state: a dashed ring (inside the solid one if it is also current).
+      if (i === pc) el('circle', { cx: pos[i].x.toFixed(1), cy: pos[i].y.toFixed(1), r: (pos[i].r + (isCur ? 8 : 4)).toFixed(1), class: 'ring prev' }, g);
+      el('title', {}, g).textContent = `${chords[i]}: ${pos[i].n} moves out in the chorales`;
+      // Name the current chord, the previous one, the likeliest next chords, and the common chords.
       // Common major chords sit next to their root's name already, so skip those.
-      const major = /^[A-G][#-]?$/.test(names[i]);
-      if (i === cur || labelled.has(i) || (pos[i].n >= 120 && !major)) {
+      const major = /^[A-G][#-]?$/.test(chords[i]);
+      if (isCur || isPrev || labelled.has(i) || (pos[i].n >= 120 && !major)) {
         // Labels sit on the outer side of the dot: left of it on the left half.
-        const left = Math.cos(pos[i].a) < -0.2, gap = pos[i].r + (i === cur ? 8 : 3);
-        const t = el('text', { x: (pos[i].x + (left ? -gap : gap)).toFixed(1), y: (pos[i].y + 4).toFixed(1), 'text-anchor': left ? 'end' : 'start', class: 'net-label' + (i === cur ? ' cur' : '') }, gLab);
-        if (i === cur) t.textContent = showLabels && P[cur][cur] > 0 ? `${names[i]} (stays ${fmt(P[cur][cur])})` : names[i];
-        else t.textContent = showLabels && labelled.has(i) ? `${names[i]} ${fmt(P[cur][i])}` : names[i];
+        const left = Math.cos(pos[i].a) < -0.2, gap = pos[i].r + (isCur || isPrev ? 8 : 3);
+        const t = el('text', { x: (pos[i].x + (left ? -gap : gap)).toFixed(1), y: (pos[i].y + 4).toFixed(1), 'text-anchor': left ? 'end' : 'start', class: 'net-label' + (isCur ? ' cur' : isPrev ? ' prev' : '') }, gLab);
+        // The current and previous chords get a second, smaller line, so long labels
+        // near the left and right edges stay inside the frame.
+        let line2 = '';
+        if (isCur) line2 = showLabels && pNext[cc] ? `stays ${fmt(pNext[cc])}` : '';
+        else if (isPrev) line2 = 'previous';
+        t.textContent = chords[i] + (!isCur && showLabels && labelled.has(i) ? ` ${fmt(pNext[i])}` : '');
+        if (line2) {
+          const ts = el('tspan', { x: t.getAttribute('x'), dy: 13, class: 'net-label-sub' }, t);
+          ts.textContent = line2;
+        }
       }
     }
-    el('circle', { id: 'token', r: 7, cx: pos[cur].x, cy: pos[cur].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
+    el('circle', { id: 'token', r: 7, cx: pos[cc].x, cy: pos[cc].y, class: 'token', style: `fill:${color(cur)};opacity:0` }, svg);
   }
 
   // ---------------------------------------------------------------- walk
@@ -547,7 +575,7 @@
     history.push(next); if (history.length > 200) history.shift();
     if (animate) {
       // Sound plays only on Step and Play, never during +1,000 steps.
-      if (soundOn()) playChord(names[next], Math.min(1.4, stepInterval() / 1000 * 0.95));
+      if (soundOn()) playChord(curChord(next), Math.min(1.4, stepInterval() / 1000 * 0.95));
       moveToken(from, next);
     }
   }
@@ -586,8 +614,16 @@
     const c = document.createElement('span');
     c.className = 'chip' + (isBig() ? ' wide' : '');
     c.style.background = color(s);
-    c.textContent = isBig() ? names[s] : names[s].slice(0, 3);
+    c.textContent = isBig() ? curChord(s) : names[s].slice(0, 3);
     c.title = names[s];
+    return c;
+  }
+  // Pairs: the start state's first chord gets its own chip, so the strip reads as the chord sequence.
+  function chordChip(nm) {
+    const c = document.createElement('span');
+    c.className = 'chip wide';
+    c.style.background = qualityColor(nm);
+    c.textContent = nm; c.title = nm;
     return c;
   }
   function renderTicker() {
@@ -605,11 +641,15 @@
       row.style.transform = 'translateX(0)';
     } else {
       row.innerHTML = '';
+      if (pairMode && history.length < 200) row.appendChild(chordChip(stateChords(history[0])[0]));
       history.slice(-TICK_KEEP).forEach((st) => row.appendChild(tickerChip(st)));
       row.style.transition = 'none';
       row.style.transform = 'translateX(0)';
     }
-    Array.from(row.children).forEach((c, k, all) => c.classList.toggle('latest', k === all.length - 1));
+    Array.from(row.children).forEach((c, k, all) => {
+      c.classList.toggle('latest', k === all.length - 1);
+      c.classList.toggle('prev', pairMode && k === all.length - 2);
+    });
     tickerShown = steps; tickerWalk = walkId;
   }
 
@@ -668,20 +708,26 @@
   }
 
   // Panel titles and captions that differ between drawn chains and big ones.
+  // Panel text for [small chains, Bach order 1, Bach order 2].
+  const NET_DESC = 'Each dot is a chord. Its angle is its root on the circle of fifths (C at the top, then G, D, A, ...); its distance from the center is its quality, from major on the outside through dominant seventh, added sixth, sus4, minor, minor seventh, minor sixth and diminished to diminished seventh in the middle. Bigger dots are more common chords. Faint lines are the likelier moves (p ≥ 0.10). Colors mark quality: blue major, cyan minor, red dominant seventh, gray diminished, gold sus4 or added sixth.';
   const TEXTS = [
-    ['#viz-chain > .viz-title', 'The chain', 'The chain: 99 chords'],
-    ['#viz-chain > .viz-description',
-      null,
-      'Each dot is a chord. Its angle is its root on the circle of fifths (C at the top, then G, D, A, ...); its distance from the center is its quality, from major on the outside through dominant seventh, added sixth, sus4, minor, minor seventh, minor sixth and diminished to diminished seventh in the middle. Bigger dots are more common chords. Faint lines are the likelier moves (p ≥ 0.10). The colored arrows leave the current chord: they are the row the next step is drawn from, and the six likeliest are labeled. Colors mark quality: blue major, cyan minor, red dominant seventh, gray diminished, gold sus4 or added sixth.'],
-    ['#viz-matrix > .viz-title', 'Transition matrix used', 'Row of the transition matrix for the current chord'],
-    ['#viz-matrix > .viz-caption', null, 'Each count divided by the row total, as on the "Where does D7 go?" slide. The row changes every time the walk moves.']
+    ['#viz-chain > .viz-title', 'The chain', 'The chain: 99 chords', 'The chain: pairs of chords (order 2)'],
+    ['#viz-chain > .viz-description', null,
+      NET_DESC + ' The colored arrows leave the current chord: they are the row the next step is drawn from, and the six likeliest are labeled.',
+      'The state is the last two chords: the solid ring is the current chord, the dashed ring the chord before it. The same chord can have different next chords depending on what came before, so the arrows change with both. ' + NET_DESC + ' The colored arrows leave the current chord: they are the row of the current pair, and the six likeliest are labeled.'],
+    ['.mc-walk .mc-stat-row > span.mc-unit', null, null, 'newest on the right · the state is the last two chords (outlined)'],
+    ['#viz-matrix > .viz-title', 'Transition matrix used', 'Row of the transition matrix for the current chord', 'Row of the transition matrix for the current pair'],
+    ['#viz-matrix > .viz-caption', null,
+      'Each count divided by the row total, as on the "Where does D7 go?" slide. The row changes every time the walk moves.',
+      'Each count divided by the row total for the current pair (previous chord, current chord). The next state is (current chord, next chord).']
   ];
   function setModeText() {
     TEXTS.forEach((t) => {
       const node = document.querySelector(t[0]);
       if (!node) return;
       if (t[1] === null) t[1] = node.textContent;   // remember the original once
-      node.textContent = isBig() ? t[2] : t[1];
+      const pick = pairMode ? t[3] : isBig() ? t[2] : t[1];
+      node.textContent = pick === null ? t[1] : pick;
     });
     $('play-chords-wrap').hidden = !soundable;
   }
@@ -706,11 +752,14 @@
   function loadPreset(id) {
     const pr = PRESETS.find((p) => p.id === id) || PRESETS[0];
     soundable = !!pr.chords;
-    if (pr.id === 'bach') {
-      // 99 x 99 counts built from the sparse rows in bach.js.
+    pairMode = !!pr.pairs;
+    if (pr.chords) {
+      // Dense count tables built from the sparse rows in bach.js:
+      // 99 x 99 chords for order 1, 747 x 747 pairs for order 2.
       const B = window.MC_BACH;
-      names = B.states.slice();
-      raw = names.map((a) => names.map((b) => String((B.rows[a] || {})[b] || 0)));
+      const rows = pairMode ? B.pairRows : B.rows;
+      names = (pairMode ? B.pairs : B.states).slice();
+      raw = names.map((a) => { const r = rows[a] || {}; return names.map((b) => (r[b] ? String(r[b]) : '0')); });
     } else if (pr.table) {
       names = pr.names.slice();
       raw = pr.table.map((r) => r.slice());
@@ -723,6 +772,18 @@
     $('preset-note').textContent = pr.note;
     cur = pr.start ? Math.max(0, names.indexOf(pr.start)) : 0;
     rebuild(true);
+    setLink(pr.id);
+  }
+
+  // Deep links: index.html#bach (or #bach2, #cville, ...) opens that example,
+  // and the address bar follows the menu so its URL can be copied and shared.
+  function setLink(id) {
+    // window.history: `history` in this file is the walk's list of visited states.
+    try { window.history.replaceState(null, '', id ? `#${id}` : location.pathname + location.search); } catch (e) { /* file:// or sandboxed */ }
+  }
+  function linkedPreset() {
+    const id = decodeURIComponent(location.hash.replace(/^#/, ''));
+    return PRESETS.some((p) => p.id === id) ? id : null;
   }
 
   function resize(n) {
@@ -741,6 +802,8 @@
       raw = raw.slice(0, n).map((r) => r.slice(0, n));
     }
     soundable = false;
+    pairMode = false;
+    setLink('');
     $('preset-note').textContent = 'Your own table. New states start as absorbing (a 1 on the diagonal) until you fill in their row.';
     $('preset').value = '';
     rebuild(true);
@@ -767,14 +830,16 @@
   // Ticking the box is a user gesture, which browsers require before audio
   // can start; play the current chord so the reader hears that sound is on.
   $('play-chords').addEventListener('change', () => {
-    if ($('play-chords').checked) playChord(names[cur], 1.0); else silence();
+    if ($('play-chords').checked) playChord(curChord(cur), 1.0); else silence();
   });
   $('speed').addEventListener('input', updateSpeedLabel);
 
   updateSpeedLabel();
-  presetSel.value = 'class-weather';
-  loadPreset('class-weather');
+  const first = linkedPreset() || 'class-weather';
+  presetSel.value = first;
+  loadPreset(first);
+  window.addEventListener('hashchange', () => { const id = linkedPreset(); if (id && id !== presetSel.value) { presetSel.value = id; loadPreset(id); } });
 
   // exposed for testing in the console
-  window.MarkovWalk = { get P() { return P; }, get names() { return names; }, get cur() { return cur; }, get longRun() { return longRun; }, get counts() { return counts; }, get steps() { return steps; }, get audioState() { return actx ? actx.state : null; }, step, computeLongRun, parseEntry, chordMidi, loadPreset };
+  window.MarkovWalk = { get P() { return P; }, get names() { return names; }, get cur() { return cur; }, get pairMode() { return pairMode; }, get longRun() { return longRun; }, get counts() { return counts; }, get steps() { return steps; }, get audioState() { return actx ? actx.state : null; }, step, computeLongRun, parseEntry, chordMidi, loadPreset };
 })();

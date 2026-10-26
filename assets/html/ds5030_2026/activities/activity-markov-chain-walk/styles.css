@@ -171,3 +171,11 @@ body.presentation-mode.mc-page main { max-width: 1400px; }
 .mc-input td.mc-big-note { font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; padding: 4px 0; white-space: normal; }
 /* .mc-check and .mc-n-row set display, which would override the hidden attribute. */
 body.mc-page [hidden] { display: none !important; }
+
+/* Order-2 Bach: the state is (previous chord, current chord). */
+#mc-diagram .node circle.ring.prev { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 3 3; fill: none; }
+#mc-diagram .net-label.prev { font-weight: 700; }
+#mc-diagram .net-state { font-family: var(--sans); font-size: 15px; font-weight: 700; fill: var(--ink); }
+#mc-diagram .net-state-sub { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); }
+.mc-seq .chip.prev { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink-soft); }
+#mc-diagram .net-label .net-label-sub { font-size: 10px; font-weight: 400; fill: var(--ink-soft); }
