@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Computational tools for phenotype classification and GRN inference
+title: Computational tools for understanding cell identity
 img: assets/img/cellsys_graphical_abstract.png
 importance: 1
 category: research
