@@ -724,6 +724,8 @@ const BH_STATE_NAMES = ["Intermediate", "nonNE2", "Stress", "nonNE1", "Neuroendo
 // The six archetypes and their colors from the paper's figures
 const BH_ARCHETYPES = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Intermediate", "nonNE1", "nonNE2"];
 const BH_ARCHETYPE_COLORS = { Neuroendocrine1: "#cb76da", Neuroendocrine2: "#8e403a", Stress: "#3eab32", Intermediate: "#4e8ee6", nonNE1: "#f10c13", nonNE2: "#f27a30" };
+// Mean normalized expression per archetype (cells in train + test splits), in BH_ARCHETYPES order
+const BH_MEANS = {"ASCL1":[0.897,0.713,0.363,0.406,0.031,0.014],"BACH1":[0.82,0.656,0.786,0.625,0.686,0.872],"BACH2":[0.653,0.223,0.815,0.531,0.895,0.945],"CREB1":[0.901,0.682,0.433,0.538,0.54,0.422],"CUX2":[0.963,0.866,0.336,0.354,0.071,0.008],"EGR1":[0.75,0.901,0.622,0.384,0.093,0.561],"EHF":[0.186,0.332,0.776,0.679,0.967,0.992],"EPCAM":[0.902,0.68,0.557,0.647,0.399,0.201],"ESR1":[0.485,0.316,0.373,0.669,0.993,0.785],"ETS1":[0.922,0.717,0.833,0.588,0.435,0.406],"FOS":[0.144,0.663,0.128,0.343,0.594,0.983],"FOXO3":[0.756,0.444,0.616,0.695,0.856,0.992],"GRHL2":[0.84,0.636,0.391,0.632,0.86,0.598],"HES1":[0.395,0.304,0.337,0.72,0.994,0.983],"HSF2":[0.915,0.707,0.699,0.47,0.079,0.147],"ICAM1":[0.135,0.265,0.528,0.549,0.993,0.994],"JUN":[0.115,0.498,0.259,0.452,0.621,0.999],"JUNB":[0.178,0.873,0.133,0.319,0.367,0.922],"JUND":[0.566,0.655,0.168,0.621,0.944,0.959],"KMT2A":[0.676,0.788,0.867,0.454,0.016,0.012],"LMX1B":[0.777,0.916,0.621,0.461,0.002,0.003],"MEIS2":[0.865,0.957,0.632,0.374,0.001,0.001],"NCAM1":[0.928,0.756,0.434,0.442,0.002,0.009],"NFATC2":[0.875,0.898,0.772,0.452,0.001,0.003],"NFIA":[0.317,0.515,0.366,0.646,0.993,0.936],"NFIB":[0.898,0.644,0.368,0.528,0.616,0.453],"NFIX":[0.073,0.142,0.109,0.506,0.999,0.991],"NFKB1":[0.82,0.671,0.585,0.641,0.715,0.623],"NFYC":[0.789,0.661,0.534,0.67,0.717,0.427],"NR6A1":[0.889,0.713,0.414,0.462,0.513,0.472],"PBX1":[0.352,0.663,0.956,0.34,0.851,0.77],"PKNOX2":[0.929,0.758,0.351,0.45,0.082,0.013],"PROX1":[0.926,0.746,0.476,0.447,0.0,0.004],"RBPJ":[0.892,0.673,0.569,0.535,0.455,0.293],"REST":[0.042,0.087,0.274,0.561,0.999,0.997],"RORA_RORB":[0.897,0.715,0.613,0.497,0.118,0.097],"RUNX1":[0.103,0.119,0.498,0.571,0.998,0.988],"SIX1":[0.902,0.699,0.408,0.443,0.042,0.088],"SIX4":[0.913,0.714,0.589,0.492,0.056,0.049],"SMAD3":[0.036,0.068,0.818,0.533,0.997,0.995],"SOX11":[0.925,0.6,0.447,0.648,0.135,0.285],"SOX9":[0.133,0.133,0.443,0.578,0.994,1.0],"STAT1":[0.792,0.497,0.367,0.634,0.973,0.854],"STAT2":[0.587,0.379,0.791,0.468,0.877,0.943],"TBX15":[0.868,0.746,0.503,0.507,0.018,0.028],"TCF4":[0.91,0.703,0.522,0.458,0.308,0.216],"TCF7L1":[0.63,0.22,0.244,0.726,0.992,0.855],"TCF7L2":[0.042,0.113,0.032,0.499,0.998,0.996],"TEAD1":[0.907,0.678,0.58,0.52,0.614,0.505],"TFDP1":[0.932,0.732,0.647,0.564,0.326,0.177],"THRB":[0.87,0.61,0.455,0.591,0.765,0.53],"ZBTB20":[0.896,0.706,0.447,0.443,0.561,0.403],"ZEB1":[0.386,0.965,0.836,0.358,0.08,0.001]};
 // Tab order, matching the paper's figures
 const BH_STATE_ORDER = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Generalist NE", "Intermediate", "nonNE1", "nonNE2", "Generalist non-NE"];
 function makeBhattacharya() {
@@ -731,15 +733,19 @@ function makeBhattacharya() {
   const ne = BH_STATE_NAMES.indexOf("Generalist NE"), nn = BH_STATE_NAMES.indexOf("Generalist non-NE");
   const rows = Object.entries(BH_STATES).map(([tf, st]) => {
     const r = { TF: tf };
+    const means = BH_MEANS[tf], top = Math.max(...means);
+    r["Highest in"] = BH_ARCHETYPES.filter((_, i) => means[i] === top).join(" + ");
     const on = BH_ARCHETYPES.filter(name => st[BH_STATE_NAMES.indexOf(name)]);
     r["ON in archetypes"] = on.length ? on.join(" + ") : "None";
     r["NE vs non-NE"] = st[ne] && st[nn] ? "ON in both" : st[ne] ? "NE only" : st[nn] ? "Non-NE only" : "OFF in both";
     BH_STATE_ORDER.forEach(name => r[name] = st[BH_STATE_NAMES.indexOf(name)] ? "ON" : "OFF");
     r["States ON (of 8)"] = String(st.reduce((a, b) => a + b, 0));
+    BH_ARCHETYPES.forEach((name, i) => r[`Mean in ${name}`] = String(means[i]));
     return r;
   });
   const onOff = { order: ["ON", "OFF"], colors: { ON: "#c8494f", OFF: "#8f9bb0" } };
   const fixed = {
+    "Highest in": { order: BH_ARCHETYPES, colors: BH_ARCHETYPE_COLORS },
     "ON in archetypes": { parts: BH_ARCHETYPES, noTab: true, order: [...BH_ARCHETYPES, "None"], colors: { ...BH_ARCHETYPE_COLORS, None: "#8f9bb0" } },
     "NE vs non-NE": { order: ["NE only", "ON in both", "Non-NE only", "OFF in both"],
     colors: { "NE only": "#3a9fc6", "ON in both": "#b8892a", "Non-NE only": "#7c62b8", "OFF in both": "#8f9bb0" } } };
@@ -748,7 +754,7 @@ function makeBhattacharya() {
     main: { name: "bhattacharya_edges.csv", fields: ["regulator", "target", "Effect", "Strength"], rows: edges },
     nodes: { name: "bhattacharya_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed,
-    defaultColor: "ON in archetypes",
+    defaultColor: "Highest in",
     edgeFixed: { Effect: { order: ["Activating", "Inhibiting"], colors: { Activating: "#3a9a6a", Inhibiting: "#c8494f" } } },
   };
 }
