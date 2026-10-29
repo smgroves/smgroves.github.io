@@ -62,6 +62,10 @@ button { cursor: pointer; }
 .brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
 .meta { color: var(--muted); font-size: 13px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.modes { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; padding: 2px; background: var(--surface); flex-wrap: wrap; }
+.mode { border: 0; background: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.mode:hover { color: var(--ink); }
+.mode[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); }
 .example-select { width: auto; max-width: 100%; min-width: 0; flex: 0 1 auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .btn {
@@ -102,7 +106,8 @@ button { cursor: pointer; }
 .links-off .link { display: none; }
 .dim { opacity: .1; }
 .arrowhead { fill: var(--edge); }
-.grouped marker path { fill-opacity: .15; }
+.grouped marker:not(.hi) path { fill-opacity: .15; }
+.node { cursor: grab; }
 .links-off marker { display: none; }
 .link.hi { stroke-opacity: .9 !important; stroke-width: 1.6; }
 .nlabel {
@@ -140,7 +145,7 @@ button { cursor: pointer; }
 }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label, .check { font-size: 13px; }
-select, input[type="search"] {
+select, input[type="search"], input[type="text"] {
   border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 6px 8px; width: 100%;
 }
 .check { display: flex; align-items: center; gap: 8px; }
@@ -222,10 +227,18 @@ pre {
       <span class="meta" id="meta">Loading…</span>
     </div>
     <div class="actions">
+      <div class="modes" role="group" aria-label="Mode">
+        <button type="button" class="mode" id="mode-explore" aria-pressed="true">Explore a network</button>
+        <button type="button" class="mode" id="mode-compare" aria-pressed="false">Compare two networks</button>
+      </div>
       <label class="sr-only" for="sel-example">Example network</label>
       <select id="sel-example" class="example-select">
         <option value="wooten2019">Example: SCLC TFs, Wooten, Groves et al. 2019</option>
         <option value="bhattacharya2026">Example: SCLC TFs, Bhattacharya, Groves et al. 2026</option>
+      </select>
+      <label class="sr-only" for="sel-compare">Example comparison</label>
+      <select id="sel-compare" class="example-select" hidden>
+        <option value="wooten-vs-bhattacharya">Example: Wooten 2019 vs Bhattacharya 2026</option>
       </select>
       <button class="btn primary" id="btn-load" type="button">Load your CSV</button>
     </div>
@@ -290,8 +303,13 @@ pre {
 <dialog id="dlg">
   <div class="dlg">
     <div class="det-head">
-      <h2>Load a network</h2>
+      <h2 id="dlg-title">Load a network</h2>
       <button class="x" id="dlg-close" type="button" aria-label="Close">×</button>
+    </div>
+
+    <div class="field" id="net-name-field" hidden>
+      <label for="net-name">Name for this network (used to label it in the comparison)</label>
+      <input type="text" id="net-name" autocomplete="off" placeholder="e.g. Treated">
     </div>
 
     <div class="drops">
@@ -782,7 +800,25 @@ const zoom = d3.zoom().scaleExtent([0.08, 10]).on("zoom", e => {
   root.attr("transform", e.transform);
   if (e.sourceEvent) userZoomed = true;
 });
-svg.call(zoom).on("dblclick.zoom", null);
+// Drag grabs the nearest node within a few screen pixels, so small or moving nodes are easy to catch.
+// Registered before zoom so a node press doesn't also pan; presses on empty space fall through to zoom.
+const nodeDrag = d3.drag()
+  .container(() => root.node())
+  .clickDistance(4)
+  .subject(e => {
+    if (!sim) return null;
+    const k = d3.zoomTransform(svg.node()).k, d = sim.find(e.x, e.y, 40 / k);
+    return d && Math.hypot(d.x - e.x, d.y - e.y) <= d.r + 6 / k ? d : null;
+  })
+  .on("start", e => { e.subject._moved = false; hideTip(); })
+  .on("drag", e => {
+    const d = e.subject;
+    // e.active counts this gesture during "drag" events, so don't gate the restart on it here
+    if (!d._moved) { d._moved = true; sim.alphaTarget(0.25).restart(); }
+    d.fx = e.x; d.fy = e.y;
+  })
+  .on("end", e => { const d = e.subject; if (d._moved && !e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; });
+svg.call(nodeDrag).call(zoom).on("dblclick.zoom", null);
 svg.on("click", e => { if (e.target === svg.node()) setPinned(null); });
 
 const canvasEl = $("#canvas");
@@ -933,17 +969,23 @@ function renderMarkers() {
   const a = edgeAttrBy(state.edgeKey);
   const specs = [{ id: "arr-d", color: null }];
   if (a && a.type === "cat") a.order.forEach((c, i) => { if (c !== MISSING) specs.push({ id: `arr-${i}`, color: a.colors.get(c) }); });
-  defs.selectAll("marker").data(specs, d => d.id + d.color).join(enter => {
+  const all = specs.flatMap(d => [d, { ...d, id: d.id + "-h", hi: true }]);
+  defs.selectAll("marker").data(all, d => d.id + d.color).join(enter => {
     const m = enter.append("marker").attr("viewBox", "0 -5 10 10").attr("refX", 9).attr("refY", 0)
       .attr("markerUnits", "userSpaceOnUse").attr("orient", "auto");
     m.append("path").attr("d", "M0,-4L10,0L0,4Z").attr("class", "arrowhead");
     return m;
-  }).attr("id", d => d.id).attr("markerWidth", size).attr("markerHeight", size)
+  }).attr("id", d => d.id).attr("class", d => d.hi ? "hi" : null).attr("markerWidth", size).attr("markerHeight", size)
     .select("path").style("fill", d => d.color);
-  linkSel.attr("marker-end", l => {
+  updateMarkerRefs();
+}
+function updateMarkerRefs() {
+  const a = edgeAttrBy(state.edgeKey);
+  linkSel.attr("marker-end", function (l) {
     if (!state.directed) return null;
-    if (a && a.type === "cat") { const v = val(l, a.key); if (v !== MISSING) return `url(#arr-${a.order.indexOf(v)})`; }
-    return "url(#arr-d)";
+    let id = "arr-d";
+    if (a && a.type === "cat") { const v = val(l, a.key); if (v !== MISSING) id = `arr-${a.order.indexOf(v)}`; }
+    return `url(#${id}${this.classList.contains("hi") ? "-h" : ""})`;
   });
 }
 
@@ -992,14 +1034,7 @@ function draw() {
     .on("pointermove", moveTip)
     .on("pointerleave", () => { hideTip(); if (!state.pinned) highlight(null); })
     .on("click", (e, d) => { e.stopPropagation(); setPinned(state.pinned && state.pinned.node === d ? null : { type: "node", node: d }); })
-    .call(d3.drag()
-      .clickDistance(4)
-      .on("start", (e, d) => { d._moved = false; })
-      .on("drag", (e, d) => {
-        if (!d._moved) { d._moved = true; if (!e.active) sim.alphaTarget(0.25).restart(); }
-        d.fx = e.x; d.fy = e.y;
-      })
-      .on("end", (e, d) => { if (d._moved && !e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+;
 
   labelSel = gLabels.selectAll("text").data(state.nodes, d => d.id).join("text").attr("class", "nlabel").text(d => d.label);
   updateRadii(false);
@@ -1019,13 +1054,15 @@ function neighborhood(d) { const s = new Set(state.adj.get(d.id)); s.add(d.id); 
 function highlight(set, focus = null) {
   if (!set) {
     nodeSel.classed("dim", false); labelSel.classed("dim", false).classed("on", false); linkSel.classed("dim", false).classed("hi", false);
+    updateMarkerRefs();
     return;
   }
   nodeSel.classed("dim", d => !set.has(d.id));
   labelSel.classed("dim", d => !set.has(d.id)).classed("on", d => set.size <= 40 && set.has(d.id));
   // With a focus node, keep only that node's own edges, not edges among its neighbors
   const both = focus ? (l => l.source === focus || l.target === focus) : (l => set.has(l.source.id) && set.has(l.target.id));
-  linkSel.classed("dim", l => !both(l)).classed("hi", l => both(l) && set.size < state.nodes.length * 0.5);
+  linkSel.classed("dim", l => !both(l)).classed("hi", l => both(l) && (!!focus || set.size < state.nodes.length * 0.5));
+  updateMarkerRefs();
 }
 function setPinned(p) {
   state.pinned = p;
@@ -1317,7 +1354,11 @@ for (const which of ["main", "nodes"]) {
 }
 $("#fmt").addEventListener("change", () => { showFmt(); renderCompare(); $("#chk-directed").checked = $("#fmt").value !== "edge"; });
 $("#col-id").addEventListener("change", renderCompare);
-$("#btn-load").addEventListener("click", () => { setStatus(""); refreshDialog(); dlg.showModal(); });
+$("#btn-load").addEventListener("click", () => {
+  if (appMode === "compare") startLoadStep("A");
+  else { loadStep = null; $("#dlg-title").textContent = "Load a network"; $("#net-name-field").hidden = true; $("#btn-build").textContent = "Build network"; setStatus(""); refreshDialog(); }
+  dlg.showModal();
+});
 $("#dlg-close").addEventListener("click", () => dlg.close());
 $("#btn-cancel").addEventListener("click", () => dlg.close());
 $("#btn-sample").addEventListener("click", () => { loadSample(); dlg.close(); });
@@ -1331,23 +1372,108 @@ $("#btn-build").addEventListener("click", () => {
   };
   try {
     const g = buildGraph(files.main, files.nodes, cfg); g.fmt = cfg.fmt;
-    initViz(g, files.main.name + (files.nodes ? ` + ${files.nodes.name}` : ""));
+    const fname = files.main.name + (files.nodes ? ` + ${files.nodes.name}` : "");
+    if (appMode !== "compare") { initViz(g, fname); dlg.close(); return; }
+    const name = $("#net-name").value.trim() || `Network ${loadStep}`;
+    if (loadStep === "A") { pendingA = { g, name }; startLoadStep("B"); setStatus(`Network A “${name}” is ready. Now load network B.`); return; }
+    if (name === pendingA.name) throw new Error("Give the two networks different names.");
+    initViz(mergeGraphs(pendingA, { g, name }), `Comparing ${pendingA.name} and ${name}`);
     dlg.close();
   } catch (err) { setStatus(err.message, true); }
 });
+
+/* ---------------- Compare two networks ----------------
+   The two graphs are merged on node ID. "Found in" marks each node and edge as in A only,
+   B only, or both; every other attribute is kept with its network's name in front. */
+function mergeGraphs(A, B) {
+  const nodes = new Map(), links = new Map(), nodeKeys = [], edgeKeys = [], fixed = {}, edgeFixed = {};
+  const FOUND = "Found in", both = `${A.name} + ${B.name}`;
+  const id = x => typeof x === "object" ? x.id : x;
+  for (const [side, net] of [["A", A], ["B", B]]) {
+    const pre = k => `${net.name}: ${k}`;
+    net.g.nodeKeys.forEach(k => nodeKeys.push(pre(k)));
+    net.g.edgeKeys.forEach(k => edgeKeys.push(pre(k)));
+    for (const [k, v] of Object.entries(net.g.fixed || {})) fixed[pre(k)] = v;
+    for (const [k, v] of Object.entries(net.g.edgeFixed || {})) edgeFixed[pre(k)] = v;
+    for (const n of net.g.nodes) {
+      let m = nodes.get(n.id);
+      if (!m) { m = { id: n.id, label: n.label, attrs: {}, sides: new Set() }; nodes.set(n.id, m); }
+      m.sides.add(side);
+      for (const [k, v] of Object.entries(n.attrs)) m.attrs[pre(k)] = v;
+    }
+    for (const l of net.g.links) {
+      const s = id(l.source), t = id(l.target), key = s + "\u0001" + t;
+      let m = links.get(key);
+      if (!m) { m = { source: s, target: t, attrs: {}, sides: new Set() }; links.set(key, m); }
+      m.sides.add(side);
+      for (const [k, v] of Object.entries(l.attrs)) m.attrs[pre(k)] = v;
+    }
+  }
+  const label = set => set.size === 2 ? both : set.has("A") ? A.name : B.name;
+  const list = [...nodes.values()], linkList = [...links.values()];
+  list.forEach(n => n.attrs[FOUND] = label(n.sides));
+  linkList.forEach(l => l.attrs[FOUND] = label(l.sides));
+  const degKey = "Connections (combined)";
+  const deg = new Map(list.map(n => [n.id, 0]));
+  linkList.forEach(l => { deg.set(l.source, deg.get(l.source) + 1); deg.set(l.target, deg.get(l.target) + 1); });
+  list.forEach(n => n.attrs[degKey] = deg.get(n.id));
+  const colors = { [A.name]: "#3b6fb6", [B.name]: "#e07b39", [both]: "#8a63b8" };
+  fixed[FOUND] = { order: [A.name, both, B.name], colors };
+  edgeFixed[FOUND] = { order: [A.name, both, B.name], colors };
+  return { nodes: list, links: linkList, nodeKeys: [FOUND, ...nodeKeys, degKey], edgeKeys: [FOUND, ...edgeKeys],
+    degKey, fixed, edgeFixed, directed: !!(A.g.directed || B.g.directed), fmt: "edge", defaultColor: FOUND };
+}
+
+let appMode = "explore", loadStep = null, pendingA = null;
+function resetFiles() {
+  files.main = null; files.nodes = null;
+  $("#file-main").value = ""; $("#file-nodes").value = "";
+}
+function startLoadStep(step) {
+  loadStep = step;
+  resetFiles();
+  const compare = appMode === "compare";
+  $("#dlg-title").textContent = compare ? `Load network ${step} of 2` : "Load a network";
+  $("#net-name-field").hidden = !compare;
+  $("#net-name").value = "";
+  $("#btn-build").textContent = !compare ? "Build network" : step === "A" ? "Next: network B" : "Compare networks";
+  setStatus("");
+  refreshDialog();
+}
+function setAppMode(mode) {
+  appMode = mode;
+  $("#mode-explore").setAttribute("aria-pressed", mode === "explore");
+  $("#mode-compare").setAttribute("aria-pressed", mode === "compare");
+  $("#sel-example").hidden = mode !== "explore";
+  $("#sel-compare").hidden = mode !== "compare";
+  $("#btn-load").textContent = mode === "compare" ? "Load two networks" : "Load your CSV";
+  $("#btn-sample").textContent = mode === "compare" ? "Show example comparison" : "Show example again";
+  loadSample();
+}
+$("#mode-explore").addEventListener("click", () => setAppMode("explore"));
+$("#mode-compare").addEventListener("click", () => setAppMode("compare"));
 
 const EXAMPLES = {
   wooten2019: { make: makeSCLC, label: "SCLC transcription factor network (Wooten, Groves et al. 2019)" },
   bhattacharya2026: { make: makeBhattacharya, label: "SCLC transcription factor network (Bhattacharya, Groves et al. 2026)" },
 };
-function loadSample() {
-  const key = $("#sel-example").value in EXAMPLES ? $("#sel-example").value : "wooten2019";
-  const ex = EXAMPLES[key], s = ex.make();
+function exampleGraph(key) {
+  const s = EXAMPLES[key].make();
   const g = buildGraph(s.main, s.nodes, { fmt: "edge", src: "regulator", tgt: "target", idCol: "TF", directed: true, fixed: s.fixed });
   g.fmt = "edge"; g.edgeFixed = s.edgeFixed; g.defaultColor = s.defaultColor;
-  initViz(g, ex.label);
+  return g;
+}
+function loadSample() {
+  if (appMode === "compare") {
+    const A = { g: exampleGraph("wooten2019"), name: "Wooten 2019" }, B = { g: exampleGraph("bhattacharya2026"), name: "Bhattacharya 2026" };
+    initViz(mergeGraphs(A, B), "Comparing SCLC TF networks: Wooten, Groves et al. 2019 and Bhattacharya, Groves et al. 2026");
+    return;
+  }
+  const key = $("#sel-example").value in EXAMPLES ? $("#sel-example").value : "wooten2019";
+  initViz(exampleGraph(key), EXAMPLES[key].label);
 }
 $("#sel-example").addEventListener("change", loadSample);
+$("#sel-compare").addEventListener("change", loadSample);
 
 requestAnimationFrame(loadSample);
 })();
