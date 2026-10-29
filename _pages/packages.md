@@ -4,6 +4,7 @@ title: Packages
 permalink: /packages/
 description: "Packaged tools I've developed for researchers and data enthusiasts"
 display_categories: [packages]
+app_categories: [webapps]
 horizontal: false
 ---
 
@@ -28,4 +29,17 @@ horizontal: false
   </div>
   {%- endif -%}
 {% endfor %}
+</div>
+
+<!-- Web apps: single-page tools that run in the browser -->
+<div class="projects packages">
+  <h2 class="category">Web Apps</h2>
+  {%- for category in page.app_categories %}
+  {%- assign sorted_apps = site.projects | where: "category", category | sort: "importance" %}
+  <div class="grid">
+    {%- for project in sorted_apps -%}
+      {% include projects.html %}
+    {%- endfor %}
+  </div>
+  {%- endfor %}
 </div>
