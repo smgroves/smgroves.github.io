@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Packages
+title: Tools
 permalink: /packages/
-description: "Packaged tools I've developed for researchers and data enthusiasts"
+description: "Packages and apps I've developed for researchers and data enthusiasts"
 display_categories: [packages]
 app_categories: [webapps]
 horizontal: false
@@ -10,6 +10,7 @@ horizontal: false
 
 <!-- pages/packages.md -->
 <div class="projects packages">
+  <h2 class="category">Packages</h2>
 {%- for category in page.display_categories %}
   {%- assign categorized_projects = site.projects | where: "category", category -%}
   {%- assign sorted_projects = categorized_projects | sort: "importance" %}
@@ -31,9 +32,9 @@ horizontal: false
 {% endfor %}
 </div>
 
-<!-- Web apps: single-page tools that run in the browser -->
+<!-- Apps: single-page tools that run in the browser -->
 <div class="projects packages">
-  <h2 class="category">Web Apps</h2>
+  <h2 class="category">Apps</h2>
   {%- for category in page.app_categories %}
   {%- assign sorted_apps = site.projects | where: "category", category | sort: "importance" %}
   <div class="grid">

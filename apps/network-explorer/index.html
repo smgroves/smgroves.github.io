@@ -458,6 +458,8 @@ function analyze(items, keys, fixed = {}) {
     if (fx && !allNum) order = fx.order.filter(c => counts.has(c)).concat(order.filter(c => !fx.order.includes(c)));
     const a = { key, type: allNum ? "num" : "cat", order, counts, uniq,
       groupable: allNum ? uniq >= 2 && uniq <= 12 : uniq >= 2 && uniq <= 30 };
+    if (fx && fx.noTab) a.groupable = false;
+    if (fx && fx.parts) { a.parts = fx.parts; a.partColors = new Map(fx.parts.map(x => [x, fx.colors[x]])); }
     if (allNum) {
       const vals = present.map(it => it.attrs[key]);
       a.min = d3.min(vals); a.max = d3.max(vals);
@@ -719,6 +721,9 @@ const BH_EDGES = [["EGR1","ASCL1",5.464],["HES1","ASCL1",-2.263],["JUN","ASCL1",
 const BH_STATES = {"ASCL1":[0,0,0,0,1,1,1,0],"BACH1":[1,1,1,1,1,1,1,0],"BACH2":[1,1,1,1,1,0,0,1],"CREB1":[1,0,0,0,1,1,1,0],"CUX2":[0,0,0,0,1,1,1,0],"EGR1":[0,0,1,0,1,1,1,0],"EHF":[1,1,1,1,0,0,0,1],"EPCAM":[1,0,0,0,1,1,1,0],"ESR1":[1,1,0,1,0,0,0,1],"ETS1":[1,0,1,0,1,1,1,0],"FOS":[0,1,0,1,0,1,0,1],"FOXO3":[1,1,1,1,1,0,1,1],"GRHL2":[1,1,0,1,1,1,1,1],"HES1":[1,1,0,1,0,0,0,1],"HSF2":[1,0,1,0,1,1,1,0],"ICAM1":[0,1,1,1,0,0,0,1],"JUN":[0,1,0,1,0,0,0,1],"JUNB":[0,1,0,1,0,1,0,0],"JUND":[1,1,0,1,1,1,1,1],"KMT2A":[1,0,1,0,1,1,1,0],"LMX1B":[1,0,1,0,1,1,1,0],"MEIS2":[0,0,1,0,1,1,1,0],"NCAM1":[1,0,0,0,1,1,1,0],"NFATC2":[1,0,1,0,1,1,1,0],"NFIA":[1,1,0,1,0,1,0,1],"NFIB":[1,0,0,0,1,1,1,0],"NFIX":[0,1,0,1,0,0,0,1],"NFKB1":[1,1,1,1,1,1,1,0],"NFYC":[1,0,1,1,1,1,1,0],"NR6A1":[0,0,0,0,1,1,1,0],"PBX1":[0,1,1,1,0,1,1,1],"PKNOX2":[0,0,0,0,1,1,1,0],"PROX1":[0,0,0,0,1,1,1,0],"RBPJ":[1,0,1,0,1,1,1,0],"REST":[0,1,0,1,0,0,0,1],"RORA_RORB":[1,0,1,0,1,1,1,0],"RUNX1":[0,1,0,1,0,0,0,1],"SIX1":[1,0,0,0,1,1,1,0],"SIX4":[1,0,1,0,1,1,1,0],"SMAD3":[0,1,1,1,0,0,0,1],"SOX11":[1,0,0,0,1,1,1,0],"SOX9":[1,1,0,1,0,0,0,1],"STAT1":[1,1,0,1,1,1,1,1],"STAT2":[0,1,1,1,1,0,0,1],"TBX15":[1,0,0,0,1,1,1,0],"TCF4":[0,0,0,0,1,1,1,0],"TCF7L1":[1,1,0,1,1,0,0,1],"TCF7L2":[0,1,0,1,0,0,0,1],"TEAD1":[1,0,1,0,1,1,1,0],"TFDP1":[1,0,1,0,1,1,1,0],"THRB":[1,0,0,1,1,1,1,1],"ZBTB20":[1,0,0,0,1,1,1,0],"ZEB1":[0,0,1,0,0,1,1,0]};
 // Column order of BH_STATES (Arc_1 … Arc_6, then the generalists), named as in the paper
 const BH_STATE_NAMES = ["Intermediate", "nonNE2", "Stress", "nonNE1", "Neuroendocrine1", "Neuroendocrine2", "Generalist NE", "Generalist non-NE"];
+// The six archetypes and their colors from the paper's figures
+const BH_ARCHETYPES = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Intermediate", "nonNE1", "nonNE2"];
+const BH_ARCHETYPE_COLORS = { Neuroendocrine1: "#cb76da", Neuroendocrine2: "#8e403a", Stress: "#3eab32", Intermediate: "#4e8ee6", nonNE1: "#f10c13", nonNE2: "#f27a30" };
 // Tab order, matching the paper's figures
 const BH_STATE_ORDER = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Generalist NE", "Intermediate", "nonNE1", "nonNE2", "Generalist non-NE"];
 function makeBhattacharya() {
@@ -726,19 +731,24 @@ function makeBhattacharya() {
   const ne = BH_STATE_NAMES.indexOf("Generalist NE"), nn = BH_STATE_NAMES.indexOf("Generalist non-NE");
   const rows = Object.entries(BH_STATES).map(([tf, st]) => {
     const r = { TF: tf };
+    const on = BH_ARCHETYPES.filter(name => st[BH_STATE_NAMES.indexOf(name)]);
+    r["ON in archetypes"] = on.length ? on.join(" + ") : "None";
     r["NE vs non-NE"] = st[ne] && st[nn] ? "ON in both" : st[ne] ? "NE only" : st[nn] ? "Non-NE only" : "OFF in both";
     BH_STATE_ORDER.forEach(name => r[name] = st[BH_STATE_NAMES.indexOf(name)] ? "ON" : "OFF");
     r["States ON (of 8)"] = String(st.reduce((a, b) => a + b, 0));
     return r;
   });
   const onOff = { order: ["ON", "OFF"], colors: { ON: "#c8494f", OFF: "#8f9bb0" } };
-  const fixed = { "NE vs non-NE": { order: ["NE only", "ON in both", "Non-NE only", "OFF in both"],
+  const fixed = {
+    "ON in archetypes": { parts: BH_ARCHETYPES, noTab: true, order: [...BH_ARCHETYPES, "None"], colors: { ...BH_ARCHETYPE_COLORS, None: "#8f9bb0" } },
+    "NE vs non-NE": { order: ["NE only", "ON in both", "Non-NE only", "OFF in both"],
     colors: { "NE only": "#3a9fc6", "ON in both": "#b8892a", "Non-NE only": "#7c62b8", "OFF in both": "#8f9bb0" } } };
   BH_STATE_NAMES.forEach(n => fixed[n] = onOff);
   return {
     main: { name: "bhattacharya_edges.csv", fields: ["regulator", "target", "Effect", "Strength"], rows: edges },
     nodes: { name: "bhattacharya_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed,
+    defaultColor: "ON in archetypes",
     edgeFixed: { Effect: { order: ["Activating", "Inhibiting"], colors: { Activating: "#3a9a6a", Inhibiting: "#c8494f" } } },
   };
 }
@@ -769,8 +779,8 @@ const edgeAttrBy = key => state.edgeAttrs.find(a => a.key === key);
 
 function splitParts(a, c) {
   if (a.type !== "cat" || typeof c !== "string" || !c.includes(" + ")) return null;
-  const parts = c.split(" + ");
-  return parts.every(x => a.colors.has(x)) ? parts.map(x => a.colors.get(x)) : null;
+  const parts = c.split(" + "), pal = a.partColors || a.colors;
+  return parts.every(x => pal.has(x)) ? parts.map(x => pal.get(x)) : null;
 }
 function catCss(a, c) {
   if (c === MISSING) return "var(--missing)";
@@ -1047,7 +1057,7 @@ function renderTabs() {
 
 function fillControls() {
   const opt = (v, t, sel) => `<option value="${esc(v)}"${sel ? " selected" : ""}>${esc(t)}</option>`;
-  const colorable = state.attrs.filter(a => a.groupable || a.type === "num");
+  const colorable = state.attrs.filter(a => a.groupable || a.parts || a.type === "num");
   $("#sel-color").innerHTML = opt("", "One color") + colorable.map(a => opt(a.key, a.key, a.key === state.colorKey)).join("");
   const nums = state.attrs.filter(a => a.type === "num");
   $("#sel-size").innerHTML = opt("", "Equal size") + nums.map(a => opt(a.key, a.key, a.key === state.sizeKey)).join("");
@@ -1069,9 +1079,29 @@ function legendHTML(a, interactive) {
     return `<${tag} class="leg-item" data-i="${i}"${interactive ? ' type="button"' : ""}><span class="sw" style="background:${col}"></span><span class="leg-name">${esc(vlabel(c))}</span><span class="leg-n">${a.counts.get(c)}</span></${tag}>`;
   }).join("");
 }
+function renderPartsLegend(a, el) {
+  const has = (d, x) => { const v = val(d, a.key); return v !== MISSING && String(v).split(" + ").includes(x); };
+  const items = [...a.parts, ...a.order.filter(c => !String(c).includes(" + ") && !a.parts.includes(c))];
+  el.innerHTML = `<p class="muted small" style="margin:0 0 4px">Each node is striped with every color it is ON in.</p>` + items.map((x, i) => {
+    const col = x === MISSING ? "var(--missing)" : (a.partColors.get(x) || a.colors.get(x));
+    const n = state.nodes.filter(d => a.parts.includes(x) ? has(d, x) : val(d, a.key) === x).length;
+    return `<button class="leg-item" type="button" data-i="${i}"><span class="sw" style="background:${col}"></span><span class="leg-name">${esc(vlabel(x))}</span><span class="leg-n">${n}</span></button>`;
+  }).join("");
+  const setFor = x => new Set(state.nodes.filter(d => a.parts.includes(x) ? has(d, x) : val(d, a.key) === x).map(d => d.id));
+  el.querySelectorAll(".leg-item").forEach(btn => {
+    const i = +btn.dataset.i, x = items[i];
+    btn.addEventListener("pointerenter", () => { if (!state.pinned) highlight(setFor(x)); });
+    btn.addEventListener("pointerleave", () => { if (!state.pinned) highlight(null); });
+    btn.addEventListener("click", () => {
+      const same = state.pinned && state.pinned.type === "cat" && state.pinned.index === i && state.pinned.key === a.key;
+      setPinned(same ? null : { type: "cat", key: a.key, index: i, set: setFor(x) });
+    });
+  });
+}
 function renderLegend() {
   const a = attrBy(state.colorKey);
   const el = $("#legend");
+  if (a && a.parts) return renderPartsLegend(a, el);
   el.innerHTML = legendHTML(a, true);
   if (!a || a.type !== "cat") return;
   const setFor = c => new Set(state.nodes.filter(d => val(d, a.key) === c).map(d => d.id));
@@ -1147,7 +1177,7 @@ function initViz(g, label) {
   state.directed = !!g.directed; $("#chk-arrows").checked = state.directed;
   state.edgeAttrs = analyze(g.links, g.edgeKeys, g.edgeFixed || {});
   state.mode = "network"; state.pinned = null;
-  const firstCat = attrBy("Highest in") || state.attrs.find(a => a.groupable && a.type === "cat" && a.key !== "Component" && a.key !== LEVEL_KEY)
+  const firstCat = (g.defaultColor && attrBy(g.defaultColor)) || attrBy("Highest in") || state.attrs.find(a => a.groupable && a.type === "cat" && a.key !== "Component" && a.key !== LEVEL_KEY)
     || state.attrs.find(a => a.groupable);
   state.colorKey = firstCat ? firstCat.key : "";
   const userNum = state.attrs.find(a => a.type === "num" && a.key !== g.degKey);
@@ -1287,7 +1317,7 @@ function loadSample() {
   const key = $("#sel-example").value in EXAMPLES ? $("#sel-example").value : "wooten2019";
   const ex = EXAMPLES[key], s = ex.make();
   const g = buildGraph(s.main, s.nodes, { fmt: "edge", src: "regulator", tgt: "target", idCol: "TF", directed: true, fixed: s.fixed });
-  g.fmt = "edge"; g.edgeFixed = s.edgeFixed;
+  g.fmt = "edge"; g.edgeFixed = s.edgeFixed; g.defaultColor = s.defaultColor;
   initViz(g, ex.label);
 }
 $("#sel-example").addEventListener("change", loadSample);

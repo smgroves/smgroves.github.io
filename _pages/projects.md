@@ -10,7 +10,7 @@ dropdown: true
 children:
   - title: Projects
     permalink: /projects/
-  - title: Packages
+  - title: Tools
     permalink: /packages/
 display_sections: [active, past]
 ---
