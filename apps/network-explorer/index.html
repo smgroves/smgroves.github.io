@@ -40,6 +40,7 @@ body { margin: 0; }
 
 [hidden] { display: none !important; }
 html, body { height: 100%; }
+html { scrollbar-gutter: stable; }
 body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-ui); font-size: 14px; line-height: 1.45;
@@ -48,7 +49,8 @@ button, select, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { height: 100%; display: grid; grid-template-rows: auto auto 1fr; }
+.app { height: 100%; display: grid; grid-template-rows: auto auto 1fr; grid-template-columns: minmax(0, 1fr); }
+.top > * { min-width: 0; }
 
 .top {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
@@ -60,7 +62,7 @@ button { cursor: pointer; }
 .brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
 .meta { color: var(--muted); font-size: 13px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-.example-select { width: auto; max-width: 100%; }
+.example-select { width: auto; max-width: 100%; min-width: 0; flex: 0 1 auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .btn {
   border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
@@ -726,6 +728,15 @@ const BH_ARCHETYPES = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Intermed
 const BH_ARCHETYPE_COLORS = { Neuroendocrine1: "#cb76da", Neuroendocrine2: "#8e403a", Stress: "#3eab32", Intermediate: "#4e8ee6", nonNE1: "#f10c13", nonNE2: "#f27a30" };
 // Mean normalized expression per archetype (cells in train + test splits), in BH_ARCHETYPES order
 const BH_MEANS = {"ASCL1":[0.897,0.713,0.363,0.406,0.031,0.014],"BACH1":[0.82,0.656,0.786,0.625,0.686,0.872],"BACH2":[0.653,0.223,0.815,0.531,0.895,0.945],"CREB1":[0.901,0.682,0.433,0.538,0.54,0.422],"CUX2":[0.963,0.866,0.336,0.354,0.071,0.008],"EGR1":[0.75,0.901,0.622,0.384,0.093,0.561],"EHF":[0.186,0.332,0.776,0.679,0.967,0.992],"EPCAM":[0.902,0.68,0.557,0.647,0.399,0.201],"ESR1":[0.485,0.316,0.373,0.669,0.993,0.785],"ETS1":[0.922,0.717,0.833,0.588,0.435,0.406],"FOS":[0.144,0.663,0.128,0.343,0.594,0.983],"FOXO3":[0.756,0.444,0.616,0.695,0.856,0.992],"GRHL2":[0.84,0.636,0.391,0.632,0.86,0.598],"HES1":[0.395,0.304,0.337,0.72,0.994,0.983],"HSF2":[0.915,0.707,0.699,0.47,0.079,0.147],"ICAM1":[0.135,0.265,0.528,0.549,0.993,0.994],"JUN":[0.115,0.498,0.259,0.452,0.621,0.999],"JUNB":[0.178,0.873,0.133,0.319,0.367,0.922],"JUND":[0.566,0.655,0.168,0.621,0.944,0.959],"KMT2A":[0.676,0.788,0.867,0.454,0.016,0.012],"LMX1B":[0.777,0.916,0.621,0.461,0.002,0.003],"MEIS2":[0.865,0.957,0.632,0.374,0.001,0.001],"NCAM1":[0.928,0.756,0.434,0.442,0.002,0.009],"NFATC2":[0.875,0.898,0.772,0.452,0.001,0.003],"NFIA":[0.317,0.515,0.366,0.646,0.993,0.936],"NFIB":[0.898,0.644,0.368,0.528,0.616,0.453],"NFIX":[0.073,0.142,0.109,0.506,0.999,0.991],"NFKB1":[0.82,0.671,0.585,0.641,0.715,0.623],"NFYC":[0.789,0.661,0.534,0.67,0.717,0.427],"NR6A1":[0.889,0.713,0.414,0.462,0.513,0.472],"PBX1":[0.352,0.663,0.956,0.34,0.851,0.77],"PKNOX2":[0.929,0.758,0.351,0.45,0.082,0.013],"PROX1":[0.926,0.746,0.476,0.447,0.0,0.004],"RBPJ":[0.892,0.673,0.569,0.535,0.455,0.293],"REST":[0.042,0.087,0.274,0.561,0.999,0.997],"RORA_RORB":[0.897,0.715,0.613,0.497,0.118,0.097],"RUNX1":[0.103,0.119,0.498,0.571,0.998,0.988],"SIX1":[0.902,0.699,0.408,0.443,0.042,0.088],"SIX4":[0.913,0.714,0.589,0.492,0.056,0.049],"SMAD3":[0.036,0.068,0.818,0.533,0.997,0.995],"SOX11":[0.925,0.6,0.447,0.648,0.135,0.285],"SOX9":[0.133,0.133,0.443,0.578,0.994,1.0],"STAT1":[0.792,0.497,0.367,0.634,0.973,0.854],"STAT2":[0.587,0.379,0.791,0.468,0.877,0.943],"TBX15":[0.868,0.746,0.503,0.507,0.018,0.028],"TCF4":[0.91,0.703,0.522,0.458,0.308,0.216],"TCF7L1":[0.63,0.22,0.244,0.726,0.992,0.855],"TCF7L2":[0.042,0.113,0.032,0.499,0.998,0.996],"TEAD1":[0.907,0.678,0.58,0.52,0.614,0.505],"TFDP1":[0.932,0.732,0.647,0.564,0.326,0.177],"THRB":[0.87,0.61,0.455,0.591,0.765,0.53],"ZBTB20":[0.896,0.706,0.447,0.443,0.561,0.403],"ZEB1":[0.386,0.965,0.836,0.358,0.08,0.001]};
+// Co-expressed TF modules from Fig 5d (RORB is the merged RORA_RORB node; "GHRL2" in the figure is GRHL2)
+const BH_MODULES = {
+  NE1: "NFIB PBX1 TCF12 ZBTB20 CREB1 TCF4 KDM2A LCOR SOX6 ZEB1",
+  NE2: "ASCL1 MEIS2 PROX1 RORA_RORB TBX15",
+  Secretory: "FOSB JUND JUN JUNB EGR1 FOS",
+  nonNE1: "BACH2 SMAD3 NFIX FOXO3 GLIS3 CUX1 NFE2L2 TCF7L1 STAT1 STAT2 NFKB1 NFYC GRHL2 PPARG TEAD1",
+  nonNE2: "PRDM16 MECOM RARB RUNX1 ESR1 SOX5 NPAS2 TCF7L2",
+};
+const BH_MODULE_OF = Object.fromEntries(Object.entries(BH_MODULES).flatMap(([m, tfs]) => tfs.split(" ").map(tf => [tf, m])));
 // Tab order, matching the paper's figures
 const BH_STATE_ORDER = ["Neuroendocrine1", "Neuroendocrine2", "Stress", "Generalist NE", "Intermediate", "nonNE1", "nonNE2", "Generalist non-NE"];
 function makeBhattacharya() {
@@ -735,6 +746,7 @@ function makeBhattacharya() {
     const r = { TF: tf };
     const means = BH_MEANS[tf], top = Math.max(...means);
     r["Highest in"] = BH_ARCHETYPES.filter((_, i) => means[i] === top).join(" + ");
+    r["Fig 5d module"] = BH_MODULE_OF[tf] || "Not in a module";
     const on = BH_ARCHETYPES.filter(name => st[BH_STATE_NAMES.indexOf(name)]);
     r["ON in archetypes"] = on.length ? on.join(" + ") : "None";
     r["NE vs non-NE"] = st[ne] && st[nn] ? "ON in both" : st[ne] ? "NE only" : st[nn] ? "Non-NE only" : "OFF in both";
@@ -746,6 +758,8 @@ function makeBhattacharya() {
   const onOff = { order: ["ON", "OFF"], colors: { ON: "#c8494f", OFF: "#8f9bb0" } };
   const fixed = {
     "Highest in": { order: BH_ARCHETYPES, colors: BH_ARCHETYPE_COLORS },
+    "Fig 5d module": { order: ["NE1", "NE2", "Secretory", "nonNE1", "nonNE2", "Not in a module"],
+      colors: { NE1: "#cb76da", NE2: "#8e403a", Secretory: "#3eab32", nonNE1: "#f10c13", nonNE2: "#f27a30", "Not in a module": "#8f9bb0" } },
     "ON in archetypes": { parts: BH_ARCHETYPES, noTab: true, order: [...BH_ARCHETYPES, "None"], colors: { ...BH_ARCHETYPE_COLORS, None: "#8f9bb0" } },
     "NE vs non-NE": { order: ["NE only", "ON in both", "Non-NE only", "OFF in both"],
     colors: { "NE only": "#3a9fc6", "ON in both": "#b8892a", "Non-NE only": "#7c62b8", "OFF in both": "#8f9bb0" } } };
@@ -775,9 +789,11 @@ const canvasEl = $("#canvas");
 new ResizeObserver(() => {
   const r = canvasEl.getBoundingClientRect();
   if (r.width < 10 || r.height < 10) return;
-  const changed = Math.abs(r.width - W) > 4 || Math.abs(r.height - H) > 4;
+  const big = Math.abs(r.width - W) > 60 || Math.abs(r.height - H) > 60;
   W = r.width; H = r.height;
-  if (changed && sim) { setForces(); sim.alpha(0.4).restart(); fitPending = true; userZoomed = false; }
+  if (!sim) return;
+  setForces();
+  if (big) { sim.alpha(0.3).restart(); if (!userZoomed) fitPending = true; }
 }).observe(canvasEl);
 
 const attrBy = key => state.attrs.find(a => a.key === key);
@@ -972,14 +988,18 @@ function draw() {
   if (!big) linkSel.on("pointerenter", (e, l) => showEdgeTip(e, l)).on("pointermove", moveTip).on("pointerleave", hideTip);
 
   nodeSel = gNodes.selectAll("circle").data(state.nodes, d => d.id).join("circle").attr("class", "node")
-    .on("pointerenter", (e, d) => { showNodeTip(e, d); if (!state.pinned) highlight(neighborhood(d)); })
+    .on("pointerenter", (e, d) => { showNodeTip(e, d); if (!state.pinned) highlight(neighborhood(d), d); })
     .on("pointermove", moveTip)
     .on("pointerleave", () => { hideTip(); if (!state.pinned) highlight(null); })
     .on("click", (e, d) => { e.stopPropagation(); setPinned(state.pinned && state.pinned.node === d ? null : { type: "node", node: d }); })
     .call(d3.drag()
-      .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
-      .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
-      .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+      .clickDistance(4)
+      .on("start", (e, d) => { d._moved = false; })
+      .on("drag", (e, d) => {
+        if (!d._moved) { d._moved = true; if (!e.active) sim.alphaTarget(0.25).restart(); }
+        d.fx = e.x; d.fy = e.y;
+      })
+      .on("end", (e, d) => { if (d._moved && !e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
 
   labelSel = gLabels.selectAll("text").data(state.nodes, d => d.id).join("text").attr("class", "nlabel").text(d => d.label);
   updateRadii(false);
@@ -996,14 +1016,15 @@ function applyColors() {
 
 /* ---------------- Highlighting ---------------- */
 function neighborhood(d) { const s = new Set(state.adj.get(d.id)); s.add(d.id); return s; }
-function highlight(set) {
+function highlight(set, focus = null) {
   if (!set) {
     nodeSel.classed("dim", false); labelSel.classed("dim", false).classed("on", false); linkSel.classed("dim", false).classed("hi", false);
     return;
   }
   nodeSel.classed("dim", d => !set.has(d.id));
   labelSel.classed("dim", d => !set.has(d.id)).classed("on", d => set.size <= 40 && set.has(d.id));
-  const both = l => set.has(l.source.id) && set.has(l.target.id);
+  // With a focus node, keep only that node's own edges, not edges among its neighbors
+  const both = focus ? (l => l.source === focus || l.target === focus) : (l => set.has(l.source.id) && set.has(l.target.id));
   linkSel.classed("dim", l => !both(l)).classed("hi", l => both(l) && set.size < state.nodes.length * 0.5);
 }
 function setPinned(p) {
@@ -1011,7 +1032,7 @@ function setPinned(p) {
   nodeSel.classed("pinned", d => !!p && p.type === "node" && p.node === d);
   document.querySelectorAll(".leg-item").forEach(el => el.classList.toggle("active", !!p && p.type === "cat" && el.dataset.i === String(p.index)));
   if (!p) highlight(null);
-  else if (p.type === "node") highlight(neighborhood(p.node));
+  else if (p.type === "node") highlight(neighborhood(p.node), p.node);
   else highlight(p.set);
   renderDetails();
 }
