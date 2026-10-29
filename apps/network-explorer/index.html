@@ -478,7 +478,7 @@ function analyze(items, keys, fixed = {}) {
     if (fx && !allNum) order = fx.order.filter(c => counts.has(c)).concat(order.filter(c => !fx.order.includes(c)));
     const a = { key, type: allNum ? "num" : "cat", order, counts, uniq,
       groupable: allNum ? uniq >= 2 && uniq <= 12 : uniq >= 2 && uniq <= 30 };
-    if (fx && fx.noTab) a.groupable = false;
+    if (fx && fx.noTab) { a.colorable = a.groupable; a.groupable = false; }
     if (fx && fx.parts) { a.parts = fx.parts; a.partColors = new Map(fx.parts.map(x => [x, fx.colors[x]])); }
     if (allNum) {
       const vals = present.map(it => it.attrs[key]);
@@ -1121,7 +1121,7 @@ function renderTabs() {
 
 function fillControls() {
   const opt = (v, t, sel) => `<option value="${esc(v)}"${sel ? " selected" : ""}>${esc(t)}</option>`;
-  const colorable = state.attrs.filter(a => a.groupable || a.parts || a.type === "num");
+  const colorable = state.attrs.filter(a => a.groupable || a.colorable || a.parts || a.type === "num");
   $("#sel-color").innerHTML = opt("", "One color") + colorable.map(a => opt(a.key, a.key, a.key === state.colorKey)).join("");
   const nums = state.attrs.filter(a => a.type === "num");
   $("#sel-size").innerHTML = opt("", "Equal size") + nums.map(a => opt(a.key, a.key, a.key === state.sizeKey)).join("");
@@ -1393,7 +1393,8 @@ function mergeGraphs(A, B) {
     const pre = k => `${net.name}: ${k}`;
     net.g.nodeKeys.forEach(k => nodeKeys.push(pre(k)));
     net.g.edgeKeys.forEach(k => edgeKeys.push(pre(k)));
-    for (const [k, v] of Object.entries(net.g.fixed || {})) fixed[pre(k)] = v;
+    // Only "Found in" gets a group-by tab; each network's own attributes stay for color and tooltips
+    net.g.nodeKeys.forEach(k => fixed[pre(k)] = { ...(net.g.fixed || {})[k], noTab: true });
     for (const [k, v] of Object.entries(net.g.edgeFixed || {})) edgeFixed[pre(k)] = v;
     for (const n of net.g.nodes) {
       let m = nodes.get(n.id);
