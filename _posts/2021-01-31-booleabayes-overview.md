@@ -7,7 +7,7 @@ categories: booleabayes
 tags: code blog writing
 ---
 
-To see the code and documentation, please visit <a href= 'https://github.com/smgroves/BooleaBayes'>Github</a> or <a href='https://pypi.org/project/booleabayes/'>PYPI</a> for instructions on installing the package.
+To see the code and documentation, please visit <a href= 'https://smgroves.github.io/BoBa-T/index.html'>Github</a> or <a href='https://pypi.org/project/bobat/'>PYPI</a> for instructions on installing the package.
 
 ## Part 1: The Why
 In this first post, I explain why we care about transcription factor networks and how they can help us treat Small Cell Lung Cancer. \
