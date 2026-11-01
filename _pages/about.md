@@ -16,7 +16,7 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-I'm an assistant professor in the School of Data Science at UVA, where I study **cancer systems biology** and **biological networks**. I'm a physicist by training and a network scientist by practice: I model high-dimensional biological data to understand how cells change state, from cell plasticity in small cell lung cancer to the physics of chromosome segregation during mitosis.
+I'm an assistant professor in the School of Data Science at UVA, where I study **cancer systems biology** and **biological networks**. I'm a physicist by training and a network scientist by practice: I model high-dimensional biological data to understand <a href="/projects/#omics-tools">how cells change state</a>, from <a href="/projects/#sclc">cell plasticity in small cell lung cancer</a> to the <a href="/projects/#mitosis">physics of chromosome segregation during mitosis</a>.
 
 I also care a lot about **science communication** and **teaching**. I make educational videos with motion design, study how AI is changing engineering education, and teach Communicating with Data (DS 2003).
 

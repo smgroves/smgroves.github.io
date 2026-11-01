@@ -32,7 +32,7 @@ display_sections: [active, past]
   {%- assign sorted_projects = site.projects | where: "status", section | sort: "importance" %}
   {%- for project in sorted_projects %}
   <div class="project-blurb">
-    <h3>{{ project.title }}</h3>
+    <h3 id="{{ project.slug | slugify }}">{{ project.title }}</h3>
     {%- if project.img %}
     <img class="project-img rounded z-depth-1" src="{{ project.img | relative_url }}" alt="{{ project.title }}">
     {%- endif %}
