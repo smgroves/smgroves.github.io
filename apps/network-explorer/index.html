@@ -102,6 +102,7 @@ button { cursor: pointer; }
 .node:hover { stroke: var(--ink); stroke-width: 1.5; }
 .node.pinned { stroke: var(--ink); stroke-width: 2.5; }
 .link { fill: none; stroke: var(--edge); stroke-opacity: .45; stroke-width: 1; transition: opacity .15s; }
+.signed .link { stroke-opacity: .7; stroke-width: 1.6; }
 .grouped .link { stroke-opacity: .08; pointer-events: none; }
 .links-off .link { display: none; }
 .dim { opacity: .1; }
@@ -110,6 +111,7 @@ button { cursor: pointer; }
 .node { cursor: grab; }
 .links-off marker { display: none; }
 .link.hi { stroke-opacity: .9 !important; stroke-width: 1.6; }
+.signed .link.hi { stroke-width: 2.4; }
 .nlabel {
   font-size: 10px; fill: var(--ink); stroke: var(--bg); stroke-width: 3; paint-order: stroke;
   pointer-events: none; display: none;
@@ -126,7 +128,7 @@ button { cursor: pointer; }
   box-shadow: 0 6px 20px rgb(0 0 0 / .14); padding: 9px 11px; font-size: 12.5px;
 }
 .tooltip h4 { margin: 0 0 5px; font-size: 14px; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; }
+.kv { display: grid; grid-template-columns: minmax(0, 45%) minmax(0, 1fr); gap: 2px 10px; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .kv .sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
@@ -687,6 +689,19 @@ const SCLC_PARENTS = {
   TEAD4: "FOXA1 ELF3 SMAD4 GATA4 CEBPD MITF",
   ZNF217: "FOXA2 SOX11 SMAD4 FOXA1 TCF4",
 };
+// Sign of each parent, in the same order as SCLC_PARENTS (+ activating, - inhibiting, ~ mixed, ? unknown).
+// Read from the S7 Fig leaf colors: flip one parent OFF -> ON with the others fixed and count how often
+// P(target ON) rises vs falls by > 0.05. >= 70% one way sets the sign; otherwise mixed. ASCL1 (Fig 7B) not read.
+const SCLC_SIGNS = {
+  ASCL1: "??????", BCL3: "-+~+", CEBPD: "+", EBF1: "~+~-~~~", ELF3: "-++---", FLI1: "+++~++",
+  FOXA1: "+-+-++-~~~", FOXA2: "+--+-+++--", GATA4: "-~--", ISL1: "++~++~", KLF2: "--+~~~", MITF: "+-+++",
+  NEUROD2: "+---", NR0B1: "+", NR0B2: "++++~~", OLIG2: "--+~--~+", RBPJ: "-++-++~~~-~", RCOR2: "+-+~-++",
+  REST: "+--~-", SIX5: "-++-", SMAD4: "++", SOX11: "~+~++++", STAT6: "~-~+~~~+", TCF3: "--+~+",
+  TCF4: "+-~+~~+~", TEAD4: "---+-~", ZNF217: "-~~-~",
+};
+const SIGN_NAMES = { "+": "Activating", "-": "Inhibiting", "~": "Mixed", "?": "Unknown" };
+const EFFECT_SPEC = { order: ["Activating", "Inhibiting", "Mixed", "Unknown"],
+  colors: { Activating: "#3a9a6a", Inhibiting: "#c8494f", Mixed: "#8f9bb0", Unknown: "#c9ced8" } };
 // Attractors ON per subtype (of A: 2, A2: 4, N: 2, Y: 2) and cell-line stars
 const SCLC_STATES = {
   ASCL1: [2, 4, 0, 0, "A A2"], FOXA1: [2, 4, 0, 0, "A A2"], FOXA2: [2, 4, 0, 0, "A A2"],
@@ -703,7 +718,7 @@ const SUBTYPES = [["SCLC-A", 2], ["SCLC-A2", 4], ["SCLC-N", 2], ["SCLC-Y", 2]];
 const SUBTYPE_COLORS = { "SCLC-A": "#3a9fc6", "SCLC-A2": "#d2525c", "SCLC-N": "#4f9a3a", "SCLC-Y": "#7c62b8" };
 function makeSCLC() {
   const edges = [];
-  for (const [tf, ps] of Object.entries(SCLC_PARENTS)) for (const p of ps.split(" ")) edges.push({ regulator: p, target: tf });
+  for (const [tf, ps] of Object.entries(SCLC_PARENTS)) ps.split(" ").forEach((p, i) => edges.push({ regulator: p, target: tf, Effect: SIGN_NAMES[SCLC_SIGNS[tf][i]] }));
   const stateOf = (on, total) => on === total ? "ON" : on === 0 ? "OFF" : "ON in some";
   const rows = Object.entries(SCLC_STATES).map(([tf, st]) => {
     const r = { TF: tf };
@@ -727,9 +742,10 @@ function makeSCLC() {
   };
   SUBTYPES.forEach(([name]) => fixed[name] = stateSpec);
   return {
-    main: { name: "sclc_edges.csv", fields: ["regulator", "target"], rows: edges },
+    main: { name: "sclc_edges.csv", fields: ["regulator", "target", "Effect"], rows: edges },
     nodes: { name: "sclc_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed,
+    edgeFixed: { Effect: EFFECT_SPEC },
   };
 }
 
@@ -787,7 +803,7 @@ function makeBhattacharya() {
     nodes: { name: "bhattacharya_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed,
     defaultColor: "Highest in",
-    edgeFixed: { Effect: { order: ["Activating", "Inhibiting"], colors: { Activating: "#3a9a6a", Inhibiting: "#c8494f" } } },
+    edgeFixed: { Effect: EFFECT_SPEC },
   };
 }
 
@@ -965,18 +981,20 @@ function linkPath(l) {
   return `M${s.x},${s.y}A${dr},${dr} 0 0,1 ${ex},${ey}`;
 }
 function renderMarkers() {
-  const size = Math.max(5, Math.min(9, state.base * 1.1));
-  const a = edgeAttrBy(state.edgeKey);
+  const a = edgeAttrBy(state.edgeKey), colored = !!a && a.type === "cat";
+  const size = Math.max(5, Math.min(9, state.base * 1.1)) * (colored ? 1.3 : 1);
   const specs = [{ id: "arr-d", color: null }];
-  if (a && a.type === "cat") a.order.forEach((c, i) => { if (c !== MISSING) specs.push({ id: `arr-${i}`, color: a.colors.get(c) }); });
+  // Inhibiting-type categories end in a flat bar (the usual ⊣ for repression) instead of an arrowhead
+  if (colored) a.order.forEach((c, i) => { if (c !== MISSING) specs.push({ id: `arr-${i}`, color: a.colors.get(c), bar: /inhibit|repress|negative/i.test(c) }); });
   const all = specs.flatMap(d => [d, { ...d, id: d.id + "-h", hi: true }]);
-  defs.selectAll("marker").data(all, d => d.id + d.color).join(enter => {
-    const m = enter.append("marker").attr("viewBox", "0 -5 10 10").attr("refX", 9).attr("refY", 0)
+  defs.selectAll("marker").data(all, d => d.id + d.color + d.bar).join(enter => {
+    const m = enter.append("marker").attr("viewBox", "0 -5 10 10").attr("refY", 0)
       .attr("markerUnits", "userSpaceOnUse").attr("orient", "auto");
-    m.append("path").attr("d", "M0,-4L10,0L0,4Z").attr("class", "arrowhead");
+    m.append("path").attr("class", "arrowhead");
     return m;
   }).attr("id", d => d.id).attr("class", d => d.hi ? "hi" : null).attr("markerWidth", size).attr("markerHeight", size)
-    .select("path").style("fill", d => d.color);
+    .attr("refX", d => d.bar ? 9.5 : 9)
+    .select("path").attr("d", d => d.bar ? "M6.5,-5H9.5V5H6.5Z" : "M0,-4L10,0L0,4Z").style("fill", d => d.color);
   updateMarkerRefs();
 }
 function updateMarkerRefs() {
@@ -1046,6 +1064,8 @@ function applyColors() {
   renderGradients();
   nodeSel.style("fill", nodeColor);
   linkSel.style("stroke", edgeColor);
+  const ea = edgeAttrBy(state.edgeKey);
+  svg.classed("signed", !!ea && ea.type === "cat");
   renderMarkers();
 }
 
