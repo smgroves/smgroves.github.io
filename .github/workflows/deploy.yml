@@ -24,6 +24,14 @@ jobs:
     - name: Install deps
       run: |
         npm install -g mermaid.cli
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Build JupyterLite into _site/lite
+      run: |
+        pip install -r jupyterlite/requirements.txt
+        cd jupyterlite && jupyter lite build
     - name: Setup deploy options
       id: setup
       run: |

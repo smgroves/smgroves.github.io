@@ -193,6 +193,7 @@ exclude:
   - pluto-deployment-environment/
   - Dockerfile.pluto
   - hf-space/
+  - jupyterlite/
   - Dockerfile.jekyll
   - explainers/
   - unused/
@@ -201,6 +202,7 @@ keep_files:
   - .nojekyll
   - .git
   - julia
+  - lite  # JupyterLite, built into _site/lite by .github/workflows/deploy.yml
 
 # Plug-ins
 plugins:

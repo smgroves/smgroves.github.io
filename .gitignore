@@ -10,3 +10,4 @@ Gemfile.lock
 vendor
 
 *.tif
+.jupyterlite.doit.db
