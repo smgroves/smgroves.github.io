@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-11-06T16:40:23.779374Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-11-06T16:39:56.389877Z",
+      "mimetype": null,
+      "name": "run_eulers.ipynb",
+      "path": "run_eulers.ipynb",
+      "size": 564603,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-11-06T16:40:23.779374Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-11-06T16:40:23.779374Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

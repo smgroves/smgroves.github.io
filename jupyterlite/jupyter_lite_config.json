@@ -1,6 +1,0 @@
-{
-  "LiteBuildConfig": {
-    "contents": ["../jupyter/run_eulers.ipynb"],
-    "output_dir": "../_site/lite"
-  }
-}
