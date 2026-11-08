@@ -42,7 +42,7 @@ button { cursor: pointer; }
 a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+.app { height: 100%; display: grid; grid-template-rows: auto auto 1fr; }
 .top {
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px;
   padding: 14px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
@@ -50,6 +50,15 @@ a { color: var(--accent); }
 }
 .top h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
 .meta { color: var(--muted); font-size: 13px; }
+.intro {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 28px;
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.intro p { margin: 0; flex: 1 1 560px; max-width: 980px; font-size: 13px; color: var(--muted); }
+.intro p strong { color: var(--ink); }
+.intro-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.intro .check { margin: 0; }
 
 .stage { display: grid; grid-template-columns: minmax(0, 1fr) 370px; min-height: 0; }
 .canvas { position: relative; min-width: 0; min-height: 0; }
@@ -99,8 +108,9 @@ ol.terms button:hover { color: var(--accent); }
 .search { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 6px 8px; }
 .check { display: flex; gap: 7px; align-items: center; font-size: 13px; margin-top: 6px; }
 .check input { accent-color: var(--accent); margin: 0; }
-.legend-size { display: flex; align-items: flex-end; gap: 10px; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); margin-top: 6px; }
+.legend-size { display: flex; align-items: flex-end; gap: 10px; font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
 .legend-size span { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.legend-size b { font-weight: 400; white-space: nowrap; }
 .legend-size i { display: block; border-radius: 50%; background: var(--muted); }
 
 @media (max-width: 860px) {
@@ -118,6 +128,19 @@ ol.terms button:hover { color: var(--accent); }
     <h1>SCLC Phenospace</h1>
     <div class="meta">Interactive Fig. 3B&ndash;C from <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019) <i>PLoS Comput Biol</i></a></div>
   </header>
+  <div class="intro">
+    <p><strong>What this shows.</strong> Each dot is one of 1,728 GO biological processes enriched in at least one WGCNA gene module from 50 SCLC cell lines (CCLE RNA-seq). Terms are placed with t-SNE on GoSemSim semantic distances, so similar processes sit together. Gray dots are the whole phenospace (Fig. 3B); colored dots are the terms enriched in the selected modules (Fig. 3C), sized by enrichment p-value.</p>
+    <div class="intro-controls">
+      <label class="check"><input type="checkbox" id="chk-labels" checked> Region labels (Fig. 3B)</label>
+      <div class="legend-size" aria-label="Dot size legend">
+        <span><i style="width:5px;height:5px"></i><b>10<sup>-2</sup></b></span>
+        <span><i style="width:7px;height:7px"></i><b>10<sup>-5</sup></b></span>
+        <span><i style="width:10px;height:10px"></i><b>10<sup>-10</sup></b></span>
+        <span><i style="width:14px;height:14px"></i><b>&le;10<sup>-20</sup></b></span>
+        <span style="align-self:center">enrichment p</span>
+      </div>
+    </div>
+  </div>
   <div class="stage">
     <div class="canvas">
       <div id="plot" role="img" aria-label="t-SNE map of enriched GO biological processes"></div>
@@ -129,10 +152,12 @@ ol.terms button:hover { color: var(--accent); }
 
     <aside class="rail">
       <section>
-        <h2>What this shows</h2>
-        <p class="small">Each dot is one of 1,728 GO biological processes enriched in at least one WGCNA gene module from 50 SCLC cell lines (CCLE RNA-seq). Terms are placed with t-SNE on GoSemSim semantic distances, so similar processes sit together. Gray dots are the whole phenospace (Fig. 3B); colored dots are the terms enriched in the selected modules (Fig. 3C), sized by enrichment p-value.</p>
-        <label class="check"><input type="checkbox" id="chk-labels" checked> Show region labels (from Fig. 3B)</label>
+        <h2>Find a process</h2>
+        <input class="search" id="search" list="term-list" placeholder="e.g. neuron differentiation" autocomplete="off">
+        <datalist id="term-list"></datalist>
       </section>
+
+      <section class="detail" id="detail"></section>
 
       <section>
         <h2>Pick a subtype</h2>
@@ -150,21 +175,6 @@ ol.terms button:hover { color: var(--accent); }
         <div class="row-actions">
           <button class="btn" id="btn-all" type="button">All</button>
           <button class="btn" id="btn-none" type="button">None</button>
-        </div>
-      </section>
-
-      <section class="detail" id="detail"></section>
-
-      <section>
-        <h2>Find a process</h2>
-        <input class="search" id="search" list="term-list" placeholder="e.g. neuron differentiation" autocomplete="off">
-        <datalist id="term-list"></datalist>
-        <div class="legend-size" aria-label="Dot size legend">
-          <span><i style="width:5px;height:5px"></i>10<sup>-2</sup></span>
-          <span><i style="width:7px;height:7px"></i>10<sup>-5</sup></span>
-          <span><i style="width:10px;height:10px"></i>10<sup>-10</sup></span>
-          <span><i style="width:14px;height:14px"></i>&le;10<sup>-20</sup></span>
-          <span style="align-self:center">enrichment p</span>
         </div>
       </section>
 
