@@ -68,6 +68,11 @@ a { color: var(--accent); }
 
 .rail { border-left: 1px solid var(--line); background: var(--surface); overflow-y: auto; padding: 14px 16px 24px; }
 .rail section + section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.or { display: flex; align-items: center; gap: 10px; margin: 14px 0; font-size: 12px; color: var(--muted); }
+.or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.term-detail { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.term-detail h2 { font-size: 14.5px; margin-bottom: 2px; }
+#mod-detail { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 .rail h2 { margin: 0 0 8px; font-size: 15px; font-weight: 700; }
 .rail p { margin: 0 0 8px; }
 .small { font-size: 12.5px; color: var(--muted); }
@@ -155,15 +160,18 @@ ol.terms button:hover { color: var(--accent); }
         <h2>Find a process</h2>
         <input class="search" id="search" list="term-list" placeholder="e.g. neuron differentiation" autocomplete="off">
         <datalist id="term-list"></datalist>
+        <div class="detail term-detail" id="term-detail" hidden></div>
       </section>
 
-      <section class="detail" id="detail"></section>
+      <div class="or">or</div>
 
       <section>
         <h2>Pick a subtype</h2>
         <div class="subtypes" id="subtypes"></div>
         <p class="small" id="subtype-desc">Selects the modules that are upregulated in that subtype.</p>
       </section>
+
+      <div class="or">or</div>
 
       <section>
         <h2>Modules</h2>
@@ -176,6 +184,7 @@ ol.terms button:hover { color: var(--accent); }
           <button class="btn" id="btn-all" type="button">All</button>
           <button class="btn" id="btn-none" type="button">None</button>
         </div>
+        <div class="detail" id="mod-detail"></div>
       </section>
 
       <section>
@@ -276,17 +285,17 @@ function buildRail() {
       e.target.checked ? state.selected.add(m) : state.selected.delete(m);
       if (e.target.checked) state.focus = m;
       else if (state.focus === m) state.focus = [...state.selected].pop() || null;
-      clearSubtype(); state.picked = null; render();
+      clearSubtype(); render();
     });
     tr.addEventListener("click", e => {
       if (e.target.closest("label")) return;
       if (!state.selected.has(m)) state.selected.add(m);
-      state.focus = m; state.picked = null; clearSubtype(); render();
+      state.focus = m; clearSubtype(); render();
     });
     tb.appendChild(tr);
   }
   $("#btn-all").addEventListener("click", () => { MOD_KEYS.forEach(m => state.selected.add(m)); clearSubtype(); render(); });
-  $("#btn-none").addEventListener("click", () => { state.selected.clear(); state.focus = null; state.picked = null; clearSubtype(); render(); });
+  $("#btn-none").addEventListener("click", () => { state.selected.clear(); state.focus = null; clearSubtype(); render(); });
   $("#chk-labels").addEventListener("change", e => { state.labels = e.target.checked; draw(); });
   $("#btn-reset").addEventListener("click", () => Plotly.relayout("plot", { "xaxis.autorange": true, "yaxis.autorange": true }));
 
@@ -307,7 +316,7 @@ function clearSubtype() {
 }
 function pickSubtype(k) {
   state.selected = new Set(MOD_KEYS.filter(m => MODS[m].high.includes(k)));
-  state.focus = [...state.selected][0]; state.picked = null;
+  state.focus = [...state.selected][0];
   render();
   activeSub = k;
   document.querySelectorAll("#subtypes .btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sub === k)));
@@ -325,8 +334,10 @@ function pickTerm(i, zoom) {
 }
 
 function renderDetail() {
-  const box = $("#detail");
+  const tbox = $("#term-detail");
+  tbox.hidden = state.picked == null;
   if (state.picked != null) {
+    const box = tbox;
     const [id, name] = terms[state.picked];
     const mem = memberOf[state.picked].sort((a, b) => a[1] - b[1]);
     box.innerHTML = `<h2>${esc(name)}</h2>
@@ -334,12 +345,12 @@ function renderDetail() {
       ${mem.length ? `<dl class="kv">${mem.map(([m, p]) =>
         `<dt><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${MODS[m].color}"></span>${MODS[m].name}</dt><dd>p = ${fmtP(p)} &middot; ${MODS[m].high.map(subName).join(", ")}</dd>`).join("")}</dl>`
         : `<p class="small">Enriched in a module not included in the published overlays.</p>`}
-      <button class="btn" type="button" id="btn-back">Back to module</button>`;
-    $("#btn-back").addEventListener("click", () => { state.picked = null; render(); });
-    return;
+      <button class="btn" type="button" id="btn-back">Clear</button>`;
+    $("#btn-back").addEventListener("click", () => { state.picked = null; $("#search").value = ""; render(); });
   }
+  const box = $("#mod-detail");
   const m = state.focus;
-  if (!m) { box.innerHTML = `<h2>Module details</h2><p class="small">Select a module to see what it is enriched for.</p>`; return; }
+  if (!m) { box.innerHTML = `<p class="small">Select a module to see what it is enriched for.</p>`; return; }
   const M = MODS[m];
   const top = modules[m].slice(0, 10);
   box.innerHTML = `<h3><span class="sw" style="background:${M.color}"></span>${M.name} module</h3>
@@ -358,7 +369,7 @@ function render() {
   document.querySelectorAll("#mod-rows tr").forEach(tr => {
     const m = tr.dataset.mod;
     tr.querySelector("input").checked = state.selected.has(m);
-    tr.classList.toggle("focus", m === state.focus && state.picked == null);
+    tr.classList.toggle("focus", m === state.focus);
   });
   renderDetail();
   draw();
