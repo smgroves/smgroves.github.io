@@ -11,6 +11,8 @@ blurb: >
 links:
   - text: Code on GitHub for numerical solvers of condensate dynamics (Cahn Hilliard dynamics)
     url: https://github.com/JanesLab/CahnHilliard_NMGSAV
+tools:
+  - cahn-hilliard-solvers
 papers:
   - 10.1371/journal.pcbi.1014568
 ---

@@ -23,6 +23,7 @@ display_sections: [active, past]
     blurb:  the paragraph shown on this page (markdown allowed)
     papers: list of bib keys from _bibliography/papers.bib, listed below the blurb
     links:  optional list of {text, url} links shown below the blurb
+    tools:  optional list of tool slugs (filenames in _projects/), listed before papers
   Fun projects also get a "Read more" link to their own page in _projects/
   (this ignores `redirect`).
 -->
@@ -48,6 +49,20 @@ display_sections: [active, past]
       <a href="{{ project.url | relative_url }}">Read more &rarr;</a>
       {%- endif %}
     </p>
+    {%- endif %}
+
+    {%- if project.tools %}
+    <div class="project-papers project-tools">
+      <h4>Related tools</h4>
+      <ol class="bibliography">
+      {%- for key in project.tools %}
+      {%- assign tool = site.projects | where: "slug", key | first %}
+      {%- if tool %}
+        <li><a href="{{ tool.redirect | default: tool.url | relative_url }}">{{ tool.title }}</a>: {{ tool.description }}</li>
+      {%- endif %}
+      {%- endfor %}
+      </ol>
+    </div>
     {%- endif %}
 
     {%- if project.papers %}
