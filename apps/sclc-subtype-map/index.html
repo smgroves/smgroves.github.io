@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SCLC Subtype Map</title>
+<meta name="description" content="How published SCLC subtyping schemes relate to each other: a network linking each paper's labels to the A, A2, N, P, Y, I and At states.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --ink: #1b2430; --muted: #5e6979; --line: #dce1e8;
+  --accent: #1f4e8c; --accent-soft: #e4ecf7; --edge: #8b95a3; --conflict: #c0392b;
+  --ne-zone: #eef2f8; --nonne-zone: #f7f2ea;
+  --font-ui: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151b; --surface: #181e26; --ink: #e5e9ef; --muted: #98a3b3; --line: #2a3340;
+    --accent: #84b3ee; --accent-soft: #1d2b3e; --edge: #6b7686; --conflict: #ef6f5e;
+    --ne-zone: #151c27; --nonne-zone: #1c1a17; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151b; --surface: #181e26; --ink: #e5e9ef; --muted: #98a3b3; --line: #2a3340;
+  --accent: #84b3ee; --accent-soft: #1d2b3e; --edge: #6b7686; --conflict: #ef6f5e;
+  --ne-zone: #151c27; --nonne-zone: #1c1a17; color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px;
+  padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+.top h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.meta { color: var(--muted); font-size: 13px; }
+.intro { padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--muted); max-width: 100%; }
+.intro p { margin: 0; max-width: 980px; }
+.tabs { display: flex; gap: 2px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+.tab { border: 0; background: none; padding: 9px 12px 8px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr) 320px; min-height: calc(100vh - 150px); }
+.side { border-right: 1px solid var(--line); padding: 12px 14px; overflow-y: auto; max-height: calc(100vh - 150px); }
+.side h2, .detail h2 { font-size: 13px; font-weight: 700; margin: 14px 0 6px; }
+.side h2:first-child { margin-top: 0; }
+.side label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.search { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.layers label { margin: 3px 0; }
+.year-row { display: flex; align-items: center; gap: 8px; }
+.year-row input { flex: 1; }
+.year-val { font-family: var(--font-mono); font-size: 12px; min-width: 34px; text-align: right; }
+.scheme-list { list-style: none; margin: 0; padding: 0; }
+.scheme-list li { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 13px; }
+.scheme-list li.off { opacity: 0.4; }
+.scheme-list .yr { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.scheme-list .ours { color: var(--accent); font-weight: 600; }
+.mini-btns { display: flex; gap: 6px; margin: 4px 0 6px; }
+.mini-btns button { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+
+.canvas-wrap { position: relative; min-width: 0; }
+#net { width: 100%; aspect-ratio: 1000 / 780; height: auto; display: block; background: var(--surface); touch-action: none; }
+.legend .reset { margin-left: auto; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 3px 9px; font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.detail { border-left: 1px solid var(--line); padding: 12px 16px; overflow-y: auto; max-height: calc(100vh - 150px); background: var(--surface); }
+.detail h3 { margin: 0 0 4px; font-size: 17px; }
+.detail .sub { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
+.detail p { margin: 6px 0; }
+.detail ul { margin: 4px 0 8px; padding-left: 18px; }
+.detail li { margin: 2px 0; }
+.detail .cite { font-size: 13px; color: var(--muted); }
+.detail .dt { font-size: 13px; margin: 0 0 8px; padding: 5px 8px; background: var(--accent-soft); border-radius: 4px; }
+.detail ul.found { font-size: 13px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
+.linkbtn { display: inline; border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-align: left; font: inherit; }
+.warn { color: var(--conflict); }
+
+/* SVG */
+.zone-label { font-size: 12px; font-weight: 600; fill: var(--muted); letter-spacing: 0.02em; }
+.state circle { stroke: var(--surface); stroke-width: 3; }
+.state .nm { font-size: 13px; font-weight: 700; fill: #fff; pointer-events: none; }
+.state .tf { font-size: 11px; fill: var(--muted); pointer-events: none; }
+.state.hybrid circle { stroke-dasharray: 5 3; stroke: var(--ink); stroke-width: 1.5; }
+.lab rect { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.lab .l1 { font-size: 11.5px; font-weight: 600; fill: var(--ink); }
+.lab .l2 { font-size: 10px; fill: var(--muted); }
+.lab.ours .l2 { fill: var(--accent); font-weight: 600; }
+.mk text { font-size: 12px; font-style: italic; font-weight: 600; fill: var(--ink); }
+.mk path { fill: var(--ink); }
+.node { cursor: pointer; }
+.edge { fill: none; stroke-width: 1.4; }
+.edge.partial { stroke-dasharray: 4 3; }
+.edge.marker { stroke-width: 1.2; }
+.edge.marker.low { stroke-dasharray: 2 3; stroke: var(--edge); }
+.edge.conflict { stroke: var(--conflict); stroke-dasharray: 6 3; stroke-width: 1.6; }
+.edge.trans { stroke: var(--ink); stroke-width: 1.8; opacity: 0.55; }
+.elabel { font-size: 10px; fill: var(--muted); pointer-events: none; }
+.elabel.conflict { fill: var(--conflict); font-weight: 700; font-size: 12px; }
+.dim { opacity: 0.12; }
+.hl rect { stroke: var(--accent); stroke-width: 2; }
+.sel rect { stroke: var(--accent); stroke-width: 2.5; fill: var(--accent-soft); }
+.sel circle { stroke: var(--accent); stroke-width: 4; }
+.match rect { stroke: #d9a400; stroke-width: 2.5; }
+
+/* table */
+.table-wrap { padding: 12px 16px 24px; overflow-x: auto; }
+table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; background: var(--surface); }
+.rosetta th, .rosetta td { border: 1px solid var(--line); padding: 5px 8px; vertical-align: top; text-align: left; }
+.rosetta thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.rosetta td.same { font-weight: 600; }
+.rosetta td .p { color: var(--muted); font-style: italic; font-weight: 400; display: block; }
+.rosetta .yr { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.table-note { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+
+.foot { padding: 12px 16px 20px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 220px minmax(0, 1fr); }
+  .detail { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); max-height: none; }
+}
+@media (max-width: 720px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; order: 2; }
+  .canvas-wrap { order: 1; }
+  .detail { order: 3; }
+  .scheme-list { columns: 2; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>SCLC Subtype Map</h1>
+  <div class="meta"><a href="/">Sarah Groves</a> · <a href="/projects/#sclc">SCLC research</a></div>
+</header>
+<div class="intro"><p>Since 1985, SCLC has been split into classic/variant, NE/non-NE, A/N/P/Y, A/N/P/I, archetypes, clusters and NMF groups. Each box is a label from one paper. Lines show which of the current states (colored circles) it corresponds to: solid means the same state, dashed means partial overlap. Click anything for details, including what kind of data (human tumors, cell lines, mouse models, organoids) each state was found in. For example, ISL1 is high in SCLC-A and low in SCLC-A2 (Wooten 2019), and the later "ISL1+ subtype" (Shields 2026) maps onto SCLC-A.</p></div>
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-view="network">Network</button>
+  <button class="tab" role="tab" aria-selected="false" data-view="table">Table</button>
+</nav>
+
+<main id="view-network" class="layout">
+  <aside class="side">
+    <h2>Search</h2>
+    <input id="search" class="search" type="search" placeholder="Gene, label or paper (e.g. ISL1)" autocomplete="off">
+    <h2>Show</h2>
+    <div class="layers">
+      <label><input type="checkbox" id="lyr-markers" checked> Marker genes</label>
+      <label><input type="checkbox" id="lyr-trans"> State transitions</label>
+      <label><input type="checkbox" id="lyr-conflict" checked> Disagreements</label>
+    </div>
+    <h2>Published through</h2>
+    <div class="year-row"><input id="year" type="range" min="1985" max="2026" step="1" value="2026" aria-label="Show schemes published through year"><span class="year-val" id="year-val">2026</span></div>
+    <h2>Schemes</h2>
+    <div class="mini-btns"><button id="all-on">All</button><button id="all-off">None</button></div>
+    <ul class="scheme-list" id="scheme-list"></ul>
+  </aside>
+  <section class="canvas-wrap">
+    <svg id="net" viewBox="0 0 1000 780" role="img" aria-label="Network of SCLC subtype labels linked to canonical states"></svg>
+    <div class="legend">
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--edge)" stroke-width="1.6"/></svg>same state</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="4 3"/></svg>partial overlap</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--edge)" stroke-width="1.4" stroke-dasharray="2 3"/></svg>marker low</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--conflict)" stroke-width="1.6" stroke-dasharray="6 3"/></svg>disagreement</span>
+      <span><svg width="26" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="var(--ink)" stroke-width="1.8" opacity="0.6"/><path d="M19 1 L26 5 L19 9 Z" fill="var(--ink)" opacity="0.6"/></svg>transition</span>
+      <span><b style="color:var(--accent)">blue year</b> = our papers</span>
+      <button id="reset" class="reset">Reset zoom</button>
+    </div>
+  </section>
+  <aside class="detail" id="detail" aria-live="polite"></aside>
+</main>
+
+<main id="view-table" hidden>
+  <div class="table-wrap">
+    <p class="table-note">Each row is a paper; each column is a current state. <b>Bold</b> = same state; <i>gray italic</i> = partial overlap.</p>
+    <table class="rosetta" id="rosetta"></table>
+  </div>
+</main>
+
+<footer class="foot">Curated by Sarah Groves from her SCLC literature notes; mappings are interpretations, not claims made by each paper. Checked against PubMed abstracts and full texts, November 2026. Corrections welcome: <a href="mailto:smgroves@virginia.edu">smgroves@virginia.edu</a>.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  const D = window.SCLC_MAP;
+  const W = 1000, H = 780, NE_SPLIT = 0.56;
+  const COLORS = { A: "#2563a8", A2: "#4a86c8", N: "#6b46a8", AN: "#585c9e", At: "#a63d86", I: "#b8432f", Y: "#a8650a", P: "#2a8a5c" };
+  const DATA_TYPES = {
+    htb: "Human tumors, bulk RNA", hts: "Human tumors, single-cell", hti: "Human tumors, IHC/protein", ht: "Human tumors",
+    cl: "Human cell lines", pdx: "PDX / CDX models", org: "Organoids",
+    mt: "Mouse tumors (GEMM)", mts: "Mouse tumors, single-cell", rev: "Review / synthesis"
+  };
+  const DT_ORDER = Object.keys(DATA_TYPES);
+  const SINCE = { A: 2016, N: 2016, P: 2018, Y: 2019, A2: 2019, At: 2020, AN: 2020, I: 2021 };
+  const stateById = Object.fromEntries(D.states.map(s => [s.id, s]));
+  const schemeById = Object.fromEntries(D.schemes.map(s => [s.id, s]));
+
+  // ---------- build graph ----------
+  const nodes = [], links = [];
+  D.states.forEach(s => nodes.push({ id: s.id, type: "state", data: s, fx: s.x * W, fy: s.y * H }));
+  D.schemes.forEach(sc => sc.labels.forEach((l, i) => {
+    const id = l.id || `${sc.id}-${i}`;
+    l._id = id;
+    nodes.push({ id, type: "label", data: l, scheme: sc });
+    l.maps.forEach(([to, rel]) => links.push({ source: id, target: to, kind: "map", rel }));
+  }));
+  D.markers.forEach(m => {
+    const id = "g-" + m.gene;
+    nodes.push({ id, type: "marker", data: m });
+    m.edges.forEach(([to, lvl]) => links.push({ source: id, target: to, kind: "marker", rel: lvl }));
+  });
+  D.conflicts.forEach(c => links.push({ source: c.a, target: c.b || c.state, kind: "conflict", data: c }));
+  const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+  // merge transitions by pair
+  const transMap = new Map();
+  D.transitions.forEach(t => {
+    const k = t.from + ">" + t.to;
+    if (!transMap.has(k)) transMap.set(k, { from: t.from, to: t.to, bidir: false, items: [] });
+    const e = transMap.get(k); e.items.push(t); if (t.bidir) e.bidir = true;
+  });
+  const transitions = [...transMap.values()];
+
+  // initial positions: mean of anchors (seeded jitter so the layout is the same on every load)
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  nodes.forEach(n => {
+    if (n.type === "state") { n.x = n.fx; n.y = n.fy; return; }
+    const tg = links.filter(l => l.source === n.id && l.kind !== "conflict").map(l => nodeById[l.target]);
+    const anchors = tg.length ? tg : [nodeById.Y];
+    n.x = d3.mean(anchors, a => a.fx) + (rand() - 0.5) * 60;
+    n.y = d3.mean(anchors, a => a.fy) + (rand() - 0.5) * 60;
+  });
+
+  // ---------- svg ----------
+  const svg = d3.select("#net");
+  const defs = svg.append("defs");
+  defs.append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9).attr("refY", 5)
+    .attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto-start-reverse")
+    .append("path").attr("d", "M0,0 L10,5 L0,10 Z").attr("fill", "var(--ink)");
+  const root = svg.append("g");
+  const zoom = d3.zoom().scaleExtent([0.5, 4]).on("zoom", e => root.attr("transform", e.transform));
+  svg.call(zoom).on("dblclick.zoom", null);
+  d3.select("#reset").on("click", () => svg.transition().duration(300).call(zoom.transform, d3.zoomIdentity));
+
+  root.append("rect").attr("x", 0).attr("y", 0).attr("width", W * NE_SPLIT).attr("height", H).attr("fill", "var(--ne-zone)");
+  root.append("rect").attr("x", W * NE_SPLIT).attr("y", 0).attr("width", W * (1 - NE_SPLIT)).attr("height", H).attr("fill", "var(--nonne-zone)");
+  root.append("text").attr("class", "zone-label").attr("x", 14).attr("y", 22).text("NEUROENDOCRINE");
+  root.append("text").attr("class", "zone-label").attr("x", W - 14).attr("y", 22).attr("text-anchor", "end").text("NON-NEUROENDOCRINE");
+
+  const gTrans = root.append("g"), gEdges = root.append("g"), gELab = root.append("g"), gNodes = root.append("g");
+
+  const edgeSel = gEdges.selectAll("path").data(links).join("path")
+    .attr("class", d => {
+      if (d.kind === "conflict") return "edge conflict";
+      if (d.kind === "marker") return "edge marker " + d.rel;
+      return "edge " + d.rel;
+    })
+    .attr("stroke", d => d.kind === "conflict" ? null : (d.kind === "marker" && d.rel === "low") ? null : COLORS[d.target]);
+
+  const eLabSel = gELab.selectAll("text").data(links.filter(l => l.kind === "conflict" || l.kind === "marker")).join("text")
+    .attr("class", d => "elabel" + (d.kind === "conflict" ? " conflict" : ""))
+    .attr("text-anchor", "middle").attr("dy", "0.35em")
+    .text(d => d.kind === "conflict" ? "≠" : d.rel);
+
+  const nodeSel = gNodes.selectAll("g.node").data(nodes, d => d.id).join("g")
+    .attr("class", d => "node " + ({ state: "state", label: "lab", marker: "mk" })[d.type] +
+      (d.type === "state" && d.data.hybrid ? " hybrid" : "") + (d.type === "label" && d.scheme.ours ? " ours" : ""))
+    .attr("tabindex", 0).attr("role", "button")
+    .attr("aria-label", d => d.type === "state" ? d.data.name : d.type === "marker" ? d.data.gene + " marker" : `${d.data.name}, ${d.scheme.short}`);
+
+  nodeSel.filter(d => d.type === "state").each(function (d) {
+    const g = d3.select(this);
+    g.append("circle").attr("r", d.data.hybrid ? 27 : 32).attr("fill", COLORS[d.id]);
+    g.append("text").attr("class", "nm").attr("text-anchor", "middle").attr("dy", "0.35em").text(d.data.hybrid ? "A/N" : d.data.name);
+    const tf = g.append("text").attr("class", "tf").attr("text-anchor", "middle").attr("y", d.data.hybrid ? 41 : 46).text(d.data.tf);
+    d.bw = Math.max(70, tf.node().getComputedTextLength() + 6); d.bh = 96; d.by = 8;
+  });
+  nodeSel.filter(d => d.type === "label").each(function (d) {
+    const g = d3.select(this);
+    const rect = g.append("rect").attr("rx", 3);
+    const t1 = g.append("text").attr("class", "l1").attr("text-anchor", "middle").attr("y", -2).text(d.data.name);
+    const t2 = g.append("text").attr("class", "l2").attr("text-anchor", "middle").attr("y", 11).text(d.scheme.short);
+    const w = Math.max(t1.node().getComputedTextLength(), t2.node().getComputedTextLength()) + 12;
+    rect.attr("x", -w / 2).attr("y", -14).attr("width", w).attr("height", 30);
+    d.w = w; d.bw = w; d.bh = 30; d.by = 1;
+  });
+  nodeSel.filter(d => d.type === "marker").each(function (d) {
+    const g = d3.select(this);
+    g.append("path").attr("d", "M0,-5 L5,0 L0,5 L-5,0 Z").attr("transform", "translate(-12,0)");
+    const t = g.append("text").attr("x", -4).attr("dy", "0.35em").text(d.data.gene);
+    d.bw = (t.node().getComputedTextLength() + 18) * 2; d.bh = 18; d.by = 0; d.w = d.bw;
+  });
+
+  // ---------- layout ----------
+  const sim = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id)
+      .distance(l => l.kind === "conflict" ? 110 : l.kind === "marker" ? 85 : l.rel === "same" ? 70 : 120)
+      .strength(l => l.kind === "conflict" ? 0.05 : l.kind === "marker" ? 0.25 : l.rel === "same" ? 0.7 : 0.3))
+    .force("charge", d3.forceManyBody().strength(-90))
+    .force("box", boxCollide(4))
+    .stop();
+
+  // axis-aligned box collision; states are fixed, so only the other node moves
+  function boxCollide(pad) {
+    let ns = [];
+    function force() {
+      for (let i = 0; i < ns.length; i++) for (let j = i + 1; j < ns.length; j++) {
+        const a = ns[i], b = ns[j];
+        if (a.fx != null && b.fx != null) continue;
+        const dx = b.x - a.x, dy = (b.y + b.by) - (a.y + a.by);
+        const ox = (a.bw + b.bw) / 2 + pad - Math.abs(dx), oy = (a.bh + b.bh) / 2 + pad - Math.abs(dy);
+        if (ox <= 0 || oy <= 0) continue;
+        const wa = a.fx != null ? 0 : b.fx != null ? 1 : 0.5, wb = 1 - wa;
+        if (ox < oy) { const s = (dx < 0 ? -1 : 1) * ox; a.x -= s * wa; b.x += s * wb; }
+        else { const s = (dy < 0 ? -1 : 1) * oy; a.y -= s * wa; b.y += s * wb; }
+      }
+    }
+    force.initialize = n => { ns = n; };
+    return force;
+  }
+  for (let i = 0; i < 600; i++) {
+    sim.tick();
+    nodes.forEach(n => {
+      if (n.type === "state") return;
+      const hw = (n.w || 40) / 2;
+      n.x = Math.max(hw + 4, Math.min(W - hw - 4, n.x));
+      n.y = Math.max(44, Math.min(H - 18, n.y));
+    });
+  }
+
+  function linePath(l) {
+    const s = l.source, t = l.target;
+    return `M${s.x},${s.y} L${t.x},${t.y}`;
+  }
+  function render() {
+    nodeSel.attr("transform", d => `translate(${d.x},${d.y})`);
+    edgeSel.attr("d", linePath);
+    eLabSel.attr("x", d => (d.source.x * 0.4 + d.target.x * 0.6)).attr("y", d => (d.source.y * 0.4 + d.target.y * 0.6));
+  }
+  render();
+
+  // transitions: curved arrows between states, trimmed to circle edge
+  const transSel = gTrans.selectAll("path").data(transitions).join("path")
+    .attr("class", "edge trans")
+    .attr("marker-end", "url(#arr)")
+    .attr("marker-start", d => d.bidir ? "url(#arr)" : null)
+    .attr("d", d => {
+      const a = nodeById[d.from], b = nodeById[d.to];
+      const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+      const ta = a.type === "state" ? 38 : 22, tb = b.type === "state" ? 38 : 22;
+      const sx = a.x + ux * ta, sy = a.y + uy * ta, ex = b.x - ux * tb, ey = b.y - uy * tb;
+      const mx = (sx + ex) / 2 - uy * len * 0.18, my = (sy + ey) / 2 + ux * len * 0.18;
+      return `M${sx},${sy} Q${mx},${my} ${ex},${ey}`;
+    });
+  transSel.append("title").text(d => d.items.map(t => `${t.src}: ${t.note}`).join("\n"));
+
+  // drag (labels and markers only)
+  nodeSel.filter(d => d.type !== "state").call(d3.drag()
+    .on("drag", (e, d) => { d.x = e.x; d.y = e.y; render(); }));
+
+  // ---------- state ----------
+  const state = { schemesOn: new Set(D.schemes.map(s => s.id)), year: 2026, markers: true, trans: false, conflict: true, query: "", selected: null, hover: null };
+
+  function visibleNode(n) {
+    if (n.type === "state") return true;
+    if (n.type === "marker") return state.markers;
+    return state.schemesOn.has(n.scheme.id) && n.scheme.year <= state.year;
+  }
+  function visibleLink(l) {
+    if (l.kind === "conflict" && !state.conflict) return false;
+    return visibleNode(l.source) && visibleNode(l.target);
+  }
+  function neighbors(id) {
+    const s = new Set([id]);
+    links.forEach(l => { if (!visibleLink(l)) return; if (l.source.id === id) s.add(l.target.id); if (l.target.id === id) s.add(l.source.id); });
+    return s;
+  }
+  function matches(n) {
+    const q = state.query;
+    if (!q) return false;
+    const hay = n.type === "state" ? `${n.data.name} ${n.data.tf} ${n.data.desc}` :
+      n.type === "marker" ? `${n.data.gene} ${n.data.note}` :
+      `${n.data.name} ${n.scheme.short} ${n.scheme.title} ${n.data.note || ""}`;
+    return hay.toLowerCase().includes(q);
+  }
+
+  function update() {
+    const focusId = state.hover || state.selected;
+    const nb = focusId ? neighbors(focusId) : null;
+    const anyMatch = state.query && nodes.some(n => visibleNode(n) && matches(n));
+    nodeSel.attr("display", d => visibleNode(d) ? null : "none")
+      .classed("dim", d => {
+        if (d.type === "state" && SINCE[d.id] > state.year) return true;
+        if (nb) return !nb.has(d.id);
+        if (anyMatch) return !matches(d);
+        return false;
+      })
+      .classed("sel", d => d.id === state.selected)
+      .classed("match", d => anyMatch && matches(d) && d.type !== "state");
+    edgeSel.attr("display", d => visibleLink(d) ? null : "none")
+      .classed("dim", d => nb ? !(d.source.id === focusId || d.target.id === focusId) : anyMatch ? !(matches(d.source) || matches(d.target)) : false);
+    eLabSel.attr("display", d => visibleLink(d) ? null : "none")
+      .classed("dim", d => nb ? !(d.source.id === focusId || d.target.id === focusId) : false);
+    transSel.attr("display", d => state.trans && visibleNode(nodeById[d.from]) && visibleNode(nodeById[d.to]) ? null : "none")
+      .classed("dim", d => nb ? !(nb.has(d.from) && nb.has(d.to) && (focusId === d.from || focusId === d.to)) : false);
+    d3.selectAll("#scheme-list li").classed("off", d => !state.schemesOn.has(d.id) || d.year > state.year);
+  }
+
+  nodeSel
+    .on("mouseenter", (e, d) => { state.hover = d.id; update(); })
+    .on("mouseleave", () => { state.hover = null; update(); })
+    .on("click", (e, d) => { e.stopPropagation(); select(d.id); })
+    .on("keydown", (e, d) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(d.id); } });
+  svg.on("click", () => select(null));
+
+  // ---------- detail panel ----------
+  const detail = document.getElementById("detail");
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const doiLink = sc => sc.doi ? `<a href="https://doi.org/${esc(sc.doi)}" target="_blank" rel="noopener">doi:${esc(sc.doi)}</a>`
+    : sc.pmid ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(sc.pmid)}/" target="_blank" rel="noopener">PMID ${esc(sc.pmid)}</a>` : "";
+  const dataLine = (sc, l) => `<p class="dt"><b>Data:</b> ${(l && l.data || sc.data).map(k => esc(DATA_TYPES[k])).join("; ")}</p>`;
+  const nodeBtn = (id, text) => `<a href="#${esc(id)}" class="linkbtn" data-go="${esc(id)}">${esc(text)}</a>`;
+  const stateBtn = id => `<span class="swatch" style="background:${COLORS[id]}"></span>${nodeBtn(id, stateById[id].name)}`;
+  const nodeName = id => nodeById[id].type === "state" ? nodeById[id].data.name : nodeById[id].data.name;
+  const transLi = t => `<li>${nodeBtn(t.from, nodeName(t.from))} ${t.bidir ? "↔" : "→"} ${nodeBtn(t.to, nodeName(t.to))} <span class="cite">${esc(t.src)}</span>: ${esc(t.note)}</li>`;
+  const relWord = r => r === "same" ? "same as" : "partly overlaps";
+
+  function defaultDetail() {
+    detail.innerHTML = `
+      <h3>How to read this</h3>
+      <p>Circles are the states most papers now use. Each box is a label from one paper (label on top, paper below). Hover to see its links; click for the citation and notes.</p>
+      <p>Many "new" subtypes turn out to be an existing state under a new name. Try:</p>
+      <ul>
+        <li>${nodeBtn("g-ISL1", "ISL1")}: high in SCLC-A, low in SCLC-A2</li>
+        <li>${nodeBtn("shields-isl1", "the ISL1+ subtype (Shields 2026)")}</li>
+        <li>${nodeBtn("I", "SCLC-I")} and the YAP1 disagreement</li>
+        <li>${nodeBtn("A2", "SCLC-A2")}, which older schemes merge into SCLC-A</li>
+        <li>${nodeBtn("bhatt-int", "the Intermediate state (Bhattacharya 2026)")}, the route between NE and non-NE</li>
+      </ul>
+      <p class="cite">Turn on <b>State transitions</b> to see reported A → N → Y conversions.</p>`;
+  }
+
+  // which kinds of data each state has been found in, from every paper that maps to it
+  function foundIn(id) {
+    const by = {};
+    D.schemes.forEach(sc => {
+      const hits = {};
+      sc.labels.forEach(l => l.maps.forEach(([t, r]) => {
+        if (t !== id) return;
+        (l.data || sc.data).forEach(k => { if (k !== "rev") hits[k] = hits[k] || r === "same"; });
+      }));
+      Object.entries(hits).forEach(([k, same]) => (by[k] = by[k] || []).push({ sc, same }));
+    });
+    const rows = DT_ORDER.filter(k => by[k]).map(k =>
+      `<li><b>${esc(DATA_TYPES[k])}:</b> ${by[k].map(({ sc, same }) => same ? esc(sc.short) : `<span class="cite">${esc(sc.short)}*</span>`).join(", ")}</li>`).join("");
+    return rows ? `<h2>Found in</h2><ul class="found">${rows}</ul><p class="cite">* partial match only</p>` : "";
+  }
+
+  function showDetail(id) {
+    const n = nodeById[id];
+    if (!n) return defaultDetail();
+    let h = "";
+    if (n.type === "state") {
+      const s = n.data;
+      const inbound = links.filter(l => l.kind === "map" && l.target.id === id && visibleNode(l.source));
+      const group = rel => inbound.filter(l => l.rel === rel).sort((a, b) => a.source.scheme.year - b.source.scheme.year)
+        .map(l => `<li>${nodeBtn(l.source.id, l.source.data.name)} <span class="cite">${esc(l.source.scheme.short)}</span></li>`).join("");
+      const mk = links.filter(l => l.kind === "marker" && l.target.id === id)
+        .map(l => `${nodeBtn(l.source.id, l.source.data.gene)} ${l.rel}`).join(", ");
+      const tr = D.transitions.filter(t => t.from === id || t.to === id)
+        .map(transLi).join("");
+      h = `<h3><span class="swatch" style="background:${COLORS[id]}"></span>${esc(s.name)}</h3>
+        <p class="sub">${esc(s.tf)} · ${s.ne ? "neuroendocrine" : "non-neuroendocrine"}</p>
+        <p>${esc(s.desc)}</p>
+        ${foundIn(id)}
+        ${mk ? `<h2>Markers</h2><p>${mk}</p>` : ""}
+        <h2>Called the same thing by</h2><ul>${group("same") || "<li class='cite'>none shown</li>"}</ul>
+        <h2>Partly covered by</h2><ul>${group("partial") || "<li class='cite'>none shown</li>"}</ul>
+        ${tr ? `<h2>Reported transitions</h2><ul>${tr}</ul>` : ""}`;
+    } else if (n.type === "label") {
+      const l = n.data, sc = n.scheme;
+      const maps = l.maps.map(([to, rel]) => `<li>${relWord(rel)} ${stateBtn(to)}</li>`).join("");
+      const sibs = sc.labels.filter(x => x !== l).map(x => nodeBtn(x._id, x.name)).join(", ");
+      const cf = D.conflicts.filter(c => c.a === id || c.b === id).map(c => {
+        const other = c.a === id ? (c.b || c.state) : c.a;
+        const o = nodeById[other];
+        const name = o.type === "state" ? o.data.name : `${o.data.name} (${o.scheme.short})`;
+        return `<li>vs. ${nodeBtn(other, name)}: ${esc(c.note)}</li>`;
+      }).join("");
+      h = `<h3>${esc(l.name)}</h3>
+        <p class="sub">${esc(sc.short)}${sc.ours ? " · our lab" : ""}</p>
+        ${dataLine(sc, l)}
+        ${l.note ? `<p>${esc(l.note)}</p>` : ""}
+        ${maps ? `<h2>Maps to</h2><ul>${maps}</ul>` : ""}
+        ${cf ? `<h2 class="warn">Disagreement</h2><ul>${cf}</ul>` : ""}
+        ${(() => { const tr = D.transitions.filter(t => t.from === id || t.to === id).map(transLi).join(""); return tr ? `<h2>Reported transitions</h2><ul>${tr}</ul>` : ""; })()}
+        ${sibs ? `<h2>Other labels in this scheme</h2><p>${sibs}</p>` : ""}
+        <h2>Source</h2>
+        <p class="cite">${esc(sc.title)}. <i>${esc(sc.journal)}</i> ${sc.year}. ${doiLink(sc)}</p>
+        <p class="cite">Basis: ${esc(sc.basis)}</p>`;
+    } else {
+      const m = n.data;
+      const e = m.edges.map(([to, lvl]) => `<li>${lvl} in ${stateBtn(to)}</li>`).join("");
+      const re = new RegExp("\\b" + m.gene + "\\b");
+      const rel = nodes.filter(x => x.type === "label" && re.test(`${x.data.name} ${x.data.note || ""}`))
+        .map(x => `<li>${nodeBtn(x.id, x.data.name)} <span class="cite">${esc(x.scheme.short)}</span></li>`).join("");
+      h = `<h3><i>${esc(m.gene)}</i></h3><p class="sub">marker gene</p><p>${esc(m.note)}</p><ul>${e}</ul>
+        ${rel ? `<h2>Labels that mention ${esc(m.gene)}</h2><ul>${rel}</ul>` : ""}`;
+    }
+    h += `<p><a href="#" class="linkbtn" data-go="">Back to overview</a></p>`;
+    detail.innerHTML = h;
+  }
+  detail.addEventListener("click", e => {
+    const b = e.target.closest("[data-go]");
+    if (b) { e.preventDefault(); select(b.dataset.go || null); }
+  });
+
+  function select(id) {
+    if (id) {
+      const n = nodeById[id];
+      if (n && n.type === "label") {
+        if (!state.schemesOn.has(n.scheme.id)) state.schemesOn.add(n.scheme.id);
+        if (n.scheme.year > state.year) setYear(n.scheme.year);
+        syncChecks();
+      }
+      if (n && n.type === "marker" && !state.markers) { state.markers = true; document.getElementById("lyr-markers").checked = true; }
+    }
+    state.selected = id || null;
+    if (id) history.replaceState(null, "", "#" + id); else history.replaceState(null, "", location.pathname);
+    showDetail(state.selected);
+    update();
+  }
+
+  // ---------- sidebar ----------
+  const list = d3.select("#scheme-list").selectAll("li").data([...D.schemes].sort((a, b) => a.year - b.year || a.short.localeCompare(b.short))).join("li");
+  list.html(d => `<label><input type="checkbox" checked data-sc="${d.id}"> <span class="${d.ours ? "ours" : ""}">${esc(d.short.replace(/ \d{4}$/, ""))}</span> <span class="yr">${d.year}</span></label>`);
+  list.on("mouseenter", (e, d) => {
+    const ids = new Set(d.labels.map(l => l._id));
+    nodeSel.classed("hl", n => ids.has(n.id));
+  }).on("mouseleave", () => nodeSel.classed("hl", false));
+  document.getElementById("scheme-list").addEventListener("change", e => {
+    const id = e.target.dataset.sc; if (!id) return;
+    e.target.checked ? state.schemesOn.add(id) : state.schemesOn.delete(id);
+    update();
+  });
+  function syncChecks() { document.querySelectorAll("[data-sc]").forEach(c => c.checked = state.schemesOn.has(c.dataset.sc)); }
+  document.getElementById("all-on").onclick = () => { D.schemes.forEach(s => state.schemesOn.add(s.id)); syncChecks(); update(); };
+  document.getElementById("all-off").onclick = () => { state.schemesOn.clear(); syncChecks(); update(); };
+  const yr = document.getElementById("year"), yrv = document.getElementById("year-val");
+  function setYear(v) { state.year = +v; yr.value = v; yrv.textContent = v; }
+  yr.addEventListener("input", () => { setYear(yr.value); update(); });
+  document.getElementById("lyr-markers").addEventListener("change", e => { state.markers = e.target.checked; update(); });
+  document.getElementById("lyr-trans").addEventListener("change", e => { state.trans = e.target.checked; update(); });
+  document.getElementById("lyr-conflict").addEventListener("change", e => { state.conflict = e.target.checked; update(); });
+  document.getElementById("search").addEventListener("input", e => { state.query = e.target.value.trim().toLowerCase(); update(); });
+
+  // ---------- table ----------
+  const COLS = ["A", "A2", "N", "AN", "At", "I", "Y", "P"];
+  const tbl = document.getElementById("rosetta");
+  let th = `<thead><tr><th>Paper</th><th>Data</th>${COLS.map(c => `<th><span class="swatch" style="background:${COLORS[c]}"></span>${stateById[c].name}</th>`).join("")}</tr></thead><tbody>`;
+  [...D.schemes].sort((a, b) => a.year - b.year).forEach(sc => {
+    const cells = COLS.map(c => {
+      const same = sc.labels.filter(l => l.maps.some(([t, r]) => t === c && r === "same")).map(l => esc(l.name));
+      const part = sc.labels.filter(l => l.maps.some(([t, r]) => t === c && r === "partial")).map(l => `<span class="p">${esc(l.name)}</span>`);
+      return `<td class="${same.length ? "same" : ""}">${same.join("<br>")}${part.join("")}</td>`;
+    }).join("");
+    const cite = sc.doi ? `<a href="https://doi.org/${esc(sc.doi)}" target="_blank" rel="noopener">${esc(sc.short.replace(/ \d{4}$/, ""))}</a>` : esc(sc.short.replace(/ \d{4}$/, ""));
+    th += `<tr><td>${cite} <span class="yr">${sc.year}</span></td><td class="cite">${sc.data.map(k => esc(DATA_TYPES[k])).join("<br>")}</td>${cells}</tr>`;
+  });
+  tbl.innerHTML = th + "</tbody>";
+
+  // ---------- tabs ----------
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x === b));
+    document.getElementById("view-network").hidden = b.dataset.view !== "network";
+    document.getElementById("view-table").hidden = b.dataset.view !== "table";
+  }));
+
+  // ---------- init ----------
+  const h0 = decodeURIComponent(location.hash.slice(1));
+  if (h0 && nodeById[h0]) select(h0); else { defaultDetail(); update(); }
+})();
+</script>
+</body>
+</html>
