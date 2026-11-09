@@ -238,14 +238,14 @@ window.SCLC_MAP = {
   ],
 
   transitions: [
-    { from: "A", to: "N", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", note: "MYC activates Notch and shifts tumors from ASCL1+ to NEUROD1+ to YAP1+ states (mouse and human models)." },
-    { from: "N", to: "Y", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", note: "Second step of the MYC-driven shift." },
-    { from: "A", to: "N", src: "Patel 2021", doi: "10.1126/sciadv.abc2578", note: "c-Myc induced a transition from ASCL1-SCLC to NEUROD1-SCLC." },
-    { from: "A", to: "Y", src: "Lim 2017", doi: "10.1038/nature22323", note: "Notch activation switches NE cells to a non-NE fate (mouse and human tumors)." },
-    { from: "A", to: "I", src: "Gay 2021", doi: "10.1016/j.ccell.2020.12.014", note: "Cisplatin treatment of SCLC-A PDXs shifted tumors toward SCLC-I." },
-    { from: "A", to: "N", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", bidir: true, note: "Live-cell TF reporters showed bidirectional transitions between states." },
-    { from: "N", to: "Y", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", bidir: true, note: "Bidirectional; epigenetic drugs changed individual transition rates." },
-    { from: "A", to: "bhatt-int", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", bidir: true, note: "NE cells gave rise to Intermediate cells, which regenerated NE cells (mouse tumor organoids)." },
-    { from: "bhatt-int", to: "Y", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", bidir: true, note: "NE ↔ non-NE switching goes through the Intermediate state rather than directly." }
+    { from: "A", to: "N", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", data: ["mts"], note: "MYC activates Notch and shifts tumors from ASCL1+ to NEUROD1+ to YAP1+ states (mouse and human models)." },
+    { from: "N", to: "Y", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", data: ["mts"], note: "Second step of the MYC-driven shift." },
+    { from: "A", to: "N", src: "Patel 2021", doi: "10.1126/sciadv.abc2578", data: ["cl"], note: "c-Myc induced a transition from ASCL1-SCLC to NEUROD1-SCLC." },
+    { from: "A", to: "Y", src: "Lim 2017", doi: "10.1038/nature22323", data: ["mt", "ht"], note: "Notch activation switches NE cells to a non-NE fate (mouse and human tumors)." },
+    { from: "A", to: "I", src: "Gay 2021", doi: "10.1016/j.ccell.2020.12.014", data: ["pdx"], note: "Cisplatin treatment of SCLC-A PDXs shifted tumors toward SCLC-I." },
+    { from: "A", to: "N", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Live-cell TF reporters showed bidirectional transitions between states." },
+    { from: "N", to: "Y", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Bidirectional; epigenetic drugs changed individual transition rates." },
+    { from: "A", to: "bhatt-int", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE cells gave rise to Intermediate cells, which regenerated NE cells (mouse tumor organoids)." },
+    { from: "bhatt-int", to: "Y", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE ↔ non-NE switching goes through the Intermediate state rather than directly." }
   ]
 };

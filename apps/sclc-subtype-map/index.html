@@ -105,6 +105,11 @@ a { color: var(--accent); }
 .edge.marker.low { stroke-dasharray: 2 3; stroke: var(--edge); }
 .edge.conflict { stroke: var(--conflict); stroke-dasharray: 9 3 2 3; stroke-width: 1.8; }
 .edge.trans { stroke: var(--ink); stroke-width: 1.8; opacity: 0.55; }
+.trans-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.trans-g:hover .edge.trans, .trans-g:focus .edge.trans { opacity: 0.9; stroke-width: 2.4; }
+.trans-g.sel .edge.trans { stroke: var(--accent); opacity: 1; stroke-width: 2.6; }
+.detail ul.evidence li { margin-bottom: 10px; }
+.detail ul.evidence .dt { margin: 4px 0; }
 .elabel { font-size: 10px; fill: var(--muted); pointer-events: none; }
 .elabel.conflict { fill: var(--conflict); font-weight: 700; font-size: 12px; }
 .dim { opacity: 0.12; }
@@ -228,10 +233,12 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   const transMap = new Map();
   D.transitions.forEach(t => {
     const k = t.from + ">" + t.to;
-    if (!transMap.has(k)) transMap.set(k, { from: t.from, to: t.to, bidir: false, items: [] });
+    if (!transMap.has(k)) transMap.set(k, { id: `t-${t.from}-${t.to}`, from: t.from, to: t.to, bidir: false, items: [] });
     const e = transMap.get(k); e.items.push(t); if (t.bidir) e.bidir = true;
   });
   const transitions = [...transMap.values()];
+  const transById = Object.fromEntries(transitions.map(t => [t.id, t]));
+  const transIdOf = t => `t-${t.from}-${t.to}`;
 
   // initial positions: mean of anchors (seeded jitter so the layout is the same on every load)
   let seed = 7;
@@ -260,7 +267,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   root.append("text").attr("class", "zone-label").attr("x", 14).attr("y", 22).text("NEUROENDOCRINE");
   root.append("text").attr("class", "zone-label").attr("x", W - 14).attr("y", 22).attr("text-anchor", "end").text("NON-NEUROENDOCRINE");
 
-  const gTrans = root.append("g"), gEdges = root.append("g"), gGap = root.append("g"), gELab = root.append("g"), gNodes = root.append("g");
+  const gEdges = root.append("g"), gGap = root.append("g"), gELab = root.append("g"), gTrans = root.append("g"), gNodes = root.append("g");
 
   const edgeSel = gEdges.selectAll("path").data(links).join("path")
     .attr("class", d => {
@@ -357,19 +364,23 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   render();
 
   // transitions: curved arrows between states, trimmed to circle edge
-  const transSel = gTrans.selectAll("path").data(transitions).join("path")
-    .attr("class", "edge trans")
-    .attr("marker-end", "url(#arr)")
-    .attr("marker-start", d => d.bidir ? "url(#arr)" : null)
-    .attr("d", d => {
+  const transSel = gTrans.selectAll("g").data(transitions).join("g").attr("class", "trans-g")
+    .attr("tabindex", 0).attr("role", "button")
+    .attr("aria-label", d => `Transition ${d.from} to ${d.to}: evidence`);
+  const transPath = d => {
       const a = nodeById[d.from], b = nodeById[d.to];
       const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
       const ta = a.type === "state" ? 38 : 22, tb = b.type === "state" ? 38 : 22;
       const sx = a.x + ux * ta, sy = a.y + uy * ta, ex = b.x - ux * tb, ey = b.y - uy * tb;
       const mx = (sx + ex) / 2 - uy * len * 0.18, my = (sy + ey) / 2 + ux * len * 0.18;
       return `M${sx},${sy} Q${mx},${my} ${ex},${ey}`;
-    });
-  transSel.append("title").text(d => d.items.map(t => `${t.src}: ${t.note}`).join("\n"));
+  };
+  transSel.append("path").attr("class", "edge trans").attr("d", transPath)
+    .attr("marker-end", "url(#arr)").attr("marker-start", d => d.bidir ? "url(#arr)" : null);
+  transSel.append("path").attr("class", "trans-hit").attr("d", transPath)
+    .append("title").text(d => d.items.map(t => t.src).join(", ") + " (click for evidence)");
+  transSel.on("click", (e, d) => { e.stopPropagation(); select(d.id); })
+    .on("keydown", (e, d) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(d.id); } });
 
   // drag (labels and markers only)
   nodeSel.filter(d => d.type !== "state").call(d3.drag()
@@ -403,7 +414,8 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 
   function update() {
     const focusId = state.hover || state.selected;
-    const nb = focusId ? neighbors(focusId) : null;
+    const focusT = transById[focusId];
+    const nb = focusT ? new Set([focusT.from, focusT.to]) : focusId ? neighbors(focusId) : null;
     const anyMatch = state.query && nodes.some(n => visibleNode(n) && matches(n));
     nodeSel.attr("display", d => visibleNode(d) ? null : "none")
       .classed("dim", d => {
@@ -415,13 +427,14 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
       .classed("sel", d => d.id === state.selected)
       .classed("match", d => anyMatch && matches(d) && d.type !== "state");
     edgeSel.attr("display", d => visibleLink(d) ? null : "none")
-      .classed("dim", d => nb ? !(d.source.id === focusId || d.target.id === focusId) : anyMatch ? !(matches(d.source) || matches(d.target)) : false);
+      .classed("dim", d => focusT ? true : nb ? !(d.source.id === focusId || d.target.id === focusId) : anyMatch ? !(matches(d.source) || matches(d.target)) : false);
     gapSel.attr("display", d => visibleLink(d) ? null : "none")
-      .classed("dim", d => nb ? !(d.source.id === focusId || d.target.id === focusId) : anyMatch ? !(matches(d.source) || matches(d.target)) : false);
+      .classed("dim", d => focusT ? true : nb ? !(d.source.id === focusId || d.target.id === focusId) : anyMatch ? !(matches(d.source) || matches(d.target)) : false);
     eLabSel.attr("display", d => visibleLink(d) ? null : "none")
-      .classed("dim", d => nb ? !(d.source.id === focusId || d.target.id === focusId) : false);
+      .classed("dim", d => focusT ? true : nb ? !(d.source.id === focusId || d.target.id === focusId) : false);
     transSel.attr("display", d => state.trans && visibleNode(nodeById[d.from]) && visibleNode(nodeById[d.to]) ? null : "none")
-      .classed("dim", d => nb ? !(nb.has(d.from) && nb.has(d.to) && (focusId === d.from || focusId === d.to)) : false);
+      .classed("dim", d => focusT ? d !== focusT : nb ? !(nb.has(d.from) && nb.has(d.to) && (focusId === d.from || focusId === d.to)) : false)
+      .classed("sel", d => d.id === state.selected);
     d3.selectAll("#scheme-list li").classed("off", d => !state.schemesOn.has(d.id) || d.year > state.year);
   }
 
@@ -441,7 +454,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   const nodeBtn = (id, text) => `<a href="#${esc(id)}" class="linkbtn" data-go="${esc(id)}">${esc(text)}</a>`;
   const stateBtn = id => `<span class="swatch" style="background:${COLORS[id]}"></span>${nodeBtn(id, stateById[id].name)}`;
   const nodeName = id => nodeById[id].type === "state" ? nodeById[id].data.name : nodeById[id].data.name;
-  const transLi = t => `<li>${nodeBtn(t.from, nodeName(t.from))} ${t.bidir ? "↔" : "→"} ${nodeBtn(t.to, nodeName(t.to))} <span class="cite">${esc(t.src)}</span>: ${esc(t.note)}</li>`;
+  const transLi = t => `<li>${nodeBtn(transIdOf(t), `${nodeName(t.from)} ${t.bidir ? "↔" : "→"} ${nodeName(t.to)}`)} <span class="cite">${esc(t.src)}</span>: ${esc(t.note)}</li>`;
   const relWord = r => r === "same" ? "same as" : "partly overlaps";
 
   function defaultDetail() {
@@ -456,7 +469,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         <li>${nodeBtn("A2", "SCLC-A2")}, which older schemes merge into SCLC-A</li>
         <li>${nodeBtn("bhatt-int", "the Intermediate state (Bhattacharya 2026)")}, the route between NE and non-NE</li>
       </ul>
-      <p class="cite">Turn on <b>State transitions</b> to see reported A → N → Y conversions.</p>`;
+      <p class="cite">Turn on <b>State transitions</b> to see reported conversions such as A → N → Y; click an arrow for the evidence.</p>`;
   }
 
   // which kinds of data each state has been found in, from every paper that maps to it
@@ -475,7 +488,23 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
     return rows ? `<h2>Found in</h2><ul class="found">${rows}</ul><p class="cite">* partial match only</p>` : "";
   }
 
+  function showTransition(t) {
+    const nm = id => nodeById[id].type === "state" ? stateBtn(id) : nodeBtn(id, nodeName(id));
+    const ev = t.items.map(it => {
+      const sc = D.schemes.find(s => s.short === it.src);
+      return `<li><b>${esc(it.src)}</b>${it.bidir ? " (both directions)" : ""}: ${esc(it.note)}
+        <p class="dt"><b>Data:</b> ${(it.data || []).map(k => esc(DATA_TYPES[k])).join("; ")}</p>
+        <span class="cite"><a href="https://doi.org/${esc(it.doi)}" target="_blank" rel="noopener">doi:${esc(it.doi)}</a>${sc ? ` · ${nodeBtn(sc.labels[0]._id, "see in map")}` : ""}</span></li>`;
+    }).join("");
+    detail.innerHTML = `<h3>${esc(nodeName(t.from))} ${t.bidir ? "↔" : "→"} ${esc(nodeName(t.to))}</h3>
+      <p class="sub">Reported transition · ${t.items.length} source${t.items.length > 1 ? "s" : ""}</p>
+      <p>${nm(t.from)} ${t.bidir ? "↔" : "→"} ${nm(t.to)}</p>
+      <h2>Evidence</h2><ul class="evidence">${ev}</ul>
+      <p><a href="#" class="linkbtn" data-go="">Back to overview</a></p>`;
+  }
+
   function showDetail(id) {
+    if (transById[id]) return showTransition(transById[id]);
     const n = nodeById[id];
     if (!n) return defaultDetail();
     let h = "";
@@ -543,6 +572,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         syncChecks();
       }
       if (n && n.type === "marker" && !state.markers) { state.markers = true; document.getElementById("lyr-markers").checked = true; }
+      if (transById[id] && !state.trans) { state.trans = true; document.getElementById("lyr-trans").checked = true; }
     }
     state.selected = id || null;
     if (id) history.replaceState(null, "", "#" + id); else history.replaceState(null, "", location.pathname);
@@ -597,7 +627,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 
   // ---------- init ----------
   const h0 = decodeURIComponent(location.hash.slice(1));
-  if (h0 && nodeById[h0]) select(h0); else { defaultDetail(); update(); }
+  if (h0 && (nodeById[h0] || transById[h0])) select(h0); else { defaultDetail(); update(); }
 })();
 </script>
 </body>
