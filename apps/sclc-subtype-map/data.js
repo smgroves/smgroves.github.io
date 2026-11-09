@@ -28,6 +28,9 @@ window.SCLC_MAP = {
     { id: "At", name: "SCLC-At", x: 0.30, y: 0.84, ne: true,
       tf: "ATOH1",
       desc: "ATOH1-high state. First reported in CDX models (Simpson 2020), also seen in metastatic biopsies (Lissa 2022) and as an Atoh1+ state in basal-cell-derived mouse tumors (Ireland 2025). Rare." },
+    { id: "Int", name: "Intermediate", lines: ["Inter-", "mediate"], x: 0.53, y: 0.68, ne: null,
+      tf: "NCAM1+ ICAM1+",
+      desc: "Low-identity, cycling state between the NE and non-NE programs, found in mouse RPR2 tumors (Bhattacharya 2026). Cells co-express the NE marker NCAM1 and the non-NE marker ICAM1, and have high MHC and antigen-presentation genes and strong SCLC-I signature activity. Sorted NCAM1+ICAM1+ cells regenerated NE, non-NE and Intermediate cells in organoids, while NE and non-NE cells did not convert directly, so NE ↔ non-NE switching appears to go through this state. Also seen in RPM/RPMA mouse tumors and in LUAD-to-SCLC transformation; in human tumors the evidence so far is bulk RNA signature scores (112 tumors)." },
     { id: "I",  name: "SCLC-I",  x: 0.70, y: 0.60, ne: false,
       tf: "none (inflamed)",
       desc: "Inflamed subtype defined by Gay et al. 2021: low ASCL1, NEUROD1 and POU2F3 signatures with an inflamed gene signature. Benefits most from adding immunotherapy. YAP1 is higher here but does not define it (Gay 2021); in relapsed biopsies, no SCLC-I biopsy had YAP1+ cells (Stewart 2026)." },
@@ -244,7 +247,7 @@ window.SCLC_MAP = {
         { name: "NE1", data: ["mts"], maps: [["A", "same"]], note: "Ascl1-high NE archetype; NE1 and NE2 differ in the pro-metastatic TF Nfib." },
         { name: "NE2", data: ["mts"], maps: [["A", "partial"]], note: "Ascl1-high NE archetype; NE1 and NE2 differ in Nfib." },
         { name: "Secretory", data: ["mts"], maps: [["A2", "same"]], note: "Closely resembles the human SCLC-A2 archetype." },
-        { name: "Intermediate", data: ["mts", "org"], id: "bhatt-int", maps: [["AN", "partial"], ["I", "partial"]], note: "NCAM1+ICAM1+ low-identity, cycling state between NE and non-NE, with high MHC and antigen-presentation genes and strong SCLC-I signature activity. Sorted double-positive cells regenerated NE, non-NE and Intermediate cells in organoids; NE and non-NE cells did not convert directly. RORB loss pushes NE cells into this state." },
+        { name: "Intermediate", data: ["mts", "org"], id: "bhatt-int", maps: [["Int", "same"], ["I", "partial"]], note: "NCAM1+ICAM1+ low-identity, cycling state between NE and non-NE, with high MHC and antigen-presentation genes and strong SCLC-I signature activity. Sorted double-positive cells regenerated NE, non-NE and Intermediate cells in organoids; NE and non-NE cells did not convert directly. RORB loss pushes NE cells into this state." },
         { name: "nonNE1", data: ["mts"], maps: [["Y", "partial"], ["I", "partial"]], note: "Notch- and Hippo-active non-NE state; SCLC-I signature active." },
         { name: "nonNE2", data: ["mts"], maps: [["Y", "partial"], ["I", "partial"]], note: "Second Notch- and Hippo-active non-NE state; SCLC-I signature active." }
       ] }
@@ -275,7 +278,7 @@ window.SCLC_MAP = {
     { from: "A", to: "I", src: "Gay 2021", doi: "10.1016/j.ccell.2020.12.014", data: ["pdx"], note: "Cisplatin treatment of SCLC-A PDXs shifted tumors toward SCLC-I." },
     { from: "A", to: "N", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Live-cell TF reporters showed bidirectional transitions between states." },
     { from: "N", to: "Y", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Bidirectional; epigenetic drugs changed individual transition rates." },
-    { from: "A", to: "bhatt-int", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE cells gave rise to Intermediate cells, which regenerated NE cells (mouse tumor organoids)." },
-    { from: "bhatt-int", to: "Y", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE ↔ non-NE switching goes through the Intermediate state rather than directly." }
+    { from: "A", to: "Int", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE cells gave rise to Intermediate cells, which regenerated NE cells (mouse tumor organoids)." },
+    { from: "Int", to: "Y", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE ↔ non-NE switching goes through the Intermediate state rather than directly." }
   ]
 };

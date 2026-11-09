@@ -203,14 +203,14 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 (function () {
   const D = window.SCLC_MAP;
   const W = 1000, H = 780, NE_SPLIT = 0.56;
-  const COLORS = { A: "#2563a8", A2: "#4a86c8", N: "#6b46a8", AN: "#585c9e", At: "#a63d86", I: "#b5b52c", Y: "#a8650a", P: "#2a8a5c" };
+  const COLORS = { A: "#2563a8", A2: "#4a86c8", N: "#6b46a8", AN: "#585c9e", At: "#a63d86", I: "#b5b52c", Y: "#a8650a", P: "#2a8a5c", Int: "#5f6f82" };
   const DATA_TYPES = {
     htb: "Human tumors, bulk RNA", hts: "Human tumors, single-cell", hti: "Human tumors, IHC/protein", ht: "Human tumors",
     cl: "Human cell lines", pdx: "PDX / CDX models", org: "Organoids",
     mt: "Mouse tumors (GEMM)", mts: "Mouse tumors, single-cell", rev: "Review / synthesis"
   };
   const DT_ORDER = Object.keys(DATA_TYPES);
-  const SINCE = { A: 2016, N: 2016, P: 2018, Y: 2019, A2: 2019, At: 2020, AN: 2020, I: 2021 };
+  const SINCE = { A: 2016, N: 2016, P: 2018, Y: 2019, A2: 2019, At: 2020, AN: 2020, I: 2021, Int: 2026 };
   const stateById = Object.fromEntries(D.states.map(s => [s.id, s]));
   const schemeById = Object.fromEntries(D.schemes.map(s => [s.id, s]));
 
@@ -296,7 +296,9 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   nodeSel.filter(d => d.type === "state").each(function (d) {
     const g = d3.select(this);
     g.append("circle").attr("r", d.data.hybrid ? 27 : 32).attr("fill", COLORS[d.id]);
-    g.append("text").attr("class", "nm" + (d.id === "I" ? " dark" : "")).attr("text-anchor", "middle").attr("dy", "0.35em").text(d.data.hybrid ? "A/N" : d.data.name);
+    const nm = g.append("text").attr("class", "nm" + (d.id === "I" ? " dark" : "")).attr("text-anchor", "middle");
+    if (d.data.lines) d.data.lines.forEach((t, i, arr) => nm.append("tspan").attr("x", 0).attr("dy", i === 0 ? `${0.35 - (arr.length - 1) * 0.55}em` : "1.1em").text(t));
+    else nm.attr("dy", "0.35em").text(d.data.hybrid ? "A/N" : d.data.name);
     const tf = g.append("text").attr("class", "tf").attr("text-anchor", "middle").attr("y", d.data.hybrid ? 41 : 46).text(d.data.tf);
     d.bw = Math.max(70, tf.node().getComputedTextLength() + 6); d.bh = 96; d.by = 8;
   });
@@ -499,7 +501,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         <li>${nodeBtn("shields-isl1", "the ISL1+ subtype (Shields 2026)")}</li>
         <li>${nodeBtn("I", "SCLC-I")} and the contested YAP1 subtype</li>
         <li>${nodeBtn("A2", "SCLC-A2")}, which older schemes merge into SCLC-A</li>
-        <li>${nodeBtn("bhatt-int", "the Intermediate state (Bhattacharya 2026)")}, the route between NE and non-NE</li>
+        <li>${nodeBtn("Int", "the Intermediate state (Bhattacharya 2026)")}, the route between NE and non-NE</li>
       </ul>
       <p class="cite">Turn on <b>State transitions</b> to see reported conversions such as A → N → Y; click an arrow for the evidence.</p>`;
   }
@@ -550,7 +552,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
       const tr = D.transitions.filter(t => t.from === id || t.to === id)
         .map(transLi).join("");
       h = `<h3><span class="swatch" style="background:${COLORS[id]}"></span>${esc(s.name)}</h3>
-        <p class="sub">${esc(s.tf)} · ${s.ne ? "neuroendocrine" : "non-neuroendocrine"}</p>
+        <p class="sub">${esc(s.tf)} · ${s.ne === null ? "between NE and non-NE" : s.ne ? "neuroendocrine" : "non-neuroendocrine"}</p>
         <p>${esc(s.desc)}</p>
         ${foundIn(id)}
         ${mk ? `<h2>Markers</h2><p>${mk}</p>` : ""}
@@ -641,7 +643,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   });
 
   // ---------- table ----------
-  const COLS = ["A", "A2", "N", "AN", "At", "I", "Y", "P"];
+  const COLS = ["A", "A2", "N", "AN", "At", "Int", "I", "Y", "P"];
   const tbl = document.getElementById("rosetta");
   let th = `<thead><tr><th>Paper</th><th>Data</th>${COLS.map(c => `<th><span class="swatch" style="background:${COLORS[c]}"></span>${stateById[c].name}</th>`).join("")}</tr></thead><tbody>`;
   [...D.schemes].sort((a, b) => a.year - b.year).forEach(sc => {
