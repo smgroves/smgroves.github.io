@@ -34,7 +34,7 @@ horizontal: false
 
 <!-- Apps: single-page tools that run in the browser -->
 <div class="projects packages">
-  <h2 class="category">Apps</h2>
+  <h2 class="category" id="apps">Apps</h2>
   {%- for category in page.app_categories %}
   {%- assign sorted_apps = site.projects | where: "category", category | sort: "importance" %}
   <div class="grid">

@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Computational tools for understanding cell identity
+title: Computational tools for understanding changes in cell identity
 img: assets/img/cellsys_graphical_abstract.png
 importance: 1
 category: research

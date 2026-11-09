@@ -982,3 +982,18 @@ html.transition *:after {
     }
   }
 }
+// News on the home page: links always purple (including <em> inside them), purple dates
+.news {
+  h2 {
+    color: var(--global-theme-color);
+  }
+  th {
+    color: var(--global-theme-color);
+  }
+  a,
+  a em,
+  a strong,
+  a span {
+    color: var(--global-theme-color);
+  }
+}
