@@ -6,7 +6,7 @@ Run every step from this folder:
 
 | Step | Script | Output (in `results/`) | Time |
 |---|---|---|---|
-| 0 | `sh 00_download.sh` | `data/` (input, gitignored, ~33 MB) | |
+| 0 | `sh 00_download.sh` | `data/` (inputs, gitignored: expression ~33 MB, Groves 2022 labels, Gay 2021 signature) | |
 | 1 | `python3 01_labels.py` | `labels_v2.csv` | seconds |
 | 2 | `Rscript 02_pipeline.R` | `v2_module_genes.csv`, `v2_eigengenes.csv`, `v2_kruskal.csv`, `v2_gsea.csv`, `v2_go.csv` (+ `v2_net.rds`, gitignored) | ~10 min |
 | 3 | `Rscript 03_tsne.R` | `v2_tsne.csv` (+ `v2_sim.rds`, gitignored) | ~3 min first time, seconds after |
