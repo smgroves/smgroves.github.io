@@ -43,8 +43,9 @@ She is an instructor/researcher at UVA (smgroves@virginia.edu); the site hosts r
 
 ## Interactive notebooks (/notebooks/)
 - Static Jupyter notebooks in `jupyter/` and course notebooks: link via `https://nbviewer.org/urls/smgroves.github.io/<path>.ipynb` plus a separate `[.ipynb]` download link. Do NOT use nbviewer's `/github/...` form (GitHub API rate limit). Notebook images must use absolute smgroves.github.io URLs.
-- Pluto notebooks in `julia/*.jl` need a live PlutoSliderServer (env in `pluto-deployment-environment/`, PlutoSliderServer 1.3.0, Julia 1.11.4). `_pages/notebooks.md` reads `pluto_server_url` from `_config.yml` (currently `https://smgroves-pluto-notebooks.hf.space`, which does not exist).
-- As of 2026-10-26 the Pluto sliders are DEAD: Railway/Fly (`fly.toml`, `Dockerfile.pluto`)/Render (`render.yaml`) hosts are gone; `hf-space/` + `.github/workflows/pluto-space.yml` target an HF Docker Space, but free HF accounts can't create Docker Spaces. Workflow fails until a host is chosen (Cloud Run recommended). Sarah wants a live server, not a static export. Claude can't create cloud accounts; give her step-by-step instructions for those steps.
+- Pluto notebooks in `julia/*.jl` need a live PlutoSliderServer (env in `pluto-deployment-environment/`, PlutoSliderServer 1.3.0, Julia 1.11.4). `_pages/notebooks.md` reads `pluto_server_url` from `_config.yml`.
+- Pluto host is Google Cloud Run (chosen 2026-11-08; old Railway/Fly/Render/HF configs deleted). `cloud-run/Dockerfile` listens on `$PORT`; `.github/workflows/pluto-cloud-run.yml` builds the image, smoke-tests both notebooks, then deploys only if repo variables `GCP_PROJECT`, `GCP_WIF_PROVIDER`, `GCP_SERVICE_ACCOUNT` exist. Sarah's one-time account steps: `cloud-run/SETUP.md` + `cloud-run/setup.sh`. Until she does them and `pluto_server_url` gets the `run.app` URL, the sliders stay dead. Sarah wants a live server, not a static export. Claude can't create cloud accounts.
+- JupyterLite: `jupyterlite/` config, built into `_site/lite` by `deploy.yml` (`lite` in `keep_files`). Only `run_eulers.ipynb`; link via `lite_url` in `_data/notebooks.yml`.
 - `jupyter/data/*.tif` are gitignored, so `elevation.ipynb` can't fully run on Binder.
 
 ## Teaching wiki (`_pages/teaching-wiki/index.html`, /teaching-wiki)

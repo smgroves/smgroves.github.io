@@ -1,9 +1,8 @@
-# PlutoSliderServer for the Pluto notebooks in julia/, run as a Hugging Face Docker Space.
-# The GitHub workflow .github/workflows/pluto-space.yml assembles the Space repo as:
-#   Dockerfile, README.md, pluto-deployment-environment/, notebooks/*.jl
+# PlutoSliderServer for the Pluto notebooks in julia/, run on Google Cloud Run.
+# The GitHub workflow .github/workflows/pluto-cloud-run.yml assembles the build context as:
+#   Dockerfile, pluto-deployment-environment/, notebooks/*.jl
 FROM julia:1.11.4
 
-# Spaces run the container as uid 1000
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user
@@ -19,5 +18,7 @@ COPY --chown=user notebooks ./notebooks
 RUN julia --project=pluto-deployment-environment -e 'import PlutoSliderServer; PlutoSliderServer.export_directory("notebooks"; Export_output_dir="/tmp/warmup")' \
  && rm -rf /tmp/warmup
 
-EXPOSE 7860
-CMD ["julia", "--project=pluto-deployment-environment", "-e", "import PlutoSliderServer; PlutoSliderServer.run_directory(\"notebooks\"; SliderServer_port=7860, SliderServer_host=\"0.0.0.0\")"]
+# Cloud Run sets PORT (8080 by default)
+ENV PORT=8080
+EXPOSE 8080
+CMD ["julia", "--project=pluto-deployment-environment", "-e", "import PlutoSliderServer; PlutoSliderServer.run_directory(\"notebooks\"; SliderServer_port=parse(Int, ENV[\"PORT\"]), SliderServer_host=\"0.0.0.0\")"]
