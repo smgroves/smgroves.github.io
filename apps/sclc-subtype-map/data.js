@@ -9,6 +9,7 @@
 // authors: full author lists from PubMed (Crossref for bioRxiv), used for search
 // data: kinds of data each paper used (see DATA_TYPES in index.html); a label's own data overrides its paper's
 // conflicts: contested claims, label <-> label (or label -> state)
+// zone: where an unlinked label sits (ne / nonne / mid), from how its own paper describes it
 // markers: gene -> state, level "high" | "low"
 
 window.SCLC_MAP = {
@@ -27,7 +28,7 @@ window.SCLC_MAP = {
       desc: "Not a formal subtype, but ASCL1/NEUROD1 co-expression is common: 37% of tumors by IHC (Baine 2020). Intermediate and admixed identities also recur in single-cell data (Chan 2021)." },
     { id: "At", name: "SCLC-At", x: 0.30, y: 0.84, ne: true,
       tf: "ATOH1",
-      desc: "ATOH1-high state. First reported in CDX models (Simpson 2020), also seen in metastatic biopsies (Lissa 2022) and as an Atoh1+ state in basal-cell-derived mouse tumors (Ireland 2025). Rare." },
+      desc: "ATOH1-high state. First reported in CDX models (Simpson 2020), also seen in metastatic biopsies (Lissa 2022) and as an Atoh1+ state in basal-cell-derived mouse tumors (Ireland 2025)." },
     { id: "Int", name: "Intermediate", lines: ["Inter-", "mediate"], x: 0.53, y: 0.68, ne: null,
       tf: "NCAM1+ ICAM1+",
       desc: "Low-identity, cycling state between the NE and non-NE programs, found in mouse RPR2 tumors (Bhattacharya 2026). Cells co-express the NE marker NCAM1 and the non-NE marker ICAM1, and have high MHC and antigen-presentation genes and strong SCLC-I signature activity. Sorted NCAM1+ICAM1+ cells regenerated NE, non-NE and Intermediate cells in organoids, while NE and non-NE cells did not convert directly, so NE ↔ non-NE switching appears to go through this state. Also seen in RPM/RPMA mouse tumors and in LUAD-to-SCLC transformation; in human tumors the evidence so far is bulk RNA signature scores (112 tumors)." },
@@ -36,7 +37,7 @@ window.SCLC_MAP = {
       desc: "Inflamed subtype defined by Gay et al. 2021: low ASCL1, NEUROD1 and POU2F3 signatures with an inflamed gene signature. Benefits most from adding immunotherapy. YAP1 is higher here but does not define it (Gay 2021); in relapsed biopsies, no SCLC-I biopsy had YAP1+ cells (Stewart 2026)." },
     { id: "Y",  name: "SCLC-Y",  x: 0.85, y: 0.33, ne: false,
       tf: "YAP1",
-      desc: "YAP1-high, non-NE state. Largely absent from treatment-naive SCLC but emerges with treatment resistance, with LCNEC-like features (Stewart 2026). Archetype task: injury response (Groves 2022). Most YAP1+ 'SCLC-Y' cell lines are SMARCA4-deficient tumors rather than SCLC (Ng 2024)." },
+      desc: "YAP1-high, non-NE state. Largely absent from treatment-naive SCLC but emerges with treatment resistance, with LCNEC-like features (Stewart 2026). Archetype task: injury response (Groves 2022). In Ng 2024, 6 of 8 YAP1+ 'SCLC-Y' cell lines looked like SMARCA4-deficient tumors rather than SCLC." },
     { id: "P",  name: "SCLC-P",  x: 0.86, y: 0.84, ne: false,
       tf: "POU2F3",
       desc: "POU2F3-driven tuft-cell-like, non-NE subtype (Huang 2018), mutually exclusive with ASCL1 and NEUROD1 by IHC (Baine 2020). Archetype task: chemosensation and metabolism (Groves 2022). ISL1 is negatively correlated with POU2F3 (Shields 2026)." }
@@ -47,15 +48,15 @@ window.SCLC_MAP = {
       short: "Carney 1985", year: 1985, title: "Establishment and identification of small cell lung cancer cell lines having classic and variant features",
       journal: "Cancer Res", doi: null, pmid: "2985257", data: ["cl"], basis: "Biochemical NE markers + morphology (50 lines)",
       labels: [
-        { name: "Classic", maps: [["A", "partial"], ["A2", "partial"]], note: "35 of 50 lines; express all four NE biomarkers (L-dopa decarboxylase, bombesin-like immunoreactivity, NSE, CK-BB). Roughly the ASCL1+ states." },
-        { name: "Variant", maps: [["N", "partial"], ["Y", "partial"]], note: "15 of 50 lines; lack L-dopa decarboxylase and bombesin-like immunoreactivity but keep NSE and CK-BB. Roughly SCLC-N or non-NE." }
+        { name: "Classic", maps: [], zone: "ne", note: "35 of 50 lines; express all four NE biomarkers (L-dopa decarboxylase, bombesin-like immunoreactivity, NSE, CK-BB). Predates TF subtypes; the paper does not measure ASCL1 or NEUROD1, so it is not linked to a state." },
+        { name: "Variant", maps: [], zone: "mid", note: "15 of 50 lines; lack L-dopa decarboxylase and bombesin-like immunoreactivity but keep NSE and CK-BB. Not linked to a state: later papers use 'variant' for both NEUROD1-high (Mollaoglu 2017) and NE-low (Zhang 2018) SCLC." }
       ] },
     { id: "calbo", authors: ["Joaquim Calbo", "Erwin van Montfort", "Natalie Proost", "Ellen van Drunen", "H Berna Beverloo", "Ralph Meuwissen", "Anton Berns"],
       short: "Calbo 2011", year: 2011, title: "A functional role for tumor cell heterogeneity in a mouse model of small cell lung cancer",
       journal: "Cancer Cell", doi: "10.1016/j.ccr.2010.12.021", data: ["mt"], basis: "NE vs. mesenchymal marker profiles",
       labels: [
-        { name: "NE", maps: [["A", "partial"], ["A2", "partial"]], note: "Cells with a neuroendocrine marker profile." },
-        { name: "Mesenchymal", maps: [["Y", "partial"]], note: "Cells with a mesenchymal marker profile, sharing genomic aberrations with the NE cells; they gave NE cells metastatic capacity when co-engrafted." }
+        { name: "NE", maps: [], zone: "ne", note: "Mouse tumor cells with a neuroendocrine marker profile. Not linked to a state: TFs were not measured." },
+        { name: "Mesenchymal", maps: [], zone: "nonne", note: "Cells with a mesenchymal marker profile, sharing genomic aberrations with the NE cells; they gave NE cells metastatic capacity when co-engrafted. Not linked to a state: TFs were not measured." }
       ] },
     { id: "borromeo", authors: ["Mark D Borromeo", "Trisha K Savage", "Rahul K Kollipara", "Min He", "Alexander Augustyn", "Jihan K Osborne", "Luc Girard", "John D Minna", "Adi F Gazdar", "Melanie H Cobb", "Jane E Johnson"],
       short: "Borromeo 2016", year: 2016, title: "ASCL1 and NEUROD1 reveal heterogeneity in pulmonary neuroendocrine tumors and regulate distinct genetic programs",
@@ -74,15 +75,15 @@ window.SCLC_MAP = {
       short: "Lim 2017", year: 2017, title: "Intratumoural heterogeneity generated by Notch signalling promotes small-cell lung cancer",
       journal: "Nature", doi: "10.1038/nature22323", data: ["mt", "ht"], basis: "Notch pathway activity",
       labels: [
-        { name: "NE (Notch-inactive)", maps: [["A", "partial"], ["A2", "partial"]], note: "Neuroendocrine tumor cells." },
-        { name: "Non-NE (Notch-active)", maps: [["Y", "partial"], ["I", "partial"]], note: "Notch activation switches 10–50% of tumor cells to a non-NE fate, partly via Rest. These cells are slow-growing, relatively chemoresistant, and support NE cells." }
+        { name: "NE (Notch-inactive)", maps: [], zone: "ne", note: "Neuroendocrine tumor cells. Not linked to a TF-defined state in this paper." },
+        { name: "Non-NE (Notch-active)", maps: [], zone: "nonne", note: "Notch activation switches 10–50% of tumor cells to a non-NE fate, partly via Rest. These cells are slow-growing, relatively chemoresistant, and support NE cells. Not linked to a TF-defined state in this paper." }
       ] },
     { id: "zhang", authors: ["Wei Zhang", "Luc Girard", "Yu-An Zhang", "Tomohiro Haruki", "Mahboubeh Papari-Zareei", "Victor Stastny", "Hans K Ghayee", "Karel Pacak", "Trudy G Oliver", "John D Minna", "Adi F Gazdar"],
       short: "Zhang 2018", year: 2018, title: "SCLC tumors and preclinical models display heterogeneity of neuroendocrine phenotypes",
       journal: "Transl Lung Cancer Res", doi: "10.21037/tlcr.2018.02.02", data: ["htb", "cl", "mt"], basis: "50-gene NE score",
       labels: [
-        { name: "NE-high", maps: [["A", "partial"], ["A2", "partial"], ["N", "partial"]], note: "Express ASCL1 or NEUROD1 with NKX2-1 and lack REST; grow as floating aggregates." },
-        { name: "NE-low", maps: [["Y", "partial"], ["I", "partial"], ["P", "partial"]], note: "16% of tumors and 10% of cell lines. Lost most NE markers, express REST, underwent EMT, with Notch, Hippo, TGFβ and MYC active." }
+        { name: "NE-high", maps: [["A", "partial"], ["A2", "partial"], ["N", "partial"]], note: "Express ASCL1 or NEUROD1 with NKX2-1 and lack REST; grow as floating aggregates. Linked to the ASCL1+ and NEUROD1+ states because the paper defines it by those TFs." },
+        { name: "NE-low", maps: [], zone: "nonne", note: "16% of tumors and 10% of cell lines. Lost most NE markers, ASCL1 and NEUROD1, express REST, underwent EMT, with Notch, Hippo, TGFβ and MYC active. Not linked to a state: the paper does not assign these to YAP1, POU2F3 or inflamed subtypes." }
       ] },
     { id: "huang", authors: ["Yu-Han Huang", "Olaf Klingbeil", "Xue-Yan He", "Xiaoli S Wu", "Gayatri Arun", "Bin Lu", "Tim D D Somerville", "Joseph P Milazzo", "John E Wilkinson", "Osama E Demerdash", "David L Spector", "Mikala Egeblad", "Junwei Shi", "Christopher R Vakoc"],
       short: "Huang 2018", year: 2018, title: "POU2F3 is a master regulator of a tuft cell-like variant of small cell lung cancer",
@@ -97,7 +98,7 @@ window.SCLC_MAP = {
         { name: "SCLC-A", maps: [["A", "same"], ["A2", "partial"]], note: "Consensus ASCL1 subtype; does not separate A and A2." },
         { name: "SCLC-N", maps: [["N", "same"]] },
         { name: "SCLC-P", maps: [["P", "same"]] },
-        { name: "SCLC-Y", maps: [["Y", "same"], ["I", "partial"]], note: "YAP1 subtype. Gay 2021 later replaced it with the inflamed SCLC-I." }
+        { name: "SCLC-Y", maps: [["Y", "same"]], note: "YAP1 subtype. Gay 2021 later replaced it with the inflamed SCLC-I." }
       ] },
     { id: "wooten", authors: ["David J Wooten", "Sarah M Groves", "Darren R Tyson", "Qi Liu", "Jing S Lim", "Reka Albert", "Carlos F Lopez", "Julien Sage", "Vito Quaranta"],
       short: "Wooten 2019", year: 2019, title: "Systems-level network modeling of SCLC subtypes identifies master regulators and destabilizers",
@@ -112,7 +113,7 @@ window.SCLC_MAP = {
       short: "Chalishazar 2019", year: 2019, title: "MYC-driven SCLC is metabolically distinct and vulnerable to arginine depletion",
       journal: "Clin Cancer Res", doi: "10.1158/1078-0432.ccr-18-4140", data: ["mt", "cl", "pdx"], basis: "Metabolomics of MYC vs. MYCL tumors",
       labels: [
-        { name: "MYC-driven (arginine-dependent)", maps: [["N", "partial"]], note: "MYC-driven SCLC depends on arginine-regulated pathways; arginine depletion (ADI-PEG 20) suppresses these tumors. A vulnerability, not a new subtype." }
+        { name: "MYC-driven (arginine-dependent)", maps: [], zone: "mid", note: "MYC-driven SCLC depends on arginine-regulated pathways; arginine depletion (ADI-PEG 20) suppresses these tumors. Not linked to a state: the paper compares MYC- vs. MYCL-driven tumors, not TF subtypes." }
       ] },
     { id: "baine2020", authors: ["Marina K Baine", "Min-Shu Hsieh", "W Victoria Lai", "Jacklynn V Egger", "Achim A Jungbluth", "Yahya Daneshbod", "Amanda Beras", "Rowanne Spencer", "Jessica Lopardo", "Francis Bodd", "Joseph Montecalvo", "Jennifer L Sauter", "Jason C Chang", "Darren J Buonocore", "William D Travis", "Triparna Sen", "John T Poirier", "Charles M Rudin", "Natasha Rekhtman"],
       short: "Baine 2020", year: 2020, title: "SCLC subtypes defined by ASCL1, NEUROD1, POU2F3, and YAP1: a comprehensive immunohistochemical and histopathologic characterization",
@@ -139,7 +140,7 @@ window.SCLC_MAP = {
       short: "Owonikoko 2021", year: 2021, title: "YAP1 expression in SCLC defines a distinct subtype with T-cell-inflamed phenotype",
       journal: "J Thorac Oncol", doi: "10.1016/j.jtho.2020.11.006", data: ["htb", "hti", "cl"], basis: "RNA-seq + IHC",
       labels: [
-        { name: "YAP1+ T-cell inflamed", id: "owo-Y", maps: [["Y", "same"], ["I", "partial"]], note: "SCLC-Y had high interferon-γ response and T-cell-inflamed scores. YAP1 protein was more common in limited-stage than extensive-stage disease (30.6% vs. 8.5%)." }
+        { name: "YAP1+ T-cell inflamed", id: "owo-Y", maps: [["Y", "same"]], note: "SCLC-Y had high interferon-γ response and T-cell-inflamed scores. YAP1 protein was more common in limited-stage than extensive-stage disease (30.6% vs. 8.5%)." }
       ] },
     { id: "chan", authors: ["Joseph M Chan", "Alvaro Quintanal-Villalonga", "Vianne Ran Gao", "Yubin Xie", "Viola Allaj", "Ojasvi Chaudhary", "Ignas Masilionis", "Jacklynn Egger", "Andrew Chow", "Thomas Walle", "Marissa Mattar", "Dig V K Yarlagadda", "James L Wang", "Fathema Uddin", "Michael Offin", "Metamia Ciampricotti", "Besnik Qeriqi", "Amber Bahr", "Elisa de Stanchina", "Umesh K Bhanot", "W Victoria Lai", "Matthew J Bott", "David R Jones", "Arvin Ruiz", "Marina K Baine", "Yanyun Li", "Natasha Rekhtman", "John T Poirier", "Tal Nawy", "Triparna Sen", "Linas Mazutis", "Travis J Hollmann", "Dana Pe'er", "Charles M Rudin"],
       short: "Chan 2021", year: 2021, title: "Signatures of plasticity, metastasis, and immunosuppression in an atlas of human SCLC",
@@ -148,20 +149,20 @@ window.SCLC_MAP = {
         { name: "SCLC-A", maps: [["A", "same"]] },
         { name: "SCLC-N", maps: [["N", "same"]] },
         { name: "SCLC-P", maps: [["P", "same"]] },
-        { name: "Intermediate / admixed", maps: [["AN", "partial"]], note: "Tumor diversity was driven by canonical, intermediate and admixed subtypes. Also found a PLCG2-high, pro-metastatic population across subtypes." }
+        { name: "Intermediate / admixed", maps: [], zone: "mid", note: "Tumor diversity was driven by canonical, intermediate and admixed subtypes; the abstract does not say which subtypes are admixed. Also found a PLCG2-high, pro-metastatic population that recurs across subtypes." }
       ] },
     { id: "patel", authors: ["Ayushi S Patel", "Seungyeul Yoo", "Ranran Kong", "Takashi Sato", "Abhilasha Sinha", "Sarah Karam", "Li Bao", "Maya Fridrikh", "Katsura Emoto", "German Nudelman", "Charles A Powell", "Mary Beth Beasley", "Jun Zhu", "Hideo Watanabe"],
       short: "Patel 2021", year: 2021, title: "Prototypical oncogene family Myc defines unappreciated distinct lineage states of SCLC",
       journal: "Sci Adv", doi: "10.1126/sciadv.abc2578", data: ["cl"], basis: "Transcriptomic and epigenomic profiling",
       labels: [
-        { name: "L-Myc", maps: [["A", "partial"]], note: "L-Myc imparts neuronal programs." },
-        { name: "c-Myc", maps: [["N", "partial"], ["Y", "partial"]], note: "c-Myc imparts non-NE programs and induces an ASCL1 → NEUROD1 transition." }
+        { name: "L-Myc", maps: [], zone: "ne", note: "L-Myc imparts neuronal programs, but replacing c-Myc with L-Myc was not enough to induce ASCL1-SCLC, so it is not linked to SCLC-A." },
+        { name: "c-Myc", maps: [["N", "partial"]], note: "c-Myc imparts non-NE programs and induces an ASCL1 → NEUROD1 transition." }
       ] },
     { id: "olsen", authors: ["Rachelle R Olsen", "Abbie S Ireland", "David W Kastner", "Sarah M Groves", "Kyle B Spainhower", "Karine Pozo", "Demetra P Kelenis", "Christopher P Whitney", "Matthew R Guthrie", "Sarah J Wait", "Danny Soltero", "Benjamin L Witt", "Vito Quaranta", "Jane E Johnson", "Trudy G Oliver"],
       short: "Olsen 2021", year: 2021, title: "ASCL1 represses a SOX9+ neural crest stem-like state in small cell lung cancer",
       journal: "Genes Dev", doi: "10.1101/gad.348295.121", data: ["mt", "cl"], basis: "ASCL1 loss in MYC-driven mice",
       labels: [
-        { name: "SOX9+ neural-crest-like", maps: [["Y", "partial"]], note: "ASCL1 loss promotes a SOX9+ mesenchymal/neural crest stem-like state (SOX9/RUNX1/RUNX2). Mechanistic, not a clinical subtype." }
+        { name: "SOX9+ neural-crest-like", maps: [], zone: "nonne", note: "ASCL1 loss promotes a SOX9+ mesenchymal/neural crest stem-like state (SOX9/RUNX1/RUNX2) and osteosarcoma/chondroid tumors. The paper does not tie it to an existing subtype." }
       ] },
     { id: "groves", authors: ["Sarah M Groves", "Geena V Ildefonso", "Caitlin O McAtee", "Patricia M M Ozawa", "Abbie S Ireland", "Philip E Stauffer", "Perry T Wasdin", "Xiaomeng Huang", "Yi Qiao", "Jing Shan Lim", "Jackie Bader", "Qi Liu", "Alan J Simmons", "Ken S Lau", "Wade T Iams", "Doug P Hardin", "Edward B Saff", "William R Holmes", "Darren R Tyson", "Christine M Lovly", "Jeffrey C Rathmell", "Gabor Marth", "Julien Sage", "Trudy G Oliver", "Alissa M Weaver", "Vito Quaranta"],
       short: "Groves 2022", year: 2022, title: "Archetype tasks link intratumoral heterogeneity to plasticity and cancer hallmarks in SCLC",
@@ -175,25 +176,25 @@ window.SCLC_MAP = {
       ] },
     { id: "gopal", authors: ["Priyanka Gopal", "Aaron Petty", "Kevin Rogacki", "Titas Bera", "Rohan Bareja", "Craig D Peacock", "Mohamed E Abazeed"],
       short: "Gopal 2022", year: 2022, title: "Multivalent state transitions shape the intratumoral composition of small cell lung carcinoma",
-      journal: "Sci Adv", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], basis: "k-means on 53 cell lines + live-cell TF reporters",
+      journal: "Sci Adv", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], basis: "k-means on 53 cell lines; live-cell ASCL1, NEUROD1 and YAP1 reporters showed bidirectional state transitions",
       labels: [
-        { name: "Cluster I (DMS53)", data: ["cl"], maps: [["A2", "same"]], note: "ASCL1-high cluster represented by DMS53, an A2 archetype line in Groves 2022 (our mapping, not the paper's)." },
+        { name: "Cluster I (DMS53)", data: ["cl"], maps: [["A", "partial"], ["A2", "partial"]], note: "ASCL1-high cluster. Its representative line, DMS53, is an A2 archetype line in Groves 2022, but the paper does not separate A from A2." },
         { name: "Cluster II (H446)", data: ["cl"], maps: [["N", "same"]], note: "NEUROD1-high." },
-        { name: "Cluster III (H1092)", data: ["cl"], maps: [["A", "same"]], note: "ASCL1-high; grows in suspension." },
+        { name: "Cluster III (H1092)", data: ["cl"], maps: [["A", "partial"], ["A2", "partial"]], note: "Second ASCL1-high cluster; grows in suspension. The paper does not separate A from A2." },
         { name: "Cluster IV (DMS114)", data: ["cl"], maps: [["Y", "same"]], note: "YAP1+, adherent, mesenchymal. No separate P cluster." }
       ] },
     { id: "lissa", authors: ["Delphine Lissa", "Nobuyuki Takahashi", "Parth Desai", "Irena Manukyan", "Christopher W Schultz", "Vinodh Rajapakse", "Moises J Velez", "Deborah Mulford", "Nitin Roper", "Samantha Nichols", "Rasa Vilimas", "Linda Sciuto", "Yuanbin Chen", "Udayan Guha", "Arun Rajan", "Devon Atkinson", "Rajaa El Meskini", "Zoe Weaver Ohler", "Anish Thomas"],
       short: "Lissa 2022", year: 2022, title: "Heterogeneity of neuroendocrine transcriptional states in metastatic SCLC and patient-derived models",
       journal: "Nat Commun", doi: "10.1038/s41467-022-29517-9", data: ["htb", "pdx"], basis: "Transcriptome, exome and histology of metastatic SCLC",
       labels: [
-        { name: "Hybrid NE/non-NE", data: ["htb"], maps: [["AN", "partial"], ["Y", "partial"]], note: "A clinical subtype with hybrid NE and non-NE phenotypes, chemotherapy-resistant with very poor outcomes. Its place among the canonical states is uncertain." },
+        { name: "Hybrid NE/non-NE", data: ["htb"], maps: [], zone: "mid", note: "A clinical subtype with hybrid NE and non-NE phenotypes, chemotherapy-resistant with very poor outcomes. The paper presents it as its own subtype, so it is not linked to another state." },
         { name: "ATOH1+", data: ["htb"], maps: [["At", "same"]], note: "ATOH1 subtype also seen in metastatic biopsies." }
       ] },
     { id: "qu", authors: ["Song Qu", "Patricia Fetsch", "Anish Thomas", "Yves Pommier", "David S Schrump", "Markku M Miettinen", "Haobin Chen"],
       short: "Qu 2022", year: 2022, title: "Molecular subtypes of primary SCLC tumors and their associations with neuroendocrine and therapeutic markers",
       journal: "J Thorac Oncol", doi: "10.1016/j.jtho.2021.08.763", data: ["hti"], basis: "IHC (146 tumors) + MYC paralogs, SLFN11, T cells",
       labels: [
-        { name: "Quadruple-negative", maps: [["I", "partial"]], note: "6.3% of tumors were negative for all four TFs. Non-ASCL1/NEUROD1 tumors had more CD8+ T cells and an inflamed phenotype; SLFN11 was absent in 40% of tumors, especially quadruple-negative ones." }
+        { name: "Quadruple-negative", maps: [], zone: "nonne", note: "6.3% of tumors were negative for all four TFs. Not linked to SCLC-I: the paper does not call these SCLC-I. Non-ASCL1/NEUROD1 tumors had more CD8+ T cells and an inflamed phenotype; SLFN11 was absent in 40% of tumors, especially quadruple-negative ones." }
       ] },
     { id: "cho", authors: ["Hae Jin Cho", "Soon Auck Hong", "Daeun Ryu", "Sook-Hee Hong", "Tae-Min Kim"],
       short: "Cho 2022", year: 2022, title: "Transcriptional profiling reveals mesenchymal subtypes of SCLC with activation of EMT and worse clinical outcomes",
@@ -205,14 +206,14 @@ window.SCLC_MAP = {
       short: "Nabet 2024", year: 2024, title: "Immune heterogeneity in small-cell lung cancer and vulnerability to immune checkpoint blockade",
       journal: "Cancer Cell", doi: "10.1016/j.ccell.2024.01.010", data: ["htb"], basis: "NMF on 271 IMpower133 tumors",
       labels: [
-        { name: "Inflamed NE (TAM-low)", maps: [["I", "partial"], ["A", "partial"]], note: "NE tumors with high T-effector and low macrophage signals lived longest with atezolizumab added to chemotherapy." },
-        { name: "Inflamed non-NE (TAM-high)", maps: [["I", "partial"]], note: "Non-NE tumors with high T-effector and high macrophage signals benefited less. Splits immune-infiltrated SCLC in two." }
+        { name: "Inflamed NE (TAM-low)", maps: [], zone: "ne", note: "NE tumors with high T-effector and low macrophage signals lived longest with atezolizumab added to chemotherapy." },
+        { name: "Inflamed non-NE (TAM-high)", maps: [], zone: "nonne", note: "Non-NE tumors with high T-effector and high macrophage signals benefited less. The paper's four subsets broadly match A, N, P and I, but it does not say which subsets these two immune-infiltrated groups are, so they are not linked." }
       ] },
     { id: "ng", authors: ["Jin Ng", "Ling Cai", "Luc Girard", "Owen W J Prall", "Neeha Rajan", "Christine Khoo", "Ahida Batrouney", "David J Byrne", "Danielle K Boyd", "Ariena J Kersbergen", "Michael Christie", "John D Minna", "Marian L Burr", "Kate D Sutherland"],
       short: "Ng 2024", year: 2024, title: "Molecular and pathologic characterization of YAP1-expressing SCLC cell lines leads to reclassification as SMARCA4-deficient malignancies",
       journal: "Clin Cancer Res", doi: "10.1158/1078-0432.CCR-23-2360", data: ["cl", "hti"], basis: "Mutation + pathology review",
       labels: [
-        { name: "SMARCA4-deficient tumor", id: "smarca4-ut", maps: [], note: "6 of 8 SCLC-Y cell lines carried pathogenic SMARCA4 mutations and resembled thoracic SMARCA4-deficient undifferentiated tumors rather than SCLC." }
+        { name: "SMARCA4-deficient tumor", id: "smarca4-ut", maps: [], zone: "nonne", note: "6 of 8 SCLC-Y cell lines carried pathogenic SMARCA4 mutations and resembled thoracic SMARCA4-deficient undifferentiated tumors rather than SCLC." }
       ] },
     { id: "ireland2025", authors: ["Abbie S Ireland", "Daniel A Xie", "Sarah B Hawgood", "Margaret W Barbier", "Lisa Y Zuo", "Benjamin E Hanna", "Scarlett Lucas-Randolph", "Darren R Tyson", "Benjamin L Witt", "Ramaswamy Govindan", "Afshin Dowlati", "Justin C Moser", "Anish Thomas", "Sonam Puri", "Charles M Rudin", "Joseph M Chan", "Andrew Elliott", "Trudy G Oliver"],
       short: "Ireland 2025", year: 2025, title: "Basal cell of origin resolves neuroendocrine–tuft lineage plasticity in cancer",
@@ -232,7 +233,7 @@ window.SCLC_MAP = {
       short: "Shields 2026", year: 2026, title: "ISL1: a novel neuroendocrine subtype in SCLC predicts durable response to lurbinectedin",
       journal: "Mol Cancer Ther", doi: "10.1158/1535-7163.MCT-25-0663", data: ["hti", "cl"], basis: "Tumor proteomics, IHC, cell line validation",
       labels: [
-        { name: "ISL1+ 'novel' subtype", id: "shields-isl1", maps: [["A", "same"], ["N", "partial"]], note: "Presented as a new subtype, but ISL1 is highest at the SCLC-A archetype (Groves 2022) and lower in A2. In tumors ISL1 correlates with ASCL1 and NEUROD1 and negatively with POU2F3. L-MYC drives ISL1, which drives ASCL1 and SOX5; ISL1 predicts lurbinectedin response." }
+        { name: "ISL1+ subtype", id: "shields-isl1", maps: [["A", "partial"], ["N", "partial"]], note: "Presented as a new subtype. The paper reports ISL1-high tumors in ASCL1+ or NEUROD1+ backgrounds (hence the partial links); separately, ISL1 is highest at the SCLC-A archetype in Groves 2022 and lower in A2. In tumors ISL1 correlates with ASCL1 and NEUROD1 and negatively with POU2F3. L-MYC drives ISL1, which drives ASCL1 and SOX5; ISL1 predicts lurbinectedin response." }
       ] },
     { id: "stewart2026", authors: ["C Allison Stewart", "Kavya Ramkumar", "Runsheng Wang", "Yuanxin Xi", "Alexa Halliday", "Lixia Diao", "Qi Wang", "Alejandra Serrano", "Sarah Groves", "Simon Heeke", "Azusa Tanimoto", "Laura Kaiser", "Whitney Lewis", "Mukulika Bose", "Pedro Rocha", "Loukia Karacosta", "Vito Quaranta", "Jing Wang", "Julie George", "Luisa Maren Solis Soto", "Bingnan Zhang", "John V Heymach", "Lauren A Byers", "Carl M Gay"],
       short: "Stewart 2026", year: 2026, title: "YAP1 defines an emergent, plastic population of relapsed SCLC",
@@ -244,12 +245,12 @@ window.SCLC_MAP = {
       short: "Bhattacharya 2026", year: 2026, title: "Transcriptional networks underlying tumour plasticity in small-cell lung cancer",
       journal: "bioRxiv", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], basis: "Archetype analysis of scRNA-seq + scATAC-seq; BoBa-T TF network", ours: true,
       labels: [
-        { name: "NE1", data: ["mts"], maps: [["A", "same"]], note: "Ascl1-high NE archetype; NE1 and NE2 differ in the pro-metastatic TF Nfib." },
+        { name: "NE1", data: ["mts"], maps: [["A", "partial"]], note: "Ascl1-high NE archetype (linked to SCLC-A by Ascl1); NE1 and NE2 differ in the pro-metastatic TF Nfib." },
         { name: "NE2", data: ["mts"], maps: [["A", "partial"]], note: "Ascl1-high NE archetype; NE1 and NE2 differ in Nfib." },
         { name: "Secretory", data: ["mts"], maps: [["A2", "same"]], note: "Closely resembles the human SCLC-A2 archetype." },
         { name: "Intermediate", data: ["mts", "org"], id: "bhatt-int", maps: [["Int", "same"], ["I", "partial"]], note: "NCAM1+ICAM1+ low-identity, cycling state between NE and non-NE, with high MHC and antigen-presentation genes and strong SCLC-I signature activity. Sorted double-positive cells regenerated NE, non-NE and Intermediate cells in organoids; NE and non-NE cells did not convert directly. RORB loss pushes NE cells into this state." },
-        { name: "nonNE1", data: ["mts"], maps: [["Y", "partial"], ["I", "partial"]], note: "Notch- and Hippo-active non-NE state; SCLC-I signature active." },
-        { name: "nonNE2", data: ["mts"], maps: [["Y", "partial"], ["I", "partial"]], note: "Second Notch- and Hippo-active non-NE state; SCLC-I signature active." }
+        { name: "nonNE1", id: "bhatt-nonne1", data: ["mts"], maps: [["I", "partial"]], note: "Notch- and Hippo-active non-NE state; the human SCLC-I signature is active here. Not linked to SCLC-Y: the paper does not assign it." },
+        { name: "nonNE2", data: ["mts"], maps: [["I", "partial"]], note: "Second Notch- and Hippo-active non-NE state; the human SCLC-I signature is active here. Not linked to SCLC-Y: the paper does not assign it." }
       ] }
   ],
 
@@ -263,22 +264,18 @@ window.SCLC_MAP = {
     { gene: "ISL1", edges: [["A", "high"], ["A2", "low"], ["N", "low"], ["P", "low"]],
       note: "Highest at the SCLC-A archetype and lower at A2, as shown by Wooten 2019 and in the Groves 2022 archetype signatures (A 7.5, A2 3.4, N 2.6, P 1.4, Y 0.1). In tumors, ISL1 correlates with ASCL1 and NEUROD1 and negatively with POU2F3 (Shields 2026)." },
     { gene: "CALCA", edges: [["A2", "high"]], note: "CGRP; highest at the SCLC-A2 archetype (Groves 2022)." },
-    { gene: "MYCL", edges: [["A", "high"]], note: "Drives ISL1 (Shields 2026); L-Myc imparts neuronal programs (Patel 2021) and is associated with ASCL1/NEUROD1 tumors (Qu 2022)." },
-    { gene: "MYC", edges: [["N", "high"], ["Y", "high"]], note: "Drives the ASCL1 → NEUROD1 → YAP1 shift in mouse tumors (Ireland 2020) and the NEUROD1 'variant' state (Mollaoglu 2017); associated with non-ASCL1/NEUROD1 tumors (Qu 2022)." },
-    { gene: "REST", edges: [["Y", "high"], ["I", "high"], ["A", "low"]], note: "NE gene repressor: expressed in NE-low SCLC (Zhang 2018) and mediates part of the Notch-driven NE → non-NE switch (Lim 2017)." },
-    { gene: "RORB", edges: [["A", "high"]], note: "Promotes the NE state and represses the non-NE state; its loss pushes NE cells into the Intermediate state and turns on immune programs (Bhattacharya 2026, mouse)." },
-    { gene: "SLFN11", edges: [["I", "low"]], note: "Absent in 40% of primary tumors, especially those negative for all four TFs (Qu 2022). Did not predict lurbinectedin response (Shields 2026)." }
+    { gene: "MYCL", edges: [["A", "high"], ["N", "high"]], note: "Drives ISL1 (Shields 2026); L-Myc imparts neuronal programs (Patel 2021) and L-MYC protein is associated with ASCL1 and NEUROD1 tumors (Qu 2022)." },
+    { gene: "MYC", edges: [["N", "high"]], note: "Drives the ASCL1 → NEUROD1 → YAP1 shift in mouse tumors (Ireland 2020) and the NEUROD1 'variant' state (Mollaoglu 2017); associated with non-ASCL1/NEUROD1 tumors (Qu 2022)." },
+    { gene: "REST", edges: [["A", "low"], ["N", "low"]], note: "NE gene repressor: absent from NE-high SCLC (which expresses ASCL1 or NEUROD1) and expressed in NE-low SCLC (Zhang 2018); mediates part of the Notch-driven NE → non-NE switch (Lim 2017)." },
+    { gene: "RORB", edges: [["A", "high"]], note: "Promotes the NE state and represses the non-NE state; its loss pushes NE cells into the Intermediate state (mouse). In human tumors RORB expression was confined to SCLC-A (Bhattacharya 2026)." },
   ],
 
   transitions: [
     { from: "A", to: "N", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", authors: ["Abbie S Ireland", "Alexi M Micinski", "David W Kastner", "Bingqian Guo", "Sarah J Wait", "Kyle B Spainhower", "Christopher C Conley", "Opal S Chen", "Matthew R Guthrie", "Danny Soltero", "Yi Qiao", "Xiaomeng Huang", "Szabolcs Tarapcsak", "Siddhartha Devarakonda", "Milind D Chalishazar", "Jason Gertz", "Justin C Moser", "Gabor Marth", "Sonam Puri", "Benjamin L Witt", "Benjamin T Spike", "Trudy G Oliver"], data: ["mts"], note: "MYC activates Notch and shifts tumors from ASCL1+ to NEUROD1+ to YAP1+ states (mouse and human models)." },
     { from: "N", to: "Y", src: "Ireland 2020", doi: "10.1016/j.ccell.2020.05.001", authors: ["Abbie S Ireland", "Alexi M Micinski", "David W Kastner", "Bingqian Guo", "Sarah J Wait", "Kyle B Spainhower", "Christopher C Conley", "Opal S Chen", "Matthew R Guthrie", "Danny Soltero", "Yi Qiao", "Xiaomeng Huang", "Szabolcs Tarapcsak", "Siddhartha Devarakonda", "Milind D Chalishazar", "Jason Gertz", "Justin C Moser", "Gabor Marth", "Sonam Puri", "Benjamin L Witt", "Benjamin T Spike", "Trudy G Oliver"], data: ["mts"], note: "Second step of the MYC-driven shift." },
     { from: "A", to: "N", src: "Patel 2021", doi: "10.1126/sciadv.abc2578", data: ["cl"], note: "c-Myc induced a transition from ASCL1-SCLC to NEUROD1-SCLC." },
-    { from: "A", to: "Y", src: "Lim 2017", doi: "10.1038/nature22323", data: ["mt", "ht"], note: "Notch activation switches NE cells to a non-NE fate (mouse and human tumors)." },
     { from: "A", to: "I", src: "Gay 2021", doi: "10.1016/j.ccell.2020.12.014", data: ["pdx"], note: "Cisplatin treatment of SCLC-A PDXs shifted tumors toward SCLC-I." },
-    { from: "A", to: "N", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Live-cell TF reporters showed bidirectional transitions between states." },
-    { from: "N", to: "Y", src: "Gopal 2022", doi: "10.1126/sciadv.abp8674", data: ["cl", "pdx"], bidir: true, note: "Bidirectional; epigenetic drugs changed individual transition rates." },
     { from: "A", to: "Int", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE cells gave rise to Intermediate cells, which regenerated NE cells (mouse tumor organoids)." },
-    { from: "Int", to: "Y", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "NE ↔ non-NE switching goes through the Intermediate state rather than directly." }
+    { from: "Int", to: "bhatt-nonne1", src: "Bhattacharya 2026", doi: "10.64898/2026.09.26.754526", data: ["mts", "org"], bidir: true, note: "Intermediate cells regenerated ICAM1+ non-NE cells, and non-NE cells gave rise to Intermediate cells; NE ↔ non-NE switching goes through this state rather than directly (mouse tumor organoids)." }
   ]
 };

@@ -94,6 +94,7 @@ a { color: var(--accent); }
 .state .tf { font-size: 11px; fill: var(--muted); pointer-events: none; }
 .state.hybrid circle { stroke-dasharray: 5 3; stroke: var(--ink); stroke-width: 1.5; }
 .lab rect { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.lab.unlinked rect { stroke: var(--muted); stroke-dasharray: 3 2; }
 .lab .l1 { font-size: 11.5px; font-weight: 600; fill: var(--ink); }
 .lab .l2 { font-size: 10px; fill: var(--muted); }
 .lab.ours .l2 { fill: var(--accent); font-weight: 600; }
@@ -150,7 +151,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   <h1>SCLC Subtype Map</h1>
   <div class="meta"><a href="/">Sarah Groves</a> · <a href="/projects/#sclc">SCLC research</a></div>
 </header>
-<div class="intro"><p>Since 1985, SCLC has been split into classic/variant, NE/non-NE, A/N/P/Y, A/N/P/I, archetypes, clusters and NMF groups. Each box is a label from one paper. Lines show which of the current states (colored circles) it corresponds to: a double line means the same state, a single line means partial overlap. Click anything for details, including what kind of data (human tumors, cell lines, mouse models, organoids) each state was found in. For example, ISL1 is high in SCLC-A and low in SCLC-A2 (Wooten 2019), and the later "ISL1+ subtype" (Shields 2026) maps onto SCLC-A.</p></div>
+<div class="intro"><p>Since 1985, SCLC has been split into classic/variant, NE/non-NE, A/N/P/Y, A/N/P/I, archetypes, clusters and NMF groups. Each box is a label from one paper. Lines show which of the current states (colored circles) it corresponds to, only where the paper itself supports the link: a double line means the same state, a single line means partial overlap; dashed boxes are not linked. Click anything for details, including what kind of data (human tumors, cell lines, mouse models, organoids) each state was found in. For example, ISL1 is high in SCLC-A and low in SCLC-A2 (Wooten 2019), and the later "ISL1+ subtype" (Shields 2026) overlaps SCLC-A.</p></div>
 <nav class="tabs" role="tablist">
   <button class="tab" role="tab" aria-selected="true" data-view="network">Network</button>
   <button class="tab" role="tab" aria-selected="false" data-view="table">Table</button>
@@ -158,8 +159,8 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 
 <main id="view-network" class="layout">
   <aside class="side">
-    <h2>Search</h2>
-    <input id="search" class="search" type="search" placeholder="Gene, label, paper or author" autocomplete="off">
+    <h2>Search genes, papers or authors</h2>
+    <input id="search" class="search" type="search" placeholder="e.g. ISL1 or Trudy Oliver" autocomplete="off">
     <h2>Show</h2>
     <div class="layers">
       <label><input type="checkbox" id="lyr-markers" checked> Marker genes</label>
@@ -181,6 +182,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
       <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--edge)" stroke-width="1.4" stroke-dasharray="2 3"/></svg>marker low</span>
       <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--conflict)" stroke-width="1.8" stroke-dasharray="9 3 2 3"/></svg>contested (≠)</span>
       <span><svg width="26" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="var(--ink)" stroke-width="1.8" opacity="0.6"/><path d="M19 1 L26 5 L19 9 Z" fill="var(--ink)" opacity="0.6"/></svg>transition</span>
+      <span><svg width="22" height="12"><rect x="1" y="1" width="20" height="10" rx="2" fill="none" stroke="var(--muted)" stroke-dasharray="3 2"/></svg>not linked to a state</span>
       <span><b style="color:var(--accent)">blue year</b> = our papers</span>
       <button id="reset" class="reset">Reset zoom</button>
     </div>
@@ -198,7 +200,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 <footer class="foot">Curated by Sarah Groves from her SCLC literature notes; mappings are interpretations, not claims made by each paper. Checked against PubMed abstracts and full texts, November 2026. Corrections welcome: <a href="mailto:smgroves@virginia.edu">smgroves@virginia.edu</a>.</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="data.js"></script>
+<script src="data.js?v=20261108c"></script>
 <script>
 (function () {
   const D = window.SCLC_MAP;
@@ -210,6 +212,8 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
     mt: "Mouse tumors (GEMM)", mts: "Mouse tumors, single-cell", rev: "Review / synthesis"
   };
   const DT_ORDER = Object.keys(DATA_TYPES);
+  // empty areas where labels not linked to any state sit (fractions of width, height)
+  const ZONES = { ne: [0.36, 0.66], mid: [0.56, 0.42], nonne: [0.68, 0.30] };
   const SINCE = { A: 2016, N: 2016, P: 2018, Y: 2019, A2: 2019, At: 2020, AN: 2020, I: 2021, Int: 2026 };
   const stateById = Object.fromEntries(D.states.map(s => [s.id, s]));
   const schemeById = Object.fromEntries(D.schemes.map(s => [s.id, s]));
@@ -248,9 +252,14 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   nodes.forEach(n => {
     if (n.type === "state") { n.x = n.fx; n.y = n.fy; return; }
     const tg = links.filter(l => l.source === n.id && l.kind !== "conflict").map(l => nodeById[l.target]);
-    const anchors = tg.length ? tg : [nodeById.Y];
-    n.x = d3.mean(anchors, a => a.fx) + (rand() - 0.5) * 60;
-    n.y = d3.mean(anchors, a => a.fy) + (rand() - 0.5) * 60;
+    if (!tg.length) {
+      const z = ZONES[n.data.zone || "mid"];
+      n.x = z[0] * W + (rand() - 0.5) * 80;
+      n.y = z[1] * H + (rand() - 0.5) * 80;
+      return;
+    }
+    n.x = d3.mean(tg, a => a.fx) + (rand() - 0.5) * 60;
+    n.y = d3.mean(tg, a => a.fy) + (rand() - 0.5) * 60;
   });
 
   // ---------- svg ----------
@@ -289,7 +298,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 
   const nodeSel = gNodes.selectAll("g.node").data(nodes, d => d.id).join("g")
     .attr("class", d => "node " + ({ state: "state", label: "lab", marker: "mk" })[d.type] +
-      (d.type === "state" && d.data.hybrid ? " hybrid" : "") + (d.type === "label" && d.scheme.ours ? " ours" : ""))
+      (d.type === "state" && d.data.hybrid ? " hybrid" : "") + (d.type === "label" && d.scheme.ours ? " ours" : "") + (d.type === "label" && !d.data.maps.length ? " unlinked" : ""))
     .attr("tabindex", 0).attr("role", "button")
     .attr("aria-label", d => d.type === "state" ? d.data.name : d.type === "marker" ? d.data.gene + " marker" : `${d.data.name}, ${d.scheme.short}`);
 
@@ -324,6 +333,8 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
       .distance(l => l.kind === "conflict" ? 110 : l.kind === "marker" ? 85 : l.rel === "same" ? 70 : 120)
       .strength(l => l.kind === "conflict" ? 0.05 : l.kind === "marker" ? 0.25 : l.rel === "same" ? 0.7 : 0.3))
     .force("charge", d3.forceManyBody().strength(-90))
+    .force("zx", d3.forceX(d => (ZONES[d.data && d.data.zone] || [0])[0] * W).strength(d => d.data && d.data.zone ? 0.15 : 0))
+    .force("zy", d3.forceY(d => (ZONES[d.data && d.data.zone] || [0, 0])[1] * H).strength(d => d.data && d.data.zone ? 0.15 : 0))
     .force("box", boxCollide(4))
     .stop();
 
