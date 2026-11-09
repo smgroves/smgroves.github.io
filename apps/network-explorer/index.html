@@ -694,9 +694,10 @@ const SCLC_PARENTS = {
 };
 // Sign of each parent, in the same order as SCLC_PARENTS (+ activating, - inhibiting, ~ mixed, ? unknown).
 // Read from the S7 Fig leaf colors: flip one parent OFF -> ON with the others fixed and count how often
-// P(target ON) rises vs falls by > 0.05. >= 70% one way sets the sign; otherwise mixed. ASCL1 (Fig 7B) not read.
+// P(target ON) rises vs falls by > 0.05. >= 70% one way sets the sign; otherwise mixed.
+// ASCL1's rule is in Fig 7B, not S7; its signs come from Groves et al. 2022 Fig 6A, which agrees with every definite S7 sign.
 const SCLC_SIGNS = {
-  ASCL1: "??????", BCL3: "-+~+", CEBPD: "+", EBF1: "~+~-~~~", ELF3: "-++---", FLI1: "+++~++",
+  ASCL1: "--++--", BCL3: "-+~+", CEBPD: "+", EBF1: "~+~-~~~", ELF3: "-++---", FLI1: "+++~++",
   FOXA1: "+-+-++-~~~", FOXA2: "+--+-+++--", GATA4: "-~--", ISL1: "++~++~", KLF2: "--+~~~", MITF: "+-+++",
   NEUROD2: "+---", NR0B1: "+", NR0B2: "++++~~", OLIG2: "--+~--~+", RBPJ: "-++-++~~~-~", RCOR2: "+-+~-++",
   REST: "+--~-", SIX5: "-++-", SMAD4: "++", SOX11: "~+~++++", STAT6: "~-~+~~~+", TCF3: "--+~+",
