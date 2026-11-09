@@ -236,11 +236,14 @@ pre {
       <label class="sr-only" for="sel-example">Example network</label>
       <select id="sel-example" class="example-select">
         <option value="wooten2019">Example: SCLC TFs, Wooten, Groves et al. 2019</option>
+        <option value="groves2022">Example: SCLC TFs + MYC, Groves et al. 2022</option>
         <option value="bhattacharya2026">Example: SCLC TFs, Bhattacharya, Groves et al. 2026</option>
       </select>
       <label class="sr-only" for="sel-compare">Example comparison</label>
       <select id="sel-compare" class="example-select" hidden>
-        <option value="wooten-vs-bhattacharya">Example: Wooten 2019 vs Bhattacharya 2026</option>
+        <option value="wooten2019|bhattacharya2026">Example: Wooten 2019 vs Bhattacharya 2026</option>
+        <option value="wooten2019|groves2022">Example: Wooten 2019 vs Groves 2022</option>
+        <option value="groves2022|bhattacharya2026">Example: Groves 2022 vs Bhattacharya 2026</option>
       </select>
       <button class="btn primary" id="btn-load" type="button">Load your CSV</button>
     </div>
@@ -745,6 +748,56 @@ function makeSCLC() {
     main: { name: "sclc_edges.csv", fields: ["regulator", "target", "Effect"], rows: edges },
     nodes: { name: "sclc_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed,
+    edgeFixed: { Effect: EFFECT_SPEC },
+  };
+}
+
+
+/* ---------------- Example: Groves et al. (2022) Cell Systems 13(9): 690-710 ----------------
+   Fig 6A: the Wooten 2019 TF network with MYC and NEUROD1 added (43 new edges from literature/ChEA).
+   Edges and signs were read from the vector figure (green arrow = activating, red bar = inhibiting).
+   Format: target: "+activator -inhibitor ..." */
+const GROVES22_PARENTS = {
+  ASCL1: "+FLI1 -KLF2 -MITF -MYC -OLIG2 +SMAD4 -TEAD4", BCL3: "+ELF3 +MYC +NR0B1 +REST -SOX11",
+  CEBPD: "+FLI1 +FOXA1 -TCF4", EBF1: "-CEBPD -FLI1 -MITF -MYC +REST +SMAD4 +TCF4 -TEAD4",
+  ELF3: "-EBF1 +FOXA1 -GATA4 -MITF -MYC +RBPJ -ZNF217", FLI1: "+FOXA1 +FOXA2 -MYC +SMAD4 +SOX11 +STAT6 -TCF3",
+  FOXA1: "+ASCL1 +ELF3 +FLI1 +FOXA2 +ISL1 -MYC -NEUROD2 +NR0B1 -OLIG2 -TCF3 -ZNF217",
+  FOXA2: "+ASCL1 -EBF1 +FLI1 +FOXA1 +ISL1 -OLIG2 -REST +SMAD4 -TCF3 -TEAD4",
+  GATA4: "-FLI1 -FOXA2 +MYC -SMAD4 -TCF4 +TEAD4", ISL1: "+FLI1 -GATA4 -MYC +NR0B1 +SMAD4 +SOX11 +TCF4",
+  KLF2: "+CEBPD -FLI1 -MYC -NR0B1 -SMAD4 -TCF3 -TCF4", MITF: "+MYC +OLIG2 +SIX5 -SMAD4 +TCF4 +ZNF217",
+  MYC: "-CEBPD -FLI1 -FOXA1 +GATA4 -ISL1 +NEUROD1 +OLIG2 -SMAD4 +TCF3 -TCF4 +ZNF217",
+  NEUROD1: "+EBF1 -FLI1 +NR0B1 +NR0B2 +OLIG2 -REST +SMAD4 +SOX11 +TCF3 -ZNF217",
+  NEUROD2: "-FLI1 +MYC -NR0B2 +RCOR2 -REST", NR0B1: "+MYC -REST -TCF3",
+  NR0B2: "+ASCL1 +FLI1 +FOXA1 +FOXA2 +GATA4 -MYC -NEUROD2 +RBPJ",
+  OLIG2: "-ASCL1 -FLI1 -FOXA1 +NEUROD2 -NR0B1 -SMAD4 +TCF3 +TCF4",
+  RBPJ: "+ASCL1 +EBF1 +FOXA2 -GATA4 +ISL1 -MITF -OLIG2 +RCOR2 +SMAD4 +TCF3 +TCF4",
+  RCOR2: "-FLI1 -GATA4 +MYC +NEUROD2 -NR0B1 +OLIG2 +TCF3 +TCF4", REST: "-FOXA1 +GATA4 +MYC -NR0B1 +TCF3 -TCF4",
+  SIX5: "+BCL3 -ELF3 -FOXA1 +MITF +MYC", SMAD4: "+FOXA1 +FOXA2 -MYC +NEUROD2",
+  SOX11: "+FLI1 +FOXA1 +ISL1 -MYC +OLIG2 +RBPJ +TCF3 +TCF4",
+  STAT6: "+BCL3 +CEBPD +FLI1 -FOXA1 +FOXA2 +GATA4 -MITF -MYC -TCF4", TCF3: "-FLI1 +ISL1 +MYC -NR0B1 -STAT6 +TCF4",
+  TCF4: "-ELF3 +FOXA1 +MITF -MYC +NEUROD2 -REST +SMAD4 +TCF3 +TEAD4",
+  TEAD4: "-CEBPD -ELF3 -FOXA1 +GATA4 +MITF +MYC -SMAD4", ZNF217: "-FOXA1 -FOXA2 -SMAD4 -SOX11 -TCF4",
+};
+function makeGroves2022() {
+  const edges = [];
+  for (const [tf, ps] of Object.entries(GROVES22_PARENTS)) for (const p of ps.split(" "))
+    edges.push({ regulator: p.slice(1), target: tf, Effect: p[0] === "+" ? "Activating" : "Inhibiting" });
+  const tfs = [...new Set(edges.flatMap(e => [e.regulator, e.target]))].sort();
+  const regsMYC = new Set(edges.filter(e => e.target === "MYC").map(e => e.regulator));
+  const byMYC = new Set(edges.filter(e => e.regulator === "MYC").map(e => e.target));
+  const rel = tf => tf === "MYC" ? "MYC" : regsMYC.has(tf) && byMYC.has(tf) ? "Both directions"
+    : byMYC.has(tf) ? "Regulated by MYC" : regsMYC.has(tf) ? "Regulates MYC" : "Not linked to MYC";
+  const rows = tfs.map(tf => ({ TF: tf, "Relation to MYC": rel(tf),
+    "In network since": tf === "MYC" || tf === "NEUROD1" ? "Added in 2022" : "Wooten 2019" }));
+  return {
+    main: { name: "groves2022_edges.csv", fields: ["regulator", "target", "Effect"], rows: edges },
+    nodes: { name: "groves2022_tfs.csv", fields: Object.keys(rows[0]), rows },
+    fixed: {
+      "Relation to MYC": { order: ["MYC", "Regulated by MYC", "Both directions", "Regulates MYC", "Not linked to MYC"],
+        colors: { MYC: "#c8494f", "Regulated by MYC": "#d9a03f", "Both directions": "#7c62b8", "Regulates MYC": "#3a9fc6", "Not linked to MYC": "#8f9bb0" } },
+      "In network since": { order: ["Wooten 2019", "Added in 2022"], colors: { "Wooten 2019": "#8f9bb0", "Added in 2022": "#c8494f" } },
+    },
+    defaultColor: "Relation to MYC",
     edgeFixed: { Effect: EFFECT_SPEC },
   };
 }
@@ -1475,8 +1528,9 @@ $("#mode-explore").addEventListener("click", () => setAppMode("explore"));
 $("#mode-compare").addEventListener("click", () => setAppMode("compare"));
 
 const EXAMPLES = {
-  wooten2019: { make: makeSCLC, label: "SCLC transcription factor network (Wooten, Groves et al. 2019)" },
-  bhattacharya2026: { make: makeBhattacharya, label: "SCLC transcription factor network (Bhattacharya, Groves et al. 2026)" },
+  wooten2019: { make: makeSCLC, label: "SCLC transcription factor network (Wooten, Groves et al. 2019)", short: "Wooten 2019", cite: "Wooten, Groves et al. 2019" },
+  groves2022: { make: makeGroves2022, label: "SCLC transcription factor network with MYC (Groves et al. 2022)", short: "Groves 2022", cite: "Groves et al. 2022" },
+  bhattacharya2026: { make: makeBhattacharya, label: "SCLC transcription factor network (Bhattacharya, Groves et al. 2026)", short: "Bhattacharya 2026", cite: "Bhattacharya, Groves et al. 2026" },
 };
 function exampleGraph(key) {
   const s = EXAMPLES[key].make();
@@ -1486,8 +1540,9 @@ function exampleGraph(key) {
 }
 function loadSample() {
   if (appMode === "compare") {
-    const A = { g: exampleGraph("wooten2019"), name: "Wooten 2019" }, B = { g: exampleGraph("bhattacharya2026"), name: "Bhattacharya 2026" };
-    initViz(mergeGraphs(A, B), "Comparing SCLC TF networks: Wooten, Groves et al. 2019 and Bhattacharya, Groves et al. 2026");
+    const [ka, kb] = ($("#sel-compare").value.includes("|") ? $("#sel-compare").value : "wooten2019|bhattacharya2026").split("|");
+    const A = { g: exampleGraph(ka), name: EXAMPLES[ka].short }, B = { g: exampleGraph(kb), name: EXAMPLES[kb].short };
+    initViz(mergeGraphs(A, B), `Comparing SCLC TF networks: ${EXAMPLES[ka].cite} and ${EXAMPLES[kb].cite}`);
     return;
   }
   const key = $("#sel-example").value in EXAMPLES ? $("#sel-example").value : "wooten2019";
