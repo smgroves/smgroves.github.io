@@ -80,6 +80,8 @@ a { color: var(--accent); }
 .detail .cite { font-size: 13px; color: var(--muted); }
 .detail .dt { font-size: 13px; margin: 0 0 8px; padding: 5px 8px; background: var(--accent-soft); border-radius: 4px; }
 .detail ul.found { font-size: 13px; }
+.detail details.authors { margin: 4px 0 8px; }
+.detail details.authors summary { cursor: pointer; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
 .linkbtn { display: inline; border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-align: left; font: inherit; }
 .warn { color: var(--conflict); }
@@ -157,7 +159,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 <main id="view-network" class="layout">
   <aside class="side">
     <h2>Search</h2>
-    <input id="search" class="search" type="search" placeholder="Gene, label or paper (e.g. ISL1)" autocomplete="off">
+    <input id="search" class="search" type="search" placeholder="Gene, label, paper or author" autocomplete="off">
     <h2>Show</h2>
     <div class="layers">
       <label><input type="checkbox" id="lyr-markers" checked> Marker genes</label>
@@ -403,13 +405,19 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
     links.forEach(l => { if (!visibleLink(l)) return; if (l.source.id === id) s.add(l.target.id); if (l.target.id === id) s.add(l.source.id); });
     return s;
   }
+  // search: every word of the query must appear (accents and periods ignored), e.g. "trudy oliver"
+  const norm = s => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, "").toLowerCase();
+  const qTokens = () => norm(state.query).split(/\s+/).filter(Boolean);
+  const hit = hay => { const t = qTokens(); if (!t.length) return false; const n = norm(hay); return t.every(w => n.includes(w)); };
+  const schemeHay = sc => `${sc.short} ${sc.title} ${sc.journal} ${(sc.authors || []).join(" ")}`;
+  const itemAuthors = it => it.authors || (D.schemes.find(s => s.short === it.src) || {}).authors || [];
+  const transMatch = d => d.items.some(it => hit(`${it.src} ${it.note} ${itemAuthors(it).join(" ")}`));
   function matches(n) {
-    const q = state.query;
-    if (!q) return false;
+    if (!state.query) return false;
     const hay = n.type === "state" ? `${n.data.name} ${n.data.tf} ${n.data.desc}` :
       n.type === "marker" ? `${n.data.gene} ${n.data.note}` :
-      `${n.data.name} ${n.scheme.short} ${n.scheme.title} ${n.data.note || ""}`;
-    return hay.toLowerCase().includes(q);
+      `${n.data.name} ${n.data.note || ""} ${schemeHay(n.scheme)}`;
+    return hit(hay);
   }
 
   function update() {
@@ -433,7 +441,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
     eLabSel.attr("display", d => visibleLink(d) ? null : "none")
       .classed("dim", d => focusT ? true : nb ? !(d.source.id === focusId || d.target.id === focusId) : false);
     transSel.attr("display", d => state.trans && visibleNode(nodeById[d.from]) && visibleNode(nodeById[d.to]) ? null : "none")
-      .classed("dim", d => focusT ? d !== focusT : nb ? !(nb.has(d.from) && nb.has(d.to) && (focusId === d.from || focusId === d.to)) : false)
+      .classed("dim", d => focusT ? d !== focusT : nb ? !(nb.has(d.from) && nb.has(d.to) && (focusId === d.from || focusId === d.to)) : anyMatch ? !transMatch(d) : false)
       .classed("sel", d => d.id === state.selected);
     d3.selectAll("#scheme-list li").classed("off", d => !state.schemesOn.has(d.id) || d.year > state.year);
   }
@@ -456,6 +464,30 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   const nodeName = id => nodeById[id].type === "state" ? nodeById[id].data.name : nodeById[id].data.name;
   const transLi = t => `<li>${nodeBtn(transIdOf(t), `${nodeName(t.from)} ${t.bidir ? "↔" : "→"} ${nodeName(t.to)}`)} <span class="cite">${esc(t.src)}</span>: ${esc(t.note)}</li>`;
   const relWord = r => r === "same" ? "same as" : "partly overlaps";
+
+  function authorsBlock(a) {
+    if (!a || !a.length) return "";
+    if (a.length <= 4) return `<p class="cite">Authors: ${a.map(esc).join(", ")}</p>`;
+    return `<details class="cite authors"><summary>Authors: ${esc(a[0])} … ${esc(a[a.length - 1])} (${a.length})</summary>${a.map(esc).join(", ")}</details>`;
+  }
+
+  // search results: papers whose authors, title or labels match
+  function showSearch() {
+    const scs = D.schemes.filter(sc => hit(schemeHay(sc)) || sc.labels.some(l => hit(`${l.name} ${l.note || ""}`)))
+      .sort((a, b) => a.year - b.year);
+    const trs = transitions.filter(transMatch);
+    const genes = D.markers.filter(m => hit(`${m.gene} ${m.note}`));
+    const row = sc => {
+      const who = (sc.authors || []).filter(a => hit(a));
+      return `<li><b>${esc(sc.short)}</b>${who.length ? ` <span class="cite">(${who.map(esc).join(", ")})</span>` : ""}<br>
+        ${sc.labels.map(l => nodeBtn(l._id, l.name)).join(", ")}</li>`;
+    };
+    detail.innerHTML = `<h3>Search: “${esc(state.query)}”</h3>
+      ${scs.length || trs.length || genes.length ? "" : "<p class='cite'>No matches.</p>"}
+      ${genes.length ? `<h2>Marker genes</h2><p>${genes.map(m => nodeBtn("g-" + m.gene, m.gene)).join(", ")}</p>` : ""}
+      ${scs.length ? `<h2>Papers (${scs.length})</h2><ul>${scs.map(row).join("")}</ul>` : ""}
+      ${trs.length ? `<h2>Transitions</h2><ul>${trs.map(t => `<li>${nodeBtn(t.id, `${nodeName(t.from)} ${t.bidir ? "↔" : "→"} ${nodeName(t.to)}`)} <span class="cite">${esc(t.items.filter(it => hit(`${it.src} ${it.note} ${itemAuthors(it).join(" ")}`)).map(it => it.src).join(", "))}</span></li>`).join("")}</ul>` : ""}`;
+  }
 
   function defaultDetail() {
     detail.innerHTML = `
@@ -545,7 +577,8 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         ${sibs ? `<h2>Other labels in this scheme</h2><p>${sibs}</p>` : ""}
         <h2>Source</h2>
         <p class="cite">${esc(sc.title)}. <i>${esc(sc.journal)}</i> ${sc.year}. ${doiLink(sc)}</p>
-        <p class="cite">Basis: ${esc(sc.basis)}</p>`;
+        <p class="cite">Basis: ${esc(sc.basis)}</p>
+        ${authorsBlock(sc.authors)}`;
     } else {
       const m = n.data;
       const e = m.edges.map(([to, lvl]) => `<li>${lvl} in ${stateBtn(to)}</li>`).join("");
@@ -601,7 +634,11 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   document.getElementById("lyr-markers").addEventListener("change", e => { state.markers = e.target.checked; update(); });
   document.getElementById("lyr-trans").addEventListener("change", e => { state.trans = e.target.checked; update(); });
   document.getElementById("lyr-conflict").addEventListener("change", e => { state.conflict = e.target.checked; update(); });
-  document.getElementById("search").addEventListener("input", e => { state.query = e.target.value.trim().toLowerCase(); update(); });
+  document.getElementById("search").addEventListener("input", e => {
+    state.query = e.target.value.trim();
+    if (state.query) { state.selected = null; showSearch(); } else showDetail(state.selected);
+    update();
+  });
 
   // ---------- table ----------
   const COLS = ["A", "A2", "N", "AN", "At", "I", "Y", "P"];
