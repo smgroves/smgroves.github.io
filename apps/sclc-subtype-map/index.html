@@ -251,7 +251,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
     .attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto-start-reverse")
     .append("path").attr("d", "M0,0 L10,5 L0,10 Z").attr("fill", "var(--ink)");
   const root = svg.append("g");
-  const zoom = d3.zoom().scaleExtent([0.5, 4]).on("zoom", e => root.attr("transform", e.transform));
+  const zoom = d3.zoom().scaleExtent([1, 4]).extent([[0, 0], [W, H]]).translateExtent([[0, 0], [W, H]]).on("zoom", e => root.attr("transform", e.transform));
   svg.call(zoom).on("dblclick.zoom", null);
   d3.select("#reset").on("click", () => svg.transition().duration(300).call(zoom.transform, d3.zoomIdentity));
 
