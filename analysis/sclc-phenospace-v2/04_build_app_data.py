@@ -33,8 +33,8 @@ SUBTYPES = {
     "A2": {"label": "A2", "alt": "SCLC-A2", "desc": "ASCL1-high variant (NEv2 in 2019). Called only in cell lines; Gay's rule has no A2, so no tumor is A2."},
     "N":  {"label": "N",  "alt": "SCLC-N",  "desc": "NEUROD1-high neuroendocrine subtype (NEv1 in 2019)."},
     "P":  {"label": "P",  "alt": "SCLC-P",  "desc": "POU2F3-high, tuft-cell-like, non-neuroendocrine subtype."},
-    "Y":  {"label": "Y",  "alt": "SCLC-Y",  "desc": "YAP1-high, non-neuroendocrine subtype (Non-NE in 2019). Cell lines only: all 9 Groves et al. (2022) Y lines are triple-negative by Gay's rule but YAP1-high, so they stay Y."},
-    "I":  {"label": "I",  "alt": "SCLC-I",  "desc": "Inflamed: ASCL1, NEUROD1 and POU2F3 all off by Gay et al. (2021)'s rule. Tumors only (5), so treat its modules with caution."},
+    "Y":  {"label": "Y",  "alt": "SCLC-Y",  "desc": "YAP1-high, non-neuroendocrine subtype (Non-NE in 2019). The 9 Groves et al. (2022) Y lines (triple-negative but YAP1-high) plus 3 triple-negative, YAP1-high tumors without the inflamed profile."},
+    "I":  {"label": "I",  "alt": "SCLC-I",  "desc": "Inflamed: ASCL1, NEUROD1 and POU2F3 all off AND best matching the SCLC-I profile of Gay et al. (2021)'s 1,300-gene signature. Only 2 tumors, so treat its modules with caution."},
 }
 
 sig = [m for m in kw.index if kw.loc[m, "kw_q"] < 0.05 and m in set(go.module)]
@@ -144,7 +144,7 @@ credits = (
     "<p class=\"small\"><b>How v2 was made.</b> Expression: the batch-corrected CCLE + Minna cell line + George et al. tumor matrix from Groves et al. (2022) "
     f"({x.shape[0]:,} genes). Subtypes: cell lines use the Groves et al. (2022) calls; lines with ASCL1, NEUROD1 and POU2F3 all off (Gay et al. 2021) were relabeled SCLC-I, "
     "unless YAP1 was high. All 9 SCLC-Y lines are triple-negative but YAP1-high, so they stay Y and no cell line is I. "
-    "Tumors were assigned by Gay's rule (A, N, P or I; no A2 or Y call), which gives 5 SCLC-I tumors. "
+    "Tumors take Gay's TF call (A, N or P); a triple-negative tumor is SCLC-I only if it also best matches the SCLC-I profile of Gay's 1,300-gene signature, otherwise Y if YAP1-high. That gives 2 SCLC-I tumors. "
     "Counts: " + ", ".join(f"{s} {counts.get(s, 0)}" for s in SUB_ORDER) + ".</p>"
     "<p class=\"small\">Pipeline, following Wooten et al. (2019): signed WGCNA (power 12, min module size 100, deepSplit 2, merge height 0.15); "
     "Kruskal&ndash;Wallis on eigengenes across subtypes (BH FDR &lt; 0.05); GSEA of module gene sets per subtype (fgsea), "
@@ -155,7 +155,7 @@ credits = (
     "Module names: a v2 module that shares at least 5% of its GO terms with a 2019 module high in the matching subtype takes that module's name and color (one-to-one); "
     "others keep their WGCNA color, renamed if that color was a 2019 module. Region labels are the hand-placed Fig. 3B labels from the 2019 tab; "
     "they fit where the shared terms sit, and areas made mostly of new terms may not match their label. This is an unpublished reanalysis.</p>"
-    "<p class=\"small\">SCLC-I is defined in tumors by an inflamed signature; here it is only the triple-negative call, and it has 5 samples. "
+    "<p class=\"small\">SCLC-I is defined in tumors by an inflamed signature; here it needs both the triple-negative call and the closest match to Gay's SCLC-I profile, and it has only 2 samples. "
     "Several SCLC-Y lines have since been reclassified as SMARCA4-deficient tumors (Ng et al. 2024, <i>Clin Cancer Res</i>).</p>")
 
 data = {"intro": intro, "modNote": mod_note, "credits": credits,

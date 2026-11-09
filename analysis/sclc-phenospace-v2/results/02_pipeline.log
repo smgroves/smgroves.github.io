@@ -29,7 +29,7 @@ Warning messages:
 2: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
   For some pathways, in reality P-values are less than 1e-50. You can set the `eps` argument to zero for better estimation.
 3: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
-  There were 5 pathways for which P-values were not calculated properly due to unbalanced (positive and negative) gene-level statistic values. For such pathways pval, padj, NES, log2err are set to NA. You can try to increase the value of the argument nPermSimple (for example set it nPermSimple = 100000)
+  There were 2 pathways for which P-values were not calculated properly due to unbalanced (positive and negative) gene-level statistic values. For such pathways pval, padj, NES, log2err are set to NA. You can try to increase the value of the argument nPermSimple (for example set it nPermSimple = 100000)
 4: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
   For some pathways, in reality P-values are less than 1e-50. You can set the `eps` argument to zero for better estimation.
 5: In fgseaMultilevel(pathways = pathways, stats = stats, minSize = minSize,  :
@@ -42,4 +42,4 @@ In bitr(colnames(datExpr), fromType = "SYMBOL", toType = "ENTREZID",  :
   2.24% of input gene IDs are fail to map...
 sig modules: darkred, salmon, blue, brown, green, royalblue, lightgreen, lightyellow, greenyellow, magenta, black, red, yellow, grey60, lightcyan, purple, turquoise, pink, cyan, darkgrey 
 GO rows 2464 unique terms 1716 
-Rscript 02_pipeline.R  572.10s user 6.48s system 105% cpu 9:07.98 total
+Rscript 02_pipeline.R  576.95s user 9.56s system 104% cpu 9:19.46 total

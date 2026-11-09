@@ -98,6 +98,7 @@ a { color: var(--accent); }
 table.mods { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mods th { font-weight: 600; color: var(--muted); font-size: 11.5px; text-align: center; padding: 0 2px 4px; white-space: nowrap; line-height: 1.2; }
 .mods th:first-child { text-align: left; }
+.mods th:not(:first-child):not(.n) { width: 30px; }
 .mods td { padding: 3px 0; border-top: 1px solid var(--line); text-align: center; }
 .mods td:first-child { text-align: left; }
 .mods tr.focus td { background: var(--accent-soft); }
@@ -199,7 +200,7 @@ ol.terms button:hover { color: var(--accent); }
       </section>
 
       <section id="credits-v1">
-        <p class="small">Data: S1 File (GO t-SNE maps), S2 Table (module discrimination) and S4 Table (GSEA) of Wooten DJ, Groves SM, Tyson DR, Liu Q, Lim JS, Albert R, Lopez CF, Sage J, Quaranta V (2019). Systems-level network modeling of Small Cell Lung Cancer subtypes identifies master regulators and destabilizers. <i>PLoS Comput Biol</i> 15(10): e1007343. Module summaries paraphrase the paper. Region labels are placed by hand to match Fig. 3B.</p>
+        <p class="small">Data: S1 File (GO t-SNE maps), S2 Table (module discrimination) and S4 Table (GSEA) of Wooten DJ, Groves SM, Tyson DR, Liu Q, Lim JS, Albert R, Lopez CF, Sage J, Quaranta V (2019). Systems-level network modeling of Small Cell Lung Cancer subtypes identifies master regulators and destabilizers. <i>PLoS Comput Biol</i> 15(10): e1007343. Module summaries paraphrase the paper. Region labels are the Fig. 3B labels, placed by hand; two (Ion transport, Learning) are left out because the terms under them do not match the label.</p>
         <p class="small">See also the <a href="../network-explorer/">Network Explorer</a> for the SCLC transcription factor network from the same paper.</p>
       </section>
       <section id="credits-v2" hidden></section>
@@ -248,15 +249,22 @@ const V1_MODS = {
                   about: "Neuroendocrine differentiation and neurotransmitter secretion (with turquoise, yellow and salmon)." },
 };
 
-// Region labels from Fig. 3B (positions read off the published figure).
-const V1_REGIONS = [
+// Region labels from Fig. 3B (positions read off the published figure). Each tab shows only the labels whose
+// nearby GO terms actually match them (checked term by term; see analysis/sclc-phenospace-v2/README.md).
+const ALL_REGIONS = [
   ["Metabolism / biosynthetic processes", 7, 35], ["Gene regulation", 11, 25], ["Cell death", -20, 23],
   ["Cell cycle", 23, 19], ["Signal transduction", -21, 10.5], ["Homeostasis", 6, 8],
   ["Immune response / wound healing", -10.5, -1.5], ["Ion transport", 27, -0.7], ["Cell organization", 24.5, -11.3],
   ["Response to stimulus", -20.5, -18], ["Cell mobility", 1, -18], ["Learning", -30.5, -27],
-  ["Neuronal development", 19, -25.2], ["Adhesion", -23, -33.6], ["Lung development", 17.5, -33.6],
+  ["Neuronal development", 19, -25.2], ["Adhesion", -18, -33.4], ["Lung development", 17.5, -33.6],
   ["Epithelial development", 9.5, -42],
 ];
+const DROP_V1 = ["Ion transport", "Learning"];
+const DROP_V2 = ["Cell cycle", "Homeostasis", "Ion transport", "Response to stimulus", "Learning"];
+const V1_REGIONS = ALL_REGIONS.filter(r => !DROP_V1.includes(r[0]));
+// labels moved to sit over their terms on the v2 map
+const V2_MOVE = { "Adhesion": [-13.7, -25.8] };
+const V2_REGIONS = ALL_REGIONS.filter(r => !DROP_V2.includes(r[0])).map(r => V2_MOVE[r[0]] ? [r[0], ...V2_MOVE[r[0]]] : r);
 
 
 const DATASETS = {
@@ -277,7 +285,7 @@ if (window.PHENO_V2) {
     tab: "v2", tabNote: "adds SCLC-P and SCLC-I, cell lines + tumors",
     meta: 'Unpublished reanalysis following <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019)</a>',
     intro: P.intro, labelsName: "Region labels (Fig. 3B)", modNote: P.modNote,
-    terms: P.terms, modules: P.modules, SUBTYPES: P.subtypes, MODS: P.mods, REGIONS: V1_REGIONS,
+    terms: P.terms, modules: P.modules, SUBTYPES: P.subtypes, MODS: P.mods, REGIONS: V2_REGIONS,
     start: P.start, samples: P.samples, credits: P.credits, testName: "Kruskal&ndash;Wallis",
   };
 }

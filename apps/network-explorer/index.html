@@ -720,35 +720,49 @@ const SCLC_STATES = {
 };
 const SUBTYPES = [["SCLC-A", 2], ["SCLC-A2", 4], ["SCLC-N", 2], ["SCLC-Y", 2]];
 const SUBTYPE_COLORS = { "SCLC-A": "#3a9fc6", "SCLC-A2": "#d2525c", "SCLC-N": "#4f9a3a", "SCLC-Y": "#7c62b8" };
-function makeSCLC() {
-  const edges = [];
-  for (const [tf, ps] of Object.entries(SCLC_PARENTS)) ps.split(" ").forEach((p, i) => edges.push({ regulator: p, target: tf, Effect: SIGN_NAMES[SCLC_SIGNS[tf][i]] }));
-  const stateOf = (on, total) => on === total ? "ON" : on === 0 ? "OFF" : "ON in some";
-  const rows = Object.entries(SCLC_STATES).map(([tf, st]) => {
-    const r = { TF: tf };
-    const frac = SUBTYPES.map(([, total], i) => st[i] / total);
-    const top = Math.max(...frac);
-    r["Highest in"] = SUBTYPES.filter((_, i) => frac[i] === top).map(([name]) => name).join(" + ");
-    SUBTYPES.forEach(([name, total], i) => r[name] = stateOf(st[i], total));
-    r["Expressed in cell lines"] = st[4].split(" ").map(x => "SCLC-" + x).join(" + ");
-    r["Attractors ON (of 10)"] = String(st[0] + st[1] + st[2] + st[3]);
+// Subtype columns from the Wooten 2019 attractors (Fig 7C), shared by the 2019 and 2022 examples.
+// TFs that were not in the 2019 model (MYC, NEUROD1) get NOT_2019 in the category columns.
+const NOT_2019 = "Not in 2019 model";
+function sclcStateAttrs(tf) {
+  const st = SCLC_STATES[tf], r = {};
+  if (!st) {
+    r["Highest in"] = NOT_2019;
+    SUBTYPES.forEach(([name]) => r[name] = NOT_2019);
+    r["Expressed in cell lines"] = NOT_2019;
+    r["Attractors ON (of 10)"] = "";
     return r;
-  });
+  }
+  const stateOf = (on, total) => on === total ? "ON" : on === 0 ? "OFF" : "ON in some";
+  const frac = SUBTYPES.map(([, total], i) => st[i] / total);
+  const top = Math.max(...frac);
+  r["Highest in"] = SUBTYPES.filter((_, i) => frac[i] === top).map(([name]) => name).join(" + ");
+  SUBTYPES.forEach(([name, total], i) => r[name] = stateOf(st[i], total));
+  r["Expressed in cell lines"] = st[4].split(" ").map(x => "SCLC-" + x).join(" + ");
+  r["Attractors ON (of 10)"] = String(st[0] + st[1] + st[2] + st[3]);
+  return r;
+}
+function sclcStateFixed() {
   // Mix the subtype hues for shared categories so "SCLC-A + SCLC-A2" reads as both
   const mix = names => { const cs = names.map(n => d3.rgb(SUBTYPE_COLORS[n])); return d3.rgb(d3.mean(cs, c => c.r), d3.mean(cs, c => c.g), d3.mean(cs, c => c.b)).formatHex(); };
-  const comboColors = {};
-  for (const r of rows) for (const k of ["Highest in", "Expressed in cell lines"]) comboColors[r[k]] = mix(r[k].split(" + "));
-  const stateSpec = { order: ["ON", "ON in some", "OFF"], colors: { ON: "#c8494f", "ON in some": "#d9a03f", OFF: "#8f9bb0" } };
-  const comboOrder = ["SCLC-A", "SCLC-A + SCLC-A2", "SCLC-A2", "SCLC-A2 + SCLC-Y", "SCLC-Y", "SCLC-N + SCLC-Y", "SCLC-N", "SCLC-A + SCLC-N"];
+  const comboColors = { [NOT_2019]: "#c9ced8" };
+  for (const tf of Object.keys(SCLC_STATES)) { const r = sclcStateAttrs(tf); for (const k of ["Highest in", "Expressed in cell lines"]) comboColors[r[k]] = mix(r[k].split(" + ")); }
+  const stateSpec = { order: ["ON", "ON in some", "OFF", NOT_2019], colors: { ON: "#c8494f", "ON in some": "#d9a03f", OFF: "#8f9bb0", [NOT_2019]: "#c9ced8" } };
+  const comboOrder = ["SCLC-A", "SCLC-A + SCLC-A2", "SCLC-A2", "SCLC-A + SCLC-A2 + SCLC-Y", "SCLC-A2 + SCLC-Y", "SCLC-Y", "SCLC-N + SCLC-Y", "SCLC-N", "SCLC-A + SCLC-N", NOT_2019];
   const fixed = {
     "Highest in": { order: comboOrder, colors: comboColors },
     "Expressed in cell lines": { order: comboOrder, colors: comboColors },
   };
   SUBTYPES.forEach(([name]) => fixed[name] = stateSpec);
+  return fixed;
+}
+function makeSCLC() {
+  const edges = [];
+  for (const [tf, ps] of Object.entries(SCLC_PARENTS)) ps.split(" ").forEach((p, i) => edges.push({ regulator: p, target: tf, Effect: SIGN_NAMES[SCLC_SIGNS[tf][i]] }));
+  const rows = Object.keys(SCLC_STATES).map(tf => ({ TF: tf, ...sclcStateAttrs(tf) }));
   return {
     main: { name: "sclc_edges.csv", fields: ["regulator", "target", "Effect"], rows: edges },
     nodes: { name: "sclc_tfs.csv", fields: Object.keys(rows[0]), rows },
-    fixed,
+    fixed: sclcStateFixed(),
     edgeFixed: { Effect: EFFECT_SPEC },
   };
 }
@@ -788,17 +802,20 @@ function makeGroves2022() {
   const byMYC = new Set(edges.filter(e => e.regulator === "MYC").map(e => e.target));
   const rel = tf => tf === "MYC" ? "MYC" : regsMYC.has(tf) && byMYC.has(tf) ? "Both directions"
     : byMYC.has(tf) ? "Regulated by MYC" : regsMYC.has(tf) ? "Regulates MYC" : "Not linked to MYC";
-  const rows = tfs.map(tf => ({ TF: tf, "Relation to MYC": rel(tf),
+  // Subtype columns are the Wooten 2019 attractor states (the 2022 network was not re-simulated here),
+  // so MYC and NEUROD1 have none.
+  const rows = tfs.map(tf => ({ TF: tf, ...sclcStateAttrs(tf), "Relation to MYC": rel(tf),
     "In network since": tf === "MYC" || tf === "NEUROD1" ? "Added in 2022" : "Wooten 2019" }));
   return {
     main: { name: "groves2022_edges.csv", fields: ["regulator", "target", "Effect"], rows: edges },
     nodes: { name: "groves2022_tfs.csv", fields: Object.keys(rows[0]), rows },
     fixed: {
+      ...sclcStateFixed(),
       "Relation to MYC": { order: ["MYC", "Regulated by MYC", "Both directions", "Regulates MYC", "Not linked to MYC"],
         colors: { MYC: "#c8494f", "Regulated by MYC": "#d9a03f", "Both directions": "#7c62b8", "Regulates MYC": "#3a9fc6", "Not linked to MYC": "#8f9bb0" } },
       "In network since": { order: ["Wooten 2019", "Added in 2022"], colors: { "Wooten 2019": "#8f9bb0", "Added in 2022": "#c8494f" } },
     },
-    defaultColor: "Relation to MYC",
+    defaultColor: "Highest in",
     edgeFixed: { Effect: EFFECT_SPEC },
   };
 }

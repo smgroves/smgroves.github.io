@@ -18,13 +18,15 @@ Run every step from this folder:
 ## Labels (step 1)
 - **Gay et al. (2021) rule.** ASCL1, NEUROD1, POU2F3 and YAP1 are each called on or off with a 2-component Gaussian mixture, fit separately for each source. A sample with ASCL1, NEUROD1 and POU2F3 all off is SCLC-I. Otherwise it takes the "on" TF with the highest z-score within its source.
 - **Cell lines** keep the Groves et al. (2022) call. A Y line would become I only if it were triple-negative *and* YAP1-low. All 9 Y lines are triple-negative but YAP1-high (3.5–6.7, against an "on" cutoff of about 0.7–0.9), so they stay Y.
-- **Tumors** get Gay's rule (A, N, P or I; tumors have no A2 or Y call).
+- **SCLC-I markers.** Each sample is also matched to the four subtype profiles of Gay et al.'s 1,300-gene signature (their Table S1; 1,092 of the genes are in this data). Genes are z-scored within source, and the sample takes the profile with the highest Spearman correlation.
+- **Tumors** are SCLC-I only if they are triple-negative *and* best match the SCLC-I profile. A triple-negative tumor without the inflamed profile becomes Y if YAP1 is on, otherwise it takes its highest TF. Other tumors keep Gay's TF call (A, N or P).
+- **NCIH1339** is the one cell line that best matches the SCLC-I profile, but it is YAP1-high, so it stays Y.
 
-Counts: A 87, A2 28, N 49, P 23, Y 9 (cell lines only), I 5 (tumors only).
+Counts: A 87, A2 28, N 49, P 23, Y 12 (9 cell lines and 3 tumors), I 2 (tumors S02328 and S02242). With only 2 samples, treat the SCLC-I module calls with caution.
 
 Notes for follow-up:
 - HCC33 and H2227 (N in Groves 2022) fall just under the NEUROD1 cutoff.
-- Two of the five I tumors (S02246, S02298) are YAP1-high.
+- S02246 has many inflamed genes high, but its best overall match is the P profile, and it is YAP1-high, so it is Y.
 
 ## Pipeline (steps 2–3), following Wooten et al. (2019)
 - **Modules:** signed WGCNA (power 12, min module size 100, deepSplit 2, pamRespectsDendro, merge height 0.15, a single block).
@@ -68,7 +70,9 @@ Unmatched modules whose WGCNA color is also a 2019 color were renamed:
 No v2 module matches the 2019 Turquoise, Green, Midnight blue or Pink modules.
 
 ## Region labels
-The v2 map is in the 2019 frame, so the app reuses the hand-placed Fig. 3B region labels from the 2019 tab. They fit wherever the shared terms sit. Areas made mostly of new terms may not match their label.
+Both tabs use the hand-placed Fig. 3B labels (`ALL_REGIONS` in `index.html`), keeping only those whose nearby GO terms match.
+- **2019 tab:** Ion transport and Learning are dropped. The terms under them are transport/localization and muscle/digestive processes.
+- **v2 tab:** Cell cycle, Homeostasis, Ion transport, Response to stimulus and Learning are dropped (`DROP_V2`). Adhesion is moved onto its v2 cluster (`V2_MOVE`).
 
 ## Versions
 R 4.6.1 with WGCNA 1.74, fgsea 1.38.0, clusterProfiler 4.20.3, org.Hs.eg.db 3.23.1, GO.db 3.23.1, GOSemSim 2.38.3 and Rtsne 0.17. Python 3 with pandas 2.3.3 and scikit-learn 1.7.2.
