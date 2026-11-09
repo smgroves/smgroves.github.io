@@ -80,6 +80,7 @@ a { color: var(--accent); }
 .detail .cite { font-size: 13px; color: var(--muted); }
 .detail .dt { font-size: 13px; margin: 0 0 8px; padding: 5px 8px; background: var(--accent-soft); border-radius: 4px; }
 .detail ul.found { font-size: 13px; }
+.detail ul.tx li { margin-bottom: 4px; }
 .detail details.authors { margin: 4px 0 8px; }
 .detail details.authors summary { cursor: pointer; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
@@ -200,7 +201,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 <footer class="foot">Curated by Sarah Groves from her SCLC literature notes; mappings are interpretations, not claims made by each paper. Checked against PubMed abstracts and full texts, November 2026. Corrections welcome: <a href="mailto:smgroves@virginia.edu">smgroves@virginia.edu</a>.</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="data.js?v=20261108e"></script>
+<script src="data.js?v=20261108f"></script>
 <script>
 (function () {
   const D = window.SCLC_MAP;
@@ -478,6 +479,14 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
   const transLi = t => `<li>${nodeBtn(transIdOf(t), `${nodeName(t.from)} ${t.bidir ? "↔" : "→"} ${nodeName(t.to)}`)} <span class="cite">${esc(t.src)}</span>: ${esc(t.note)}</li>`;
   const relWord = r => r === "same" ? "same as" : "partly overlaps";
 
+  // treatment findings for a state: what it may be more (or less) sensitive to, with source and evidence type
+  function txBlock(items) {
+    if (!items || !items.length) return `<h2>Treatment</h2><p class="cite">No subtype-specific treatment findings in these papers.</p>`;
+    const srcLink = src => { const sc = D.schemes.find(s => s.short === src); return sc ? nodeBtn(sc.labels[0]._id, src) : esc(src); };
+    return `<h2>Treatment</h2><ul class="tx">${items.map(([t, src, ev]) =>
+      `<li>${esc(t)} <span class="cite">(${srcLink(src)}; ${esc(ev)})</span></li>`).join("")}</ul>`;
+  }
+
   function authorsBlock(a) {
     if (!a || !a.length) return "";
     if (a.length <= 4) return `<p class="cite">Authors: ${a.map(esc).join(", ")}</p>`;
@@ -565,6 +574,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
       h = `<h3><span class="swatch" style="background:${COLORS[id]}"></span>${esc(s.name)}</h3>
         <p class="sub">${esc(s.tf)} · ${s.ne === null ? "between NE and non-NE" : s.ne ? "neuroendocrine" : "non-neuroendocrine"}</p>
         <p>${esc(s.desc)}</p>
+        ${txBlock(s.tx)}
         ${foundIn(id)}
         ${mk ? `<h2>Markers</h2><p>${mk}</p>` : ""}
         <h2>Called the same thing by</h2><ul>${group("same") || "<li class='cite'>none shown</li>"}</ul>
@@ -584,6 +594,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         <p class="sub">${esc(sc.short)}${sc.ours ? " · our lab" : ""}</p>
         ${dataLine(sc, l)}
         ${l.note ? `<p>${esc(l.note)}</p>` : ""}
+        ${l.tx ? `<h2>Treatment</h2><p>${esc(l.tx)}</p>` : ""}
         ${maps ? `<h2>Maps to</h2><ul>${maps}</ul>` : ""}
         ${cf ? `<h2 class="warn">Contested</h2><ul>${cf}</ul>` : ""}
         ${(() => { const tr = D.transitions.filter(t => t.from === id || t.to === id).map(transLi).join(""); return tr ? `<h2>Reported transitions</h2><ul>${tr}</ul>` : ""; })()}
