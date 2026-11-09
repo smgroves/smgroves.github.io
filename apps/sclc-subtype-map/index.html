@@ -200,7 +200,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
 <footer class="foot">Curated by Sarah Groves from her SCLC literature notes; mappings are interpretations, not claims made by each paper. Checked against PubMed abstracts and full texts, November 2026. Corrections welcome: <a href="mailto:smgroves@virginia.edu">smgroves@virginia.edu</a>.</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="data.js?v=20261108c"></script>
+<script src="data.js?v=20261108e"></script>
 <script>
 (function () {
   const D = window.SCLC_MAP;
@@ -594,7 +594,7 @@ table.rosetta { border-collapse: collapse; font-size: 13px; min-width: 900px; ba
         ${authorsBlock(sc.authors)}`;
     } else {
       const m = n.data;
-      const e = m.edges.map(([to, lvl]) => `<li>${lvl} in ${stateBtn(to)}</li>`).join("");
+      const e = m.edges.map(([to, lvl]) => `<li>${lvl} in ${stateById[to] ? stateBtn(to) : nodeBtn(to, `${nodeById[to].data.name} (${nodeById[to].scheme.short})`)}</li>`).join("");
       const re = new RegExp("\\b" + m.gene + "\\b");
       const rel = nodes.filter(x => x.type === "label" && re.test(`${x.data.name} ${x.data.note || ""}`))
         .map(x => `<li>${nodeBtn(x.id, x.data.name)} <span class="cite">${esc(x.scheme.short)}</span></li>`).join("");
