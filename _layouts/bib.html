@@ -142,17 +142,17 @@
           {%- if entry.html %}
             <a href="{{ entry.html }}" class="btn btn-sm z-depth-0" role="button">HTML</a>
           {%- endif %}
-          {%- if entry.doi %}
-            <span class="dimensions-badge" style="display: inline-block; vertical-align: middle; transform: scale(0.7); transform-origin: left center; margin-left: 0.75rem;">
-              <span class="__dimensions_badge_embed__" data-doi="{{ entry.doi }}" data-hide-zero-citations="true" data-legend="hover-right" data-style="small_circle"></span>
-            </span>
-          {%- endif %}
           {%- if entry.pdf %}
             {% if entry.pdf contains '://' -%}
             <a href="{{ entry.pdf }}" class="btn btn-sm z-depth-0" role="button">PDF</a>
             {%- else -%}
             <a href="{{ entry.pdf | prepend: '/assets/pdf/' | relative_url }}" class="btn btn-sm z-depth-0" role="button">PDF</a>
             {%- endif %}
+          {%- endif %}
+          {%- if entry.doi %}
+            <span class="dimensions-badge" style="display: inline-block; vertical-align: middle; transform: scale(0.7); transform-origin: left center; margin-left: 0.75rem;">
+              <span class="__dimensions_badge_embed__" data-doi="{{ entry.doi }}" data-hide-zero-citations="true" data-legend="hover-right" data-style="small_circle"></span>
+            </span>
           {%- endif %}
           {%- if entry.supp %}
             {% if entry.supp contains '://' -%}
