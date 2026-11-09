@@ -7,7 +7,7 @@
 //   "same"    = the label is essentially this state (renamed or rediscovered)
 //   "partial" = overlaps / is a subset / covers this state among others
 // data: kinds of data each paper used (see DATA_TYPES in index.html); a label's own data overrides its paper's
-// conflicts: label <-> label (or label -> state) disagreements
+// conflicts: contested claims, label <-> label (or label -> state)
 // markers: gene -> state, level "high" | "low"
 
 window.SCLC_MAP = {
@@ -220,11 +220,10 @@ window.SCLC_MAP = {
       ] }
   ],
 
+  // contested: papers that disagree about what a state is
   conflicts: [
-    { a: "owo-Y", b: "gay-I", note: "Is the inflamed group a YAP1 subtype? Owonikoko 2021 found YAP1+ SCLC-Y to be T-cell inflamed; Gay 2021 found YAP1 higher in SCLC-I but not defining it. Stage may matter: YAP1 was more common in limited-stage disease." },
-    { a: "stewart-Y", b: "gay-I", note: "Agrees with Gay 2021 that Y and I differ: in relapsed biopsies, no SCLC-I biopsy had YAP1+ cells." },
-    { a: "cho-M", b: "gay-I", note: "Cho 2022 split non-NE tumors into mesenchymal (SCLC-M) and inflamed (SCLC-I) groups with different outcomes." },
-    { a: "smarca4-ut", state: "Y", note: "Challenges cell-line models of SCLC-Y; YAP1+ cells in patient biopsies are still considered SCLC-Y." }
+    { a: "owo-Y", b: "gay-I", note: "Is there a YAP1 subtype? Owonikoko 2021 found YAP1+ tumors form a distinct T-cell-inflamed SCLC-Y subtype; Gay 2021 found YAP1 higher in SCLC-I and SCLC-P but not defining a subtype, and replaced SCLC-Y with SCLC-I. Stewart 2026 sides with Gay: in relapsed biopsies, no SCLC-I biopsy had YAP1+ cells. Stage may matter: Owonikoko saw YAP1 more often in limited-stage disease." },
+    { a: "smarca4-ut", state: "Y", note: "Are SCLC-Y cell lines SCLC? Ng 2024 found most carry SMARCA4 mutations and resemble SMARCA4-deficient tumors. YAP1+ cells in patient biopsies are still considered SCLC-Y." }
   ],
 
   markers: [
