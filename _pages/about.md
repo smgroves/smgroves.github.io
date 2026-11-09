@@ -22,4 +22,4 @@ I also care a lot about **science communication** and **teaching**. I make educa
 
 **Background:** B.S. in Physics & Mathematics, William & Mary (2016) · PhD in Chemical and Physical Biology, Vanderbilt (2022), in the Quaranta lab · Postdoc at UVA's <a href="https://sasco.virginia.edu/">SASCO</a> center.
 
-Interested in working together? See my <a href="/projects/">projects</a> or <a href="mailto:smgroves@virginia.edu">email me</a>.
+Interested in working together? See my <a href="/projects/">projects</a>, <a href="mailto:smgroves@virginia.edu">email me</a>, or <a href="https://tidycal.com/sarahmaddoxgroves/">book a meeting</a>.
