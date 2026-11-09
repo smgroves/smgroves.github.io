@@ -43,4 +43,5 @@ horizontal: false
     {%- endfor %}
   </div>
   {%- endfor %}
+  <p style="margin-top: 0.75rem;"><em>Some apps were built with Claude Opus 5.5.</em></p>
 </div>
