@@ -42,7 +42,7 @@ button { cursor: pointer; }
 a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { height: 100%; display: grid; grid-template-rows: auto auto 1fr; }
+.app { height: 100%; display: grid; grid-template-rows: auto auto auto 1fr; }
 .top {
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px;
   padding: 14px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
@@ -55,12 +55,20 @@ a { color: var(--accent); }
   padding: 8px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
   border-bottom: 1px solid var(--line); background: var(--surface);
 }
+.dstabs { display: flex; gap: 2px; padding: 0 max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.dstab { border: 0; background: none; padding: 9px 12px 8px; white-space: nowrap; font-size: 14px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.dstab:hover { color: var(--ink); }
+.dstab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.dstab small { font-weight: 400; margin-left: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 5px 10px; font-size: 13px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
 .intro p { margin: 0; flex: 1 1 560px; max-width: 980px; font-size: 13px; color: var(--muted); }
 .intro p strong { color: var(--ink); }
 .intro-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
 .intro .check { margin: 0; }
 
-.stage { display: grid; grid-template-columns: minmax(0, 1fr) 370px; min-height: 0; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 384px; min-height: 0; }
 .canvas { position: relative; min-width: 0; min-height: 0; }
 #plot { position: absolute; inset: 0; }
 .canvas-tools { position: absolute; top: 10px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 2; }
@@ -85,6 +93,7 @@ a { color: var(--accent); }
 .subtypes .btn { padding: 5px 4px; line-height: 1.25; }
 .alt { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
 .mods th .alt { font-size: 10.5px; }
+.subtypes .alt { white-space: nowrap; letter-spacing: -0.02em; }
 
 table.mods { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mods th { font-weight: 600; color: var(--muted); font-size: 11.5px; text-align: center; padding: 0 2px 4px; white-space: nowrap; line-height: 1.2; }
@@ -131,12 +140,13 @@ ol.terms button:hover { color: var(--accent); }
 <div class="app">
   <header class="top">
     <h1>SCLC Phenospace</h1>
-    <div class="meta">Interactive Fig. 3B&ndash;C from <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019) <i>PLoS Comput Biol</i></a></div>
+    <div class="meta" id="meta">Interactive Fig. 3B&ndash;C from <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019) <i>PLoS Comput Biol</i></a></div>
   </header>
+  <nav class="dstabs" role="tablist" id="dstabs"></nav>
   <div class="intro">
-    <p><strong>What this shows.</strong> Each dot is one of 1,728 GO biological processes enriched in at least one WGCNA gene module from 50 SCLC cell lines (CCLE RNA-seq). Terms are placed with t-SNE on GoSemSim semantic distances, so similar processes sit together. Gray dots are the whole phenospace (Fig. 3B); colored dots are the terms enriched in the selected modules (Fig. 3C), sized by enrichment p-value.</p>
+    <p id="intro-text"></p>
     <div class="intro-controls">
-      <label class="check"><input type="checkbox" id="chk-labels" checked> Region labels (Fig. 3B)</label>
+      <label class="check"><input type="checkbox" id="chk-labels" checked> <span id="labels-name">Region labels</span></label>
       <div class="legend-size" aria-label="Dot size legend">
         <span><i style="width:5px;height:5px"></i><b>10<sup>-2</sup></b></span>
         <span><i style="width:7px;height:7px"></i><b>10<sup>-5</sup></b></span>
@@ -150,8 +160,9 @@ ol.terms button:hover { color: var(--accent); }
     <div class="canvas">
       <div id="plot" role="img" aria-label="t-SNE map of enriched GO biological processes"></div>
       <div class="canvas-tools">
+        <div class="seg" id="viewseg" hidden><button type="button" data-view="map" aria-pressed="true">Phenospace</button><button type="button" data-view="me" aria-pressed="false">Eigengenes by sample</button></div>
         <button class="btn" id="btn-reset" type="button">Reset view</button>
-        <span class="hint">Hover a dot for the GO term; click it to see its modules. Drag to zoom.</span>
+        <span class="hint" id="hint">Hover a dot for the GO term; click it to see its modules. Drag to zoom.</span>
       </div>
     </div>
 
@@ -176,10 +187,10 @@ ol.terms button:hover { color: var(--accent); }
       <section>
         <h2>Modules</h2>
         <table class="mods">
-          <thead><tr><th>Module</th><th title="Canonical neuroendocrine">NE<span class="alt">SCLC-A</span></th><th title="Neuroendocrine variant 1">NEv1<span class="alt">SCLC-N</span></th><th title="Neuroendocrine variant 2">NEv2<span class="alt">SCLC-A2</span></th><th title="Non-neuroendocrine">Non-NE<span class="alt">SCLC-Y</span></th><th class="n">GO</th></tr></thead>
+          <thead><tr id="mod-head"></tr></thead>
           <tbody id="mod-rows"></tbody>
         </table>
-        <p class="small" style="margin-top:6px">&#9679; = module significantly enriched in that subtype by GSEA (S4 Table). GO = number of enriched processes.</p>
+        <p class="small" style="margin-top:6px" id="mod-note"></p>
         <div class="row-actions">
           <button class="btn" id="btn-all" type="button">All</button>
           <button class="btn" id="btn-none" type="button">None</button>
@@ -187,32 +198,32 @@ ol.terms button:hover { color: var(--accent); }
         <div class="detail" id="mod-detail"></div>
       </section>
 
-      <section>
+      <section id="credits-v1">
         <p class="small">Data: S1 File (GO t-SNE maps), S2 Table (module discrimination) and S4 Table (GSEA) of Wooten DJ, Groves SM, Tyson DR, Liu Q, Lim JS, Albert R, Lopez CF, Sage J, Quaranta V (2019). Systems-level network modeling of Small Cell Lung Cancer subtypes identifies master regulators and destabilizers. <i>PLoS Comput Biol</i> 15(10): e1007343. Module summaries paraphrase the paper. Region labels are placed by hand to match Fig. 3B.</p>
         <p class="small">See also the <a href="../network-explorer/">Network Explorer</a> for the SCLC transcription factor network from the same paper.</p>
       </section>
+      <section id="credits-v2" hidden></section>
     </aside>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.34.0/plotly-basic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.34.0/plotly-cartesian.min.js"></script>
 <script src="data.js"></script>
+<script src="data_v2.js"></script>
 <script>
 (() => {
 const $ = s => document.querySelector(s);
-const { terms, modules } = window.PHENO;
 
-const SUBTYPES = {
+// ---------- 2019 dataset (Wooten, Groves et al. 2019, Fig. 3) ----------
+const V1_SUBTYPES = {
   "NE":     { label: "NE",     alt: "SCLC-A",  desc: "Canonical neuroendocrine subtype (corresponds to SCLC-A)." },
   "NEv1":   { label: "NEv1",   alt: "SCLC-N",  desc: "Neuroendocrine variant 1 (corresponds to SCLC-N)." },
   "NEv2":   { label: "NEv2",   alt: "SCLC-A2", desc: "Neuroendocrine variant 2 (later called SCLC-A2), the new subtype found in this paper. It is ASCL1-high but hard to tell apart from NE using the usual few SCLC markers." },
   "Non-NE": { label: "Non-NE", alt: "SCLC-Y",  desc: "Non-neuroendocrine subtype (corresponds to SCLC-Y)." },
 };
-const SUB_KEYS = Object.keys(SUBTYPES);
-const subName = k => `${k}/${SUBTYPES[k].alt}`;
 
 // Module order, colors (matched to Fig. 3A), subtypes from GSEA (S4 Table), FDR q from S2 Table, summaries paraphrased from the Results.
-const MODS = {
+const V1_MODS = {
   brown:        { name: "Brown",        color: "#8b4a1f", q: 1.86e-8,  high: ["NE", "NEv2"],
                   about: "Secretion and epithelial differentiation. Upregulated in NEv2 and also in canonical NE." },
   yellow:       { name: "Yellow",       color: "#f2e21b", q: 3.29e-6,  high: ["NE", "NEv1"],
@@ -236,10 +247,9 @@ const MODS = {
   pink:         { name: "Pink",         color: "#f7b6c8", q: 3.12e-2,  high: ["NEv1"],
                   about: "Neuroendocrine differentiation and neurotransmitter secretion (with turquoise, yellow and salmon)." },
 };
-const MOD_KEYS = Object.keys(MODS);
 
 // Region labels from Fig. 3B (positions read off the published figure).
-const REGIONS = [
+const V1_REGIONS = [
   ["Metabolism / biosynthetic processes", 7, 35], ["Gene regulation", 11, 25], ["Cell death", -20, 23],
   ["Cell cycle", 23, 19], ["Signal transduction", -21, 10.5], ["Homeostasis", 6, 8],
   ["Immune response / wound healing", -10.5, -1.5], ["Ion transport", 27, -0.7], ["Cell organization", 24.5, -11.3],
@@ -248,11 +258,56 @@ const REGIONS = [
   ["Epithelial development", 9.5, -42],
 ];
 
-// term index -> [[module, p], ...]
-const memberOf = terms.map(() => []);
-for (const m of MOD_KEYS) for (const [i, p] of modules[m]) memberOf[i].push([m, p]);
 
-const state = { selected: new Set(["green", "yellow"]), focus: "green", picked: null, labels: true };
+const DATASETS = {
+  v1: {
+    tab: "2019", tabNote: "Fig. 3B–C",
+    intro: "<strong>What this shows.</strong> Each dot is one of 1,728 GO biological processes enriched in at least one WGCNA gene module from 50 SCLC cell lines (CCLE RNA-seq). Terms are placed with t-SNE on GoSemSim semantic distances, so similar processes sit together. Gray dots are the whole phenospace (Fig. 3B); colored dots are the terms enriched in the selected modules (Fig. 3C), sized by enrichment p-value.",
+    labelsName: "Region labels (Fig. 3B)",
+    modNote: "&#9679; = module significantly enriched in that subtype by GSEA (S4 Table). GO = number of enriched processes.",
+    terms: window.PHENO.terms, modules: window.PHENO.modules,
+    SUBTYPES: V1_SUBTYPES, MODS: V1_MODS, REGIONS: V1_REGIONS,
+    meta: 'Interactive Fig. 3B&ndash;C from <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019) <i>PLoS Comput Biol</i></a>',
+    start: ["green", "yellow"], testName: "Kruskal&ndash;Wallis",
+  },
+};
+if (window.PHENO_V2) {
+  const P = window.PHENO_V2;
+  DATASETS.v2 = {
+    tab: "v2", tabNote: "adds SCLC-P and SCLC-I, cell lines + tumors",
+    meta: 'Unpublished reanalysis following <a href="https://doi.org/10.1371/journal.pcbi.1007343" target="_blank" rel="noopener">Wooten, Groves et al. (2019)</a>',
+    intro: P.intro, labelsName: "Region labels (Fig. 3B)", modNote: P.modNote,
+    terms: P.terms, modules: P.modules, SUBTYPES: P.subtypes, MODS: P.mods, REGIONS: V1_REGIONS,
+    start: P.start, samples: P.samples, credits: P.credits, testName: "Kruskal&ndash;Wallis",
+  };
+}
+
+let D, terms, modules, SUBTYPES, SUB_KEYS, MODS, MOD_KEYS, memberOf, subName;
+const state = { ds: "v1", view: "map", selected: new Set(), focus: null, picked: null, labels: true };
+
+function useDataset(key) {
+  state.ds = key; D = DATASETS[key];
+  ({ terms, modules, SUBTYPES, MODS } = D);
+  SUB_KEYS = Object.keys(SUBTYPES); MOD_KEYS = Object.keys(MODS);
+  subName = k => SUBTYPES[k].alt ? `${SUBTYPES[k].label}/${SUBTYPES[k].alt}` : SUBTYPES[k].label;
+  memberOf = terms.map(() => []);
+  for (const m of MOD_KEYS) for (const [i, p] of modules[m]) memberOf[i].push([m, p]);
+  state.selected = new Set(D.start); state.focus = D.start[0]; state.picked = null;
+  if (!D.samples) state.view = "map";
+  document.querySelectorAll("#dstabs .dstab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.ds === key)));
+  $("#intro-text").innerHTML = D.intro;
+  $("#meta").innerHTML = D.meta;
+  $("#labels-name").textContent = D.labelsName;
+  $("#mod-note").innerHTML = D.modNote;
+  $("#credits-v1").hidden = key !== "v1";
+  $("#credits-v2").hidden = key === "v1";
+  if (D.credits) $("#credits-v2").innerHTML = D.credits;
+  $("#viewseg").hidden = !D.samples;
+  $("#search").value = "";
+  buildRail(); clearSubtype();
+  try { history.replaceState(null, "", key === "v1" ? location.pathname : "#v2"); } catch (e) {}
+  render(true);
+}
 
 const fmtP = p => {
   if (p >= 0.001) return p.toPrecision(2);
@@ -263,18 +318,22 @@ const sizeOf = p => 4 + 1.4 * Math.sqrt(Math.min(-Math.log10(p), 60)) * 2.2 - 3.
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const quickgo = id => `https://www.ebi.ac.uk/QuickGO/term/${id}`;
+const dark = c => { const n = parseInt(c.slice(1), 16); return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255) < 60; };
 
 // ---------- rail ----------
 function buildRail() {
-  const st = $("#subtypes");
+  const st = $("#subtypes"); st.innerHTML = "";
+  st.style.gridTemplateColumns = `repeat(${SUB_KEYS.length}, 1fr)`;
   for (const k of SUB_KEYS) {
     const b = document.createElement("button");
-    b.className = "btn"; b.type = "button"; b.innerHTML = `${SUBTYPES[k].label}<span class="alt">${SUBTYPES[k].alt}</span>`; b.dataset.sub = k;
+    b.className = "btn"; b.type = "button"; b.dataset.sub = k;
+    b.innerHTML = `${SUBTYPES[k].label}${SUBTYPES[k].alt ? `<span class="alt">${SUBTYPES[k].alt}</span>` : ""}`;
     b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", () => pickSubtype(k));
     st.appendChild(b);
   }
-  const tb = $("#mod-rows");
+  $("#mod-head").innerHTML = `<th>Module</th>` + SUB_KEYS.map(k => `<th title="${esc(SUBTYPES[k].desc)}">${SUBTYPES[k].label}${SUBTYPES[k].alt && SUB_KEYS.length <= 4 ?`<span class="alt">${SUBTYPES[k].alt}</span>` : ""}</th>`).join("") + `<th class="n">GO</th>`;
+  const tb = $("#mod-rows"); tb.innerHTML = "";
   for (const m of MOD_KEYS) {
     const M = MODS[m], tr = document.createElement("tr");
     tr.dataset.mod = m;
@@ -294,38 +353,50 @@ function buildRail() {
     });
     tb.appendChild(tr);
   }
+  $("#term-list").innerHTML = terms.map(t => `<option value="${esc(t[1])}">`).join("");
+}
+
+function wireOnce() {
+  const tabs = $("#dstabs");
+  for (const [k, d] of Object.entries(DATASETS)) {
+    const b = document.createElement("button");
+    b.className = "dstab"; b.type = "button"; b.role = "tab"; b.dataset.ds = k;
+    b.innerHTML = `${d.tab}<small>${d.tabNote}</small>`;
+    b.addEventListener("click", () => { if (state.ds !== k) useDataset(k); });
+    tabs.appendChild(b);
+  }
   $("#btn-all").addEventListener("click", () => { MOD_KEYS.forEach(m => state.selected.add(m)); clearSubtype(); render(); });
   $("#btn-none").addEventListener("click", () => { state.selected.clear(); state.focus = null; clearSubtype(); render(); });
   $("#chk-labels").addEventListener("change", e => { state.labels = e.target.checked; draw(); });
   $("#btn-reset").addEventListener("click", () => Plotly.relayout("plot", { "xaxis.autorange": true, "yaxis.autorange": true }));
-
-  const dl = $("#term-list");
-  dl.innerHTML = terms.map(t => `<option value="${esc(t[1])}">`).join("");
-  const byName = new Map(terms.map((t, i) => [t[1].toLowerCase(), i]));
+  document.querySelectorAll("#viewseg button").forEach(b => b.addEventListener("click", () => {
+    state.view = b.dataset.view;
+    document.querySelectorAll("#viewseg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    draw(true);
+  }));
   $("#search").addEventListener("change", e => {
-    const i = byName.get(e.target.value.trim().toLowerCase());
-    if (i != null) pickTerm(i, true);
+    const v = e.target.value.trim().toLowerCase();
+    const i = terms.findIndex(t => t[1].toLowerCase() === v);
+    if (i >= 0) pickTerm(i, true);
   });
 }
 
-let activeSub = null;
 function clearSubtype() {
-  activeSub = null;
   document.querySelectorAll("#subtypes .btn").forEach(b => b.setAttribute("aria-pressed", "false"));
   $("#subtype-desc").textContent = "Selects the modules that are upregulated in that subtype.";
 }
 function pickSubtype(k) {
   state.selected = new Set(MOD_KEYS.filter(m => MODS[m].high.includes(k)));
-  state.focus = [...state.selected][0];
+  state.focus = [...state.selected][0] || null;
   render();
-  activeSub = k;
   document.querySelectorAll("#subtypes .btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sub === k)));
   const names = [...state.selected].map(m => MODS[m].name.toLowerCase());
-  $("#subtype-desc").textContent = `${SUBTYPES[k].desc} Modules upregulated: ${names.join(", ")}.`;
+  $("#subtype-desc").textContent = `${SUBTYPES[k].desc} Modules upregulated: ${names.length ? names.join(", ") : "none"}.`;
 }
 
 function pickTerm(i, zoom) {
   state.picked = i;
+  if (state.view !== "map") { state.view = "map"; document.querySelectorAll("#viewseg button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.view === "map"))); }
   render();
   if (zoom) {
     const [, , x, y] = terms[i];
@@ -337,13 +408,12 @@ function renderDetail() {
   const tbox = $("#term-detail");
   tbox.hidden = state.picked == null;
   if (state.picked != null) {
-    const box = tbox;
     const [id, name] = terms[state.picked];
     const mem = memberOf[state.picked].sort((a, b) => a[1] - b[1]);
-    box.innerHTML = `<h2>${esc(name)}</h2>
+    tbox.innerHTML = `<h2>${esc(name)}</h2>
       <p class="small"><a href="${quickgo(id)}" target="_blank" rel="noopener">${id}</a> &middot; GO biological process</p>
       ${mem.length ? `<dl class="kv">${mem.map(([m, p]) =>
-        `<dt><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${MODS[m].color}"></span>${MODS[m].name}</dt><dd>p = ${fmtP(p)} &middot; ${MODS[m].high.map(subName).join(", ")}</dd>`).join("")}</dl>`
+        `<dt><span class="sw" style="display:inline-block;vertical-align:-1px;margin-right:6px;background:${MODS[m].color}"></span>${MODS[m].name}</dt><dd>p = ${fmtP(p)}${MODS[m].high.length ? " &middot; " + MODS[m].high.map(subName).join(", ") : ""}</dd>`).join("")}</dl>`
         : `<p class="small">Enriched in a module not included in the published overlays.</p>`}
       <button class="btn" type="button" id="btn-back">Clear</button>`;
     $("#btn-back").addEventListener("click", () => { state.picked = null; $("#search").value = ""; render(); });
@@ -355,8 +425,9 @@ function renderDetail() {
   const top = modules[m].slice(0, 10);
   box.innerHTML = `<h3><span class="sw" style="background:${M.color}"></span>${M.name} module</h3>
     <dl class="kv">
-      <dt>Up in</dt><dd>${M.high.map(subName).join(", ")}</dd>
-      <dt>Subtype test</dt><dd>FDR q = ${fmtP(M.q)} (Kruskal&ndash;Wallis)</dd>
+      <dt>Up in</dt><dd>${M.high.length ? M.high.map(subName).join(", ") : "no single subtype"}</dd>
+      <dt>Subtype test</dt><dd>FDR q = ${fmtP(M.q)} (${D.testName})</dd>
+      ${M.genes ? `<dt>Genes</dt><dd>${M.genes.toLocaleString()}</dd>` : ""}
       <dt>GO terms</dt><dd>${modules[m].length} enriched processes</dd>
     </dl>
     <p>${M.about}</p>
@@ -365,19 +436,36 @@ function renderDetail() {
   box.querySelectorAll("ol.terms button").forEach(b => b.addEventListener("click", () => pickTerm(+b.dataset.i, true)));
 }
 
-function render() {
+function render(reset) {
   document.querySelectorAll("#mod-rows tr").forEach(tr => {
     const m = tr.dataset.mod;
     tr.querySelector("input").checked = state.selected.has(m);
     tr.classList.toggle("focus", m === state.focus);
   });
   renderDetail();
-  draw();
+  draw(reset);
 }
 
-// ---------- plot ----------
+// ---------- plots ----------
 let plotted = false;
-function draw() {
+function baseLayout() {
+  const ink = css("--ink"), muted = css("--muted");
+  return {
+    showlegend: false, hovermode: "closest",
+    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    font: { family: "Libre Franklin, Arial, sans-serif", color: muted, size: 12 },
+    hoverlabel: { bgcolor: css("--surface"), bordercolor: css("--line"), font: { color: ink, family: "Libre Franklin, Arial, sans-serif", size: 12.5 } },
+  };
+}
+function draw(reset) {
+  $("#hint").textContent = state.view === "me" ? "Hover a cell for the sample, its subtype and the eigengene value." : "Hover a dot for the GO term; click it to see its modules. Drag to zoom.";
+  if (state.view === "me" && D.samples) drawME(reset); else drawMap(reset);
+  if (!plotted) {
+    plotted = true;
+    $("#plot").on("plotly_click", ev => { const pt = ev.points[0]; if (state.view === "map" && pt && pt.customdata != null) pickTerm(pt.customdata, false); });
+  }
+}
+function drawMap(reset) {
   const ink = css("--ink"), muted = css("--muted"), dot = css("--dot"), grid = css("--grid"), bg = css("--bg");
   const anyOn = state.selected.size > 0;
   const traces = [{
@@ -389,10 +477,9 @@ function draw() {
     hoverlabel: hoverFor("#8a929e"),
     marker: { color: dot, size: anyOn ? 3.5 : 5, opacity: anyOn ? 0.75 : 0.9 },
   }];
-  // draw lower-priority modules first so the focused one sits on top
   const order = [...state.selected].sort((a, b) => (a === state.focus) - (b === state.focus));
   for (const m of order) {
-    const rows = [...modules[m]].reverse(); // biggest (most significant) last, on top
+    const rows = [...modules[m]].reverse();
     const M = MODS[m];
     traces.push({
       type: "scatter", mode: "markers", name: M.name,
@@ -402,7 +489,7 @@ function draw() {
       hovertemplate: "%{text}<extra></extra>",
       hoverlabel: hoverFor(M.color),
       marker: { color: M.color, size: rows.map(([, p]) => sizeOf(p)), opacity: 0.85,
-                line: { color: m === "black" || m === "midnightblue" ? muted : ink, width: 0.6 } },
+                line: { color: dark(M.color) ? muted : ink, width: 0.6 } },
     });
   }
   if (state.picked != null) {
@@ -410,32 +497,70 @@ function draw() {
     traces.push({ type: "scatter", mode: "markers", x: [x], y: [y], hoverinfo: "skip",
       marker: { size: 22, color: "rgba(0,0,0,0)", line: { color: ink, width: 2.5 } } });
   }
-  const ann = state.labels ? REGIONS.map(([t, x, y]) => ({
+  const ann = state.labels ? D.REGIONS.map(([t, x, y]) => ({
     x, y, text: t.toUpperCase(), showarrow: false,
     font: { family: "Libre Franklin, Arial, sans-serif", size: innerWidth < 600 ? 9 : 11, color: ink },
-    bgcolor: bg.length ? hexA(bg, 0.6) : undefined, borderpad: 1,
+    bgcolor: hexA(bg, 0.6), borderpad: 1,
   })) : [];
   if (state.picked != null) {
     const [, name, x, y] = terms[state.picked];
     ann.push({ x, y, text: `<b>${esc(name)}</b>`, showarrow: true, arrowhead: 0, ax: 0, ay: -34,
       font: { size: 12, color: ink }, bgcolor: hexA(bg, 0.85), arrowcolor: ink });
   }
-  const layout = {
-    margin: { l: 48, r: 12, t: 48, b: 44 }, showlegend: false, hovermode: "closest", dragmode: "zoom",
-    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    font: { family: "Libre Franklin, Arial, sans-serif", color: muted, size: 12 },
+  const layout = Object.assign(baseLayout(), {
+    margin: { l: 48, r: 12, t: 48, b: 44 }, dragmode: "zoom",
     xaxis: { title: { text: "t-SNE 1" }, gridcolor: grid, zerolinecolor: grid, ticks: "" },
     yaxis: { title: { text: "t-SNE 2" }, gridcolor: grid, zerolinecolor: grid, ticks: "" },
-    hoverlabel: { bgcolor: css("--surface"), bordercolor: css("--line"), font: { color: ink, family: "Libre Franklin, Arial, sans-serif", size: 12.5 } },
     annotations: ann,
-    uirevision: "keep",
-  };
-  Plotly.react("plot", traces, layout, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] ,
-    toImageButtonOptions: { filename: "sclc_phenospace" } });
-  if (!plotted) {
-    plotted = true;
-    $("#plot").on("plotly_click", ev => { const pt = ev.points[0]; if (pt && pt.customdata != null) pickTerm(pt.customdata, false); });
-  }
+    uirevision: reset ? state.ds + Date.now() : state.ds + "-map",
+  });
+  Plotly.react("plot", traces, layout, plotConfig());
+}
+// Module eigengenes for every sample (cell lines + tumors), grouped by subtype.
+function drawME(reset) {
+  const S = D.samples, ink = css("--ink"), muted = css("--muted"), bg = css("--bg");
+  const mods = MOD_KEYS.filter(m => S.me[m]);
+  const order = S.names.map((n, i) => i).sort((a, b) =>
+    SUB_KEYS.indexOf(S.subtype[a]) - SUB_KEYS.indexOf(S.subtype[b]) || S.source[a].localeCompare(S.source[b]) || S.names[a].localeCompare(S.names[b]));
+  const z = mods.map(m => order.map(i => S.me[m][i]));
+  const absv = z.flat().map(Math.abs).sort((p, q) => p - q);
+  const lim = absv[Math.floor(absv.length * 0.98)] || 1; // clip the top 2% so typical values show
+  const text = mods.map(m => order.map(i => `<b>${S.names[i]}</b> (${S.source[i]})<br>${subName(S.subtype[i])}<br>${MODS[m].name} eigengene: ${S.me[m][i].toFixed(2)}`));
+  const traces = [{
+    type: "heatmap", z, x: order.map((_, j) => j), y: mods.map(m => MODS[m].name), text, hovertemplate: "%{text}<extra></extra>",
+    colorscale: [[0, "#2c5aa0"], [0.5, bg || "#ffffff"], [1, "#c8312f"]], zmin: -lim, zmax: lim, zmid: 0,
+    colorbar: { title: { text: "eigengene", side: "right" }, thickness: 10, len: 0.6, outlinewidth: 0, tickfont: { size: 11 } },
+    xgap: 0, ygap: 1,
+  }];
+  // subtype bands + sample-type strip
+  const shapes = [], ann = [];
+  let start = 0;
+  order.forEach((i, j) => {
+    const next = order[j + 1];
+    if (next == null || S.subtype[next] !== S.subtype[i]) {
+      const k = S.subtype[i];
+      ann.push({ x: (start + j) / 2, y: 1.0, yref: "paper", yanchor: "bottom", text: `<b>${SUBTYPES[k].label}</b>`, showarrow: false, font: { size: 12, color: ink }, hovertext: subName(k) });
+      if (next != null) shapes.push({ type: "line", x0: j + 0.5, x1: j + 0.5, y0: 0, y1: 1, yref: "paper", line: { color: ink, width: 1.5 } });
+      start = j + 1;
+    }
+  });
+  traces.push({
+    type: "scatter", mode: "markers", x: order.map((_, j) => j), y: order.map(() => -0.9), yaxis: "y2",
+    marker: { symbol: "square", size: 6, color: order.map(i => S.source[i] === "tumor" ? ink : muted), opacity: order.map(i => S.source[i] === "tumor" ? 0.9 : 0.35) },
+    text: order.map(i => `${S.names[i]} &middot; ${S.source[i] === "tumor" ? "tumor" : S.source[i] + " cell line"}`), hovertemplate: "%{text}<extra></extra>",
+  });
+  const layout = Object.assign(baseLayout(), {
+    margin: { l: 110, r: 20, t: 86, b: 54 }, dragmode: "zoom",
+    xaxis: { showticklabels: false, showgrid: false, zeroline: false, title: { text: "Samples (dark squares = tumors, light = cell lines)" } },
+    yaxis: { autorange: "reversed", showgrid: false, domain: [0.06, 1], tickfont: { color: ink } },
+    yaxis2: { domain: [0, 0.04], showticklabels: false, showgrid: false, zeroline: false, range: [-1.5, -0.3] },
+    shapes, annotations: ann, uirevision: state.ds + "-me",
+  });
+  Plotly.react("plot", traces, layout, plotConfig());
+}
+function plotConfig() {
+  return { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"],
+    toImageButtonOptions: { filename: "sclc_phenospace_" + state.ds } };
 }
 // Hover box filled with the dot's color; text black or white, whichever reads better.
 function hoverFor(c) {
@@ -450,9 +575,9 @@ function hexA(c, a) {
   return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
-buildRail();
-render();
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+wireOnce();
+useDataset(location.hash === "#v2" && DATASETS.v2 ? "v2" : "v1");
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => draw());
 })();
 </script>
 </body>

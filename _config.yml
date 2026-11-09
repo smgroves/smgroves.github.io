@@ -197,6 +197,7 @@ exclude:
   - Dockerfile.jekyll
   - explainers/
   - unused/
+  - analysis/
   - CLAUDE.md
 keep_files:
   - CNAME
