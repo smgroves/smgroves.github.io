@@ -36,11 +36,14 @@ jobs:
         cp cloud-run/Dockerfile build/
         cp -r pluto-deployment-environment build/
         cp julia/*.jl build/notebooks/
+        # interactive.jl is a test notebook not listed on /notebooks/; each running
+        # notebook takes ~0.6 GB, so leave it out
+        rm build/notebooks/interactive.jl
     - name: Build image
       run: docker build -t pluto build
     - name: Check the server starts and runs the notebooks
       run: |
-        docker run -d --name pluto -p 8080:8080 pluto
+        docker run -d --name pluto --memory 4g -p 8080:8080 pluto
         for nb in Runge_Kutta Ordinary_Differential_Equations; do
           for i in $(seq 1 60); do
             curl -sf -o /dev/null "http://localhost:8080/$nb.html" && echo "$nb ready" && break
@@ -67,6 +70,6 @@ jobs:
         docker push "$IMAGE"
         gcloud run deploy $SERVICE --image "$IMAGE" --region $REGION \
           --service-account pluto-runtime@${{ vars.GCP_PROJECT }}.iam.gserviceaccount.com \
-          --allow-unauthenticated --memory 2Gi --cpu 1 --cpu-boost \
+          --allow-unauthenticated --memory 4Gi --cpu 1 --cpu-boost \
           --min-instances 0 --max-instances 1 --timeout 300 --quiet
         gcloud run services describe $SERVICE --region $REGION --format 'value(status.url)'
