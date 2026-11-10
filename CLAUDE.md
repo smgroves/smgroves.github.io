@@ -45,7 +45,8 @@ She is an instructor/researcher at UVA (smgroves@virginia.edu); the site hosts r
 - Static Jupyter notebooks in `jupyter/` and course notebooks: link via `https://nbviewer.org/urls/smgroves.github.io/<path>.ipynb` plus a separate `[.ipynb]` download link. Do NOT use nbviewer's `/github/...` form (GitHub API rate limit). Notebook images must use absolute smgroves.github.io URLs.
 - Pluto notebooks in `julia/*.jl` need a live PlutoSliderServer (env in `pluto-deployment-environment/`, PlutoSliderServer 1.3.0, Julia 1.11.4). `_pages/notebooks.md` reads `pluto_server_url` from `_config.yml`.
 - Pluto host is Google Cloud Run (chosen 2026-11-08; old Railway/Fly/Render/HF configs deleted). `cloud-run/Dockerfile` listens on `$PORT`; `.github/workflows/pluto-cloud-run.yml` builds the image, smoke-tests both notebooks, then deploys only if repo variables `GCP_PROJECT`, `GCP_WIF_PROVIDER`, `GCP_SERVICE_ACCOUNT` exist. Sarah's one-time account steps: `cloud-run/SETUP.md` + `cloud-run/setup.sh`. Until she does them and `pluto_server_url` gets the `run.app` URL, the sliders stay dead. Sarah wants a live server, not a static export. Claude can't create cloud accounts.
-- JupyterLite: `jupyterlite/` config, built into `_site/lite` by `deploy.yml` (`lite` in `keep_files`). Only `run_eulers.ipynb`; link via `lite_url` in `_data/notebooks.yml`.
+- JupyterLite was removed 2026-11-10 (≈70 MB / 740 files pushed GitHub Pages past its 10-minute deploy limit). `jupyterlite/` config is kept but no longer built. `run_eulers.ipynb` now has an "Open in Colab" button (`colab_url` in `_data/notebooks.yml`).
+- Deploy size matters: Pages re-uploads the whole site each deploy and times out at 10 min. Keep big binaries (pptx, videos) out; slides go in as compressed PDFs.
 - `jupyter/data/*.tif` are gitignored, so `elevation.ipynb` can't fully run on Binder.
 
 ## Teaching wiki (`_pages/teaching-wiki/index.html`, /teaching-wiki)

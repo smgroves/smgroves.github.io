@@ -63,7 +63,7 @@ function normalizeMeta() {
         ? `${INTERACTIVE_BASE}${key}.html`
         : data.static_url || `https://smgroves.github.io/julia/${key}.html`),
       binder_url: data.binder_url || null,
-      lite_url: data.lite_url ? "{{ site.baseurl }}" + data.lite_url : null
+      colab_url: data.colab_url || null
     };
   });
 
@@ -108,8 +108,8 @@ function renderList() {
     const binderBtn = n.binder_url
       ? `<a href="${n.binder_url}" class="btn btn-sm btn-outline-secondary ml-2" target="_blank">Launch in Binder</a>`
       : "";
-    const liteBtn = n.lite_url
-      ? `<a href="${n.lite_url}" class="btn btn-sm btn-outline-secondary ml-2" target="_blank">Run in browser</a>`
+    const colabBtn = n.colab_url
+      ? `<a href="${n.colab_url}" class="btn btn-sm btn-outline-secondary ml-2" target="_blank">Open in Colab</a>`
       : "";
     const formattedDate = n.date.toLocaleDateString("en-US", {
         year: "numeric",
@@ -119,7 +119,7 @@ function renderList() {
     item.innerHTML = `
       <h4>
         <a href="${n.url}" target="_blank">${n.title}</a>
-        ${liteBtn}
+        ${colabBtn}
         ${binderBtn}
         <span class="badge badge-${badgeClass} ml-2">${n.type}</span>
       </h4>

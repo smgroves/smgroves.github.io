@@ -14,7 +14,7 @@ Most of the course focuses on using numerical methods to approximate solutions t
 ## Module 1
 - Introduction to Computational Thinking
 - Introduction to AI (ChatGPT)
-- Python Coding Bootcamp [Lecture]({{ site.baseurl }}{% link assets/ppt/class0121-0123_python_basics.pptx %})
+- Python Coding Bootcamp [Lecture]({{ site.baseurl }}{% link assets/pdf/bme2315_2025/class0121-0123_python_basics.pdf %})
 
 ## Module 2: Approximations and Errors
 - Binary Numbers: Round-off Errors
@@ -45,7 +45,7 @@ Most of the course focuses on using numerical methods to approximate solutions t
 - Nonlinear regression
 
 ## Module 7: ODEs
-- ODE Introduction and Nomenclature; Euler's Method [Lecture]({{ site.baseurl }}{% link assets/ppt/class0327_ODE1.pptx %})
+- ODE Introduction and Nomenclature; Euler's Method [Lecture]({{ site.baseurl }}{% link assets/pdf/bme2315_2025/class0327_ODE1.pdf %})
 - Midpoint Method
 - Runge-Kutta 4th Order Method
 

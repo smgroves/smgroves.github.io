@@ -26,7 +26,7 @@ run_eulers:
   type: "static"
   date: "2025-03-30"
   static_url: "https://nbviewer.org/urls/smgroves.github.io/jupyter/run_eulers.ipynb"
-  lite_url: "/lite/notebooks/index.html?path=run_eulers.ipynb"
+  colab_url: "https://colab.research.google.com/github/smgroves/smgroves.github.io/blob/master/jupyter/run_eulers.ipynb"
 
 elevation:
   title: "How steep is Charlottesville, VA?"

@@ -204,7 +204,6 @@ keep_files:
   - .nojekyll
   - .git
   - julia
-  - lite  # JupyterLite, built into _site/lite by .github/workflows/deploy.yml
 
 # Plug-ins
 plugins:
