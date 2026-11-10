@@ -493,7 +493,10 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const MISSING = "\u0000none";
 const LEVEL_KEY = "Level";
-const PALETTE = ["#3b6fb6", "#e07b39", "#3a9a6a", "#c8494f", "#8a63b8", "#b8892a", "#3aa0b0", "#d16aa0", "#6f8a2e", "#8a6a50", "#5b6fd6", "#c46a2e"];
+// Default colors for categories without preset colors: ColorBrewer Set2, then distinct golden-angle hues so
+// no two categories ever share a color, however many there are.
+const PALETTE = ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"];
+const colorAt = i => i < PALETTE.length ? PALETTE[i] : d3.hsl((i * 137.508 + 20) % 360, 0.5, 0.58).formatHex();
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const clean = v => (v === undefined || v === null) ? "" : String(v).trim();
@@ -547,6 +550,7 @@ function analyze(items, keys, fixed = {}) {
     const a = { key, type: allNum ? "num" : "cat", order, counts, uniq,
       groupable: allNum ? uniq >= 2 && uniq <= 12 : uniq >= 2 && uniq <= 30 };
     if (fx && fx.noTab) { a.colorable = a.groupable; a.groupable = false; }
+    if (fx && fx.sign) a.sign = true;
     if (fx && fx.parts) { a.parts = fx.parts; a.partColors = new Map(fx.parts.map(x => [x, fx.colors[x]])); }
     if (allNum) {
       const vals = present.map(it => it.attrs[key]);
@@ -555,7 +559,7 @@ function analyze(items, keys, fixed = {}) {
       a.scale = d3.scaleSequential([lo, a.max], t => d3.interpolatePlasma(0.08 + 0.74 * t));
     } else {
       a.colors = new Map();
-      order.filter(c => c !== MISSING).forEach((c, i) => a.colors.set(c, (fx && fx.colors && fx.colors[c]) || PALETTE[i % PALETTE.length]));
+      order.filter(c => c !== MISSING).forEach((c, i) => a.colors.set(c, (fx && fx.colors && fx.colors[c]) || colorAt(i)));
     }
     return a;
   }).filter(Boolean);
@@ -775,8 +779,8 @@ const SCLC_SIGNS = {
   TCF4: "+-~+~~+~", TEAD4: "---+-~", ZNF217: "-~~-~",
 };
 const SIGN_NAMES = { "+": "Activating", "-": "Inhibiting", "~": "Mixed", "?": "Unknown" };
-const EFFECT_SPEC = { order: ["Activating", "Inhibiting", "Mixed", "Unknown"],
-  colors: { Activating: "#3a9a6a", Inhibiting: "#c8494f", Mixed: "#8f9bb0", Unknown: "#c9ced8" } };
+const EFFECT_SPEC = { order: ["Activating", "Inhibiting", "Mixed", "Unknown"], sign: true,
+  colors: { Activating: "#5f9e7f", Inhibiting: "#c06a6e", Mixed: "#9aa3b2", Unknown: "#c9ced8" } };
 // Attractors ON per subtype (of A: 2, A2: 4, N: 2, Y: 2) and cell-line stars
 const SCLC_STATES = {
   ASCL1: [2, 4, 0, 0, "A A2"], FOXA1: [2, 4, 0, 0, "A A2"], FOXA2: [2, 4, 0, 0, "A A2"],
@@ -1031,6 +1035,56 @@ function nodeCss(d) {
   const v = val(d, a.key);
   return a.type === "cat" ? catCss(a, v) : (v === MISSING ? "var(--missing)" : a.scale(v));
 }
+/* ---------------- Signed connections ----------------
+   In a connection column with sign words (activating/inhibiting, positive/negative, +/-, up/down, promotes/represses, ...)
+   those values are colored green / red / gray by default, like the example networks, and any other names
+   (e.g. "binding") get their own distinct colors.
+   A number column with both positive and negative values gets a derived "Sign of ..." column. */
+const SIGN_POS = /^(\+|pos|positive|activat\w*|activ\w*|act|up|up-?regulat\w*|induc\w*|promot\w*|stimulat\w*|enhanc\w*|excitat\w*|increas\w*|->|→)$/i;
+const SIGN_NEG = /^(-|−|–|neg|negative|inhibit\w*|inh|repress\w*|suppress\w*|down|down-?regulat\w*|block\w*|decreas\w*|-\||⊣|antagon\w*)$/i;
+const SIGN_MID = /^(mixed|neutral|both|dual|~|±|\+\/-|ambiguous|context.?dependent)$/i;
+const SIGN_UNK = /^(unknown|unclear|none|n\/a|na|\?)$/i;
+// Slightly muted so connection colors don't read as node colors
+const SIGN_COLORS = { pos: "#5f9e7f", neg: "#c06a6e", mid: "#9aa3b2", unk: "#c9ced8" };
+// Other values in a sign column (e.g. "binding") get their own colors, never green or red
+const OTHER_EDGE_COLORS = ["#6b8fc7", "#e0904f", "#b07fc4", "#d1ad3a", "#5fb3c4", "#a6896b", "#7a7fd1", "#c97fa5"];
+// Looser fallback for values like "indirectPositive" or "unknown-Colocalization": look for the word anywhere
+const SIGN_LOOSE = [["unk", /unknown|unclear/i], ["mid", /mixed|dual|context.?dependent/i],
+  ["neg", /inhibit|repress|suppress|negative|antagon|down.?regul|block/i], ["pos", /activat|positive|induc|promot|stimulat|enhanc|up.?regul/i]];
+const signOf = v => {
+  const t = clean(v);
+  const exact = SIGN_POS.test(t) ? "pos" : SIGN_NEG.test(t) ? "neg" : SIGN_MID.test(t) ? "mid" : SIGN_UNK.test(t) ? "unk" : null;
+  return exact || (SIGN_LOOSE.find(([, re]) => re.test(t)) || [null])[0];
+};
+function addSignSpecs(g) {
+  const fixed = { ...(g.edgeFixed || {}) }, added = [], rank = { pos: 0, neg: 1, mid: 2, unk: 3 };
+  for (const key of g.edgeKeys) {
+    if (fixed[key] && fixed[key].order) continue;
+    const vals = [...new Set(g.links.map(l => clean(l.attrs[key])).filter(v => v !== ""))];
+    if (!vals.length) continue;
+    if (vals.every(isNumStr)) {
+      const nums = vals.map(toNum), k = `Sign of ${key}`;
+      if (nums.some(x => x > 0) && nums.some(x => x < 0) && !g.edgeKeys.includes(k)) {
+        for (const l of g.links) { const v = clean(l.attrs[key]); if (v !== "") { const x = toNum(v); l.attrs[k] = x > 0 ? "Positive" : x < 0 ? "Negative" : "Zero"; } }
+        fixed[k] = { order: ["Positive", "Negative", "Zero"], sign: true,
+          colors: { Positive: SIGN_COLORS.pos, Negative: SIGN_COLORS.neg, Zero: SIGN_COLORS.mid } };
+        added.push(k);
+      }
+      continue;
+    }
+    // Any column with an activating/inhibiting-type value: those values get green/red, other names their own colors
+    if (!vals.some(v => signOf(v) === "pos" || signOf(v) === "neg")) continue;
+    const others = vals.filter(v => !signOf(v)).sort();
+    const colors = Object.fromEntries(vals.filter(v => signOf(v)).map(v => [v, SIGN_COLORS[signOf(v)]]));
+    others.forEach((v, i) => colors[v] = i < OTHER_EDGE_COLORS.length ? OTHER_EDGE_COLORS[i] : d3.hsl((i * 137.508 + 230) % 360, 0.45, 0.6).formatHex());
+    const signed = vals.filter(v => signOf(v)).sort((a, b) => rank[signOf(a)] - rank[signOf(b)]);
+    // order: positive, negative, other named types, then mixed/unknown
+    fixed[key] = { ...(fixed[key] || {}), sign: true, colors,
+      order: [...signed.filter(v => rank[signOf(v)] < 2), ...others, ...signed.filter(v => rank[signOf(v)] >= 2)] };
+  }
+  g.edgeKeys = [...g.edgeKeys, ...added];
+  g.edgeFixed = fixed;
+}
 function edgeColor(l) {
   const a = edgeAttrBy(state.edgeKey);
   if (!a) return null;
@@ -1127,7 +1181,7 @@ function renderMarkers() {
   const size = Math.max(5, Math.min(9, state.base * 1.1)) * (colored ? 1.3 : 1);
   const specs = [{ id: "arr-d", color: null }];
   // Inhibiting-type categories end in a flat bar (the usual ⊣ for repression) instead of an arrowhead
-  if (colored) a.order.forEach((c, i) => { if (c !== MISSING) specs.push({ id: `arr-${i}`, color: a.colors.get(c), bar: /inhibit|repress|negative/i.test(c) }); });
+  if (colored) a.order.forEach((c, i) => { if (c !== MISSING) specs.push({ id: `arr-${i}`, color: a.colors.get(c), bar: signOf(c) === "neg" || /inhibit|repress|negative/i.test(c) }); });
   const all = specs.flatMap(d => [d, { ...d, id: d.id + "-h", hi: true }]);
   defs.selectAll("marker").data(all, d => d.id + d.color + d.bar).join(enter => {
     const m = enter.append("marker").attr("viewBox", "0 -5 10 10").attr("refY", 0)
@@ -1401,6 +1455,7 @@ function initViz(g, label) {
   }
   state.attrs = analyze(g.nodes, g.nodeKeys, g.fixed || {});
   state.directed = !!g.directed; $("#chk-arrows").checked = state.directed;
+  addSignSpecs(g);
   state.edgeAttrs = analyze(g.links, g.edgeKeys, g.edgeFixed || {});
   state.mode = "network"; state.pinned = null;
   const firstCat = (g.defaultColor && attrBy(g.defaultColor)) || attrBy("Highest in") || state.attrs.find(a => a.groupable && a.type === "cat" && a.key !== "Component" && a.key !== LEVEL_KEY)
@@ -1408,7 +1463,8 @@ function initViz(g, label) {
   state.colorKey = firstCat ? firstCat.key : "";
   const userNum = state.attrs.find(a => a.type === "num" && a.key !== g.degKey);
   state.sizeKey = (g.fmt === "wide" && userNum) ? userNum.key : g.degKey;
-  const edgeCat = state.edgeAttrs.find(a => a.groupable && a.type === "cat");
+  // Comparisons keep "Found in"; otherwise a sign column (activating/inhibiting, +/-, ...) comes first
+  const edgeCat = edgeAttrBy("Found in") || state.edgeAttrs.find(a => a.sign && a.type === "cat") || state.edgeAttrs.find(a => a.groupable && a.type === "cat");
   state.edgeKey = edgeCat ? edgeCat.key : "";
   const fewNodes = g.nodes.length <= 60;
   $("#chk-labels").checked = fewNodes; svg.classed("show-labels", fewNodes);
