@@ -135,6 +135,20 @@ button { cursor: pointer; }
 
 .canvas-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
 .canvas-tools .btn { padding: 4px 10px; font-size: 12.5px; }
+.save-menu { position: relative; }
+.save-menu > summary { list-style: none; cursor: pointer; }
+.save-menu > summary::-webkit-details-marker { display: none; }
+.save-menu .menu {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 6; min-width: 190px;
+  display: flex; flex-direction: column; padding: 4px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 20px rgb(0 0 0 / .14);
+}
+.save-menu .menu button { border: 0; background: none; text-align: left; padding: 6px 10px; border-radius: 4px; font-size: 13px; color: var(--ink); }
+.save-menu .menu button:hover, .save-menu .menu button:focus-visible { background: var(--accent-soft); }
+.save-menu .menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 6px; }
+.save-menu .menu .note { font-size: 11.5px; color: var(--muted); padding: 4px 10px 2px; max-width: 220px; }
+.btn.quiet { border-color: transparent; background: none; color: var(--muted); font-size: 12.5px; padding: 6px 8px; }
+.btn.quiet:hover { color: var(--ink); border-color: var(--line); }
 .hint { position: absolute; left: 12px; bottom: 10px; font-size: 12px; color: var(--muted); pointer-events: none; }
 
 .rail {
@@ -147,10 +161,14 @@ button { cursor: pointer; }
 }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label, .check { font-size: 13px; }
-select, input[type="search"], input[type="text"] {
+select, input[type="search"], input[type="text"], textarea {
   border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 6px 8px; width: 100%;
 }
 .check { display: flex; align-items: center; gap: 8px; }
+textarea { font: inherit; color: inherit; resize: vertical; min-height: 64px; }
+#share-dlg { width: min(520px, calc(100% - 32px)); }
+.check.top { align-items: flex-start; }
+.check.top input { margin-top: 3px; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
 
@@ -245,6 +263,8 @@ pre {
         <option value="wooten2019|groves2022">Example: Wooten 2019 vs Groves 2022</option>
         <option value="groves2022|bhattacharya2026">Example: Groves 2022 vs Bhattacharya 2026</option>
       </select>
+      <button class="btn quiet" id="btn-forget" type="button" hidden>Remove from this browser</button>
+      <button class="btn" id="btn-share" type="button" hidden>Share to public</button>
       <button class="btn primary" id="btn-load" type="button">Load your CSV</button>
     </div>
   </header>
@@ -257,6 +277,17 @@ pre {
       <div class="tooltip" id="tooltip" hidden></div>
       <div class="canvas-tools">
         <button class="btn" id="btn-fit" type="button">Fit to view</button>
+        <details class="save-menu" id="save-menu">
+          <summary class="btn">Save</summary>
+          <div class="menu">
+            <button type="button" data-save="png">Picture (PNG)</button>
+            <button type="button" data-save="svg">Picture (SVG, editable)</button>
+            <hr>
+            <button type="button" data-save="nodes">Nodes table (CSV)</button>
+            <button type="button" data-save="edges">Connections table (CSV)</button>
+            <p class="note">The picture shows the current view with its color key.</p>
+          </div>
+        </details>
       </div>
       <div class="hint">Hover for details · click to pin · drag nodes · scroll to zoom</div>
     </div>
@@ -304,6 +335,37 @@ pre {
     </aside>
   </main>
 </div>
+
+<dialog id="share-dlg">
+  <form class="dlg" id="share-form" method="dialog">
+    <div class="det-head">
+      <h2>Share to public</h2>
+      <button class="x" id="share-close" type="button" aria-label="Close">×</button>
+    </div>
+    <p class="small muted" style="margin:0">Your network (its CSV data and current colors and grouping) will be added to the “Shared by others” list. Anyone visiting this page can open and download it. You can’t delete it yourself afterwards; to have it taken down, email smgroves@virginia.edu.</p>
+    <div class="field">
+      <label for="share-name">Network name</label>
+      <input type="text" id="share-name" maxlength="80" required autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="share-desc">Short description (optional): what the nodes and connections are, and where the data came from</label>
+      <textarea id="share-desc" maxlength="500"></textarea>
+    </div>
+    <div class="field">
+      <label for="share-author">Your name (optional, shown with the network)</label>
+      <input type="text" id="share-author" maxlength="80" autocomplete="name">
+    </div>
+    <label class="check top"><input type="checkbox" id="share-ok" required> I have the right to share this data, and it contains no private, patient or student information.</label>
+    <div class="status" id="share-status" role="status"></div>
+    <div class="dlg-foot">
+      <span></span>
+      <div>
+        <button class="btn" id="share-cancel" type="button">Cancel</button>
+        <button class="btn primary" id="share-submit" type="submit">Share</button>
+      </div>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="dlg">
   <div class="dlg">
@@ -375,6 +437,7 @@ pre {
         <div class="levels" id="compare"></div>
       </div>
       <label class="check" style="margin-top:12px"><input type="checkbox" id="chk-directed"> Connections are directed (from → to)</label>
+      <label class="check"><input type="checkbox" id="chk-case" checked> Ignore upper/lower case in node names (PAX6, Pax6 and pax6 become one node)</label>
     </div>
 
     <details class="guide">
@@ -480,7 +543,7 @@ function analyze(items, keys, fixed = {}) {
       a === MISSING ? 1 : b === MISSING ? -1 :
       allNum ? a - b : (counts.get(b) - counts.get(a)) || String(a).localeCompare(String(b)));
     const fx = fixed[key];
-    if (fx && !allNum) order = fx.order.filter(c => counts.has(c)).concat(order.filter(c => !fx.order.includes(c)));
+    if (fx && fx.order && !allNum) order = fx.order.filter(c => counts.has(c)).concat(order.filter(c => !fx.order.includes(c)));
     const a = { key, type: allNum ? "num" : "cat", order, counts, uniq,
       groupable: allNum ? uniq >= 2 && uniq <= 12 : uniq >= 2 && uniq <= 30 };
     if (fx && fx.noTab) { a.colorable = a.groupable; a.groupable = false; }
@@ -500,21 +563,29 @@ function analyze(items, keys, fixed = {}) {
 
 /* ---------------- Graph building ---------------- */
 function buildGraph(main, nodeFile, cfg) {
-  const nodes = new Map(), links = [], nodeKeys = new Set();
+  // With ignoreCase, nodes are keyed by the lower-case name and keep the first spelling seen as their ID and label.
+  const nodes = new Map(), links = [], nodeKeys = new Set(), spellings = new Map();
   let edgeKeys = [];
-  const get = id => { let n = nodes.get(id); if (!n) { n = { id, label: id, attrs: {} }; nodes.set(id, n); } return n; };
+  const norm = cfg.ignoreCase ? (id => id.toLowerCase()) : (id => id);
+  const nget = id => nodes.get(norm(id));
+  const get = id => {
+    const k = norm(id);
+    let n = nodes.get(k);
+    if (!n) { n = { id, label: id, attrs: {} }; nodes.set(k, n); }
+    if (cfg.ignoreCase) { if (!spellings.has(k)) spellings.set(k, new Set()); spellings.get(k).add(id); }
+    return n;
+  };
 
   if (cfg.fmt === "edge") {
     if (cfg.src === cfg.tgt) throw new Error("Choose two different columns for From and To.");
     edgeKeys = main.fields.filter(f => f !== cfg.src && f !== cfg.tgt);
     for (const r of main.rows) {
       const s = clean(r[cfg.src]), t = clean(r[cfg.tgt]);
-      if (s) get(s);
-      if (t) get(t);
-      if (s && t) {
+      const sn = s ? get(s) : null, tn = t ? get(t) : null;
+      if (sn && tn) {
         const attrs = {};
         for (const k of edgeKeys) { const v = clean(r[k]); if (v !== "") attrs[k] = v; }
-        links.push({ source: s, target: t, attrs });
+        links.push({ source: sn.id, target: tn.id, attrs });
       }
     }
   } else if (cfg.fmt === "pc") {
@@ -526,7 +597,7 @@ function buildGraph(main, nodeFile, cfg) {
       if (!n) { if (p) get(p); continue; }
       const nd = get(n);
       for (const k of keys) { const v = clean(r[k]); if (v !== "") nd.attrs[k] = v; }
-      if (p) { get(p); links.push({ source: p, target: n, attrs: {} }); }
+      if (p) links.push({ source: get(p).id, target: nd.id, attrs: {} });
     }
   } else {
     const levels = cfg.levels;
@@ -540,8 +611,7 @@ function buildGraph(main, nodeFile, cfg) {
         const v = clean(r[levels[i]]);
         if (!v) break;
         path.push(v);
-        const id = path.join(" › ");
-        const nd = get(id);
+        const nd = get(path.join(" › ")), id = nd.id;
         nd.label = v; nd.attrs[LEVEL_KEY] = levels[i];
         for (let j = 0; j <= i; j++) nd.attrs[levels[j]] = path[j];
         if (prev) {
@@ -565,7 +635,7 @@ function buildGraph(main, nodeFile, cfg) {
       return vs.length && vs.every(isNumStr);
     }));
     const agg = id => {
-      const nd = nodes.get(id), o = own.get(id) || {}, res = {};
+      const nd = nget(id), o = own.get(id) || {}, res = {};
       for (const k of others) {
         if (numeric.has(k)) res[k] = { s: o[k] ? o[k].reduce((a, v) => a + toNum(v), 0) : 0, has: !!o[k] };
         else res[k] = new Set(o[k] || []);
@@ -584,7 +654,7 @@ function buildGraph(main, nodeFile, cfg) {
       }
       return res;
     };
-    for (const id of [...nodes.keys()]) if (!hasParent.has(id)) agg(id);
+    for (const n of [...nodes.values()]) if (!hasParent.has(n.id)) agg(n.id);
   }
 
   let unmatched = 0;
@@ -593,11 +663,11 @@ function buildGraph(main, nodeFile, cfg) {
     const keys = nodeFile.fields.filter(f => f !== cfg.idCol && f !== labelCol);
     keys.forEach(k => nodeKeys.add(k));
     let byLabel = null;
-    if (cfg.fmt === "wide") { byLabel = new Map(); for (const n of nodes.values()) byLabel.set(n.label, byLabel.has(n.label) ? null : n); }
+    if (cfg.fmt === "wide") { byLabel = new Map(); for (const n of nodes.values()) { const k = norm(n.label); byLabel.set(k, byLabel.has(k) ? null : n); } }
     for (const r of nodeFile.rows) {
       const id = clean(r[cfg.idCol]);
       if (!id) continue;
-      let nd = nodes.get(id) || (byLabel && byLabel.get(id));
+      let nd = nget(id) || (byLabel && byLabel.get(norm(id)));
       if (!nd) { nd = get(id); unmatched++; }
       if (labelCol && clean(r[labelCol])) nd.label = clean(r[labelCol]);
       for (const k of keys) { const v = clean(r[k]); if (v !== "") nd.attrs[k] = v; }
@@ -655,7 +725,8 @@ function buildGraph(main, nodeFile, cfg) {
     keys.push("Component");
   }
   keys.push(degKey);
-  return { nodes: list, links, nodeKeys: keys, edgeKeys, degKey, unmatched, fixed, directed: !!cfg.directed };
+  const caseMerged = [...spellings.values()].filter(v => v.size > 1).length;
+  return { nodes: list, links, nodeKeys: keys, edgeKeys, degKey, unmatched, caseMerged, fixed, directed: !!cfg.directed };
 }
 
 /* ---------------- Example: SCLC transcription factor network ----------------
@@ -1356,7 +1427,8 @@ function initViz(g, label) {
   renderTabs(); fillControls(); applyColors(); renderLegend(); renderEdgeLegend(); renderDetails();
   svg.call(zoom.transform, d3.zoomIdentity);
   applyMode();
-  $("#meta").textContent = `${label} · ${d3.format(",")(g.nodes.length)} nodes · ${d3.format(",")(g.links.length)} connections`;
+  $("#meta").textContent = `${label} · ${d3.format(",")(g.nodes.length)} nodes · ${d3.format(",")(g.links.length)} connections`
+    + (g.caseMerged ? ` · ${g.caseMerged} name${g.caseMerged > 1 ? "s" : ""} matched ignoring case` : "");
 }
 
 /* ---------------- Load dialog ---------------- */
@@ -1460,16 +1532,26 @@ $("#btn-build").addEventListener("click", () => {
     idCol: files.nodes ? $("#col-id").value : null,
     compare: [...document.querySelectorAll("#compare input:checked")].map(i => i.value),
     directed: $("#chk-directed").checked,
+    ignoreCase: $("#chk-case").checked,
   };
   try {
-    const g = buildGraph(files.main, files.nodes, cfg); g.fmt = cfg.fmt;
+    const src = { main: files.main, nodes: files.nodes, cfg };
+    const g = buildUser(src);
     const fname = files.main.name + (files.nodes ? ` + ${files.nodes.name}` : "");
-    if (appMode !== "compare") { initViz(g, fname); dlg.close(); return; }
+    if (appMode !== "compare") {
+      current = { view: null, label: fname, mode: "explore", data: { src } };
+      initViz(g, fname); dlg.close();
+      rememberNet("explore", fname, { src });
+      return;
+    }
     const name = $("#net-name").value.trim() || `Network ${loadStep}`;
-    if (loadStep === "A") { pendingA = { g, name }; startLoadStep("B"); setStatus(`Network A “${name}” is ready. Now load network B.`); return; }
+    if (loadStep === "A") { pendingA = { g, name, src }; startLoadStep("B"); setStatus(`Network A “${name}” is ready. Now load network B.`); return; }
     if (name === pendingA.name) throw new Error("Give the two networks different names.");
-    initViz(mergeGraphs(pendingA, { g, name }), `Comparing ${pendingA.name} and ${name}`);
+    const label = `Comparing ${pendingA.name} and ${name}`;
+    current = { view: null, label, mode: "compare", data: { A: { name: pendingA.name, src: pendingA.src }, B: { name, src } } };
+    initViz(mergeGraphs(pendingA, { g, name }), label);
     dlg.close();
+    rememberNet("compare", `${pendingA.name} vs ${name}`, { A: { name: pendingA.name, src: pendingA.src }, B: { name, src } });
   } catch (err) { setStatus(err.message, true); }
 });
 
@@ -1479,7 +1561,8 @@ $("#btn-build").addEventListener("click", () => {
 function mergeGraphs(A, B) {
   const nodes = new Map(), links = new Map(), nodeKeys = [], edgeKeys = [], fixed = {}, edgeFixed = {};
   const FOUND = "Found in", both = `${A.name} + ${B.name}`;
-  const id = x => typeof x === "object" ? x.id : x;
+  const ic = !!(A.g.ignoreCase && B.g.ignoreCase), nk = x => ic ? x.toLowerCase() : x;
+  const id = x => nodes.get(nk(typeof x === "object" ? x.id : x)).id;
   for (const [side, net] of [["A", A], ["B", B]]) {
     const pre = k => `${net.name}: ${k}`;
     net.g.nodeKeys.forEach(k => nodeKeys.push(pre(k)));
@@ -1488,8 +1571,8 @@ function mergeGraphs(A, B) {
     net.g.nodeKeys.forEach(k => fixed[pre(k)] = { ...(net.g.fixed || {})[k], noTab: true });
     for (const [k, v] of Object.entries(net.g.edgeFixed || {})) edgeFixed[pre(k)] = v;
     for (const n of net.g.nodes) {
-      let m = nodes.get(n.id);
-      if (!m) { m = { id: n.id, label: n.label, attrs: {}, sides: new Set() }; nodes.set(n.id, m); }
+      let m = nodes.get(nk(n.id));
+      if (!m) { m = { id: n.id, label: n.label, attrs: {}, sides: new Set() }; nodes.set(nk(n.id), m); }
       m.sides.add(side);
       for (const [k, v] of Object.entries(n.attrs)) m.attrs[pre(k)] = v;
     }
@@ -1550,6 +1633,7 @@ const EXAMPLES = {
   groves2022: { make: makeGroves2022, label: "SCLC transcription factor network with MYC (Groves et al. 2022)", short: "Groves 2022", cite: "Groves et al. 2022" },
   bhattacharya2026: { make: makeBhattacharya, label: "SCLC transcription factor network (Bhattacharya, Groves et al. 2026)", short: "Bhattacharya 2026", cite: "Bhattacharya, Groves et al. 2026" },
 };
+const buildUser = src => { const g = buildGraph(src.main, src.nodes, src.cfg); g.fmt = src.cfg.fmt; g.ignoreCase = !!src.cfg.ignoreCase; return g; };
 function exampleGraph(key) {
   const s = EXAMPLES[key].make();
   const g = buildGraph(s.main, s.nodes, { fmt: "edge", src: "regulator", tgt: "target", idCol: "TF", directed: true, fixed: s.fixed });
@@ -1557,19 +1641,368 @@ function exampleGraph(key) {
   return g;
 }
 function loadSample() {
-  if (appMode === "compare") {
-    const [ka, kb] = ($("#sel-compare").value.includes("|") ? $("#sel-compare").value : "wooten2019|bhattacharya2026").split("|");
-    const A = { g: exampleGraph(ka), name: EXAMPLES[ka].short }, B = { g: exampleGraph(kb), name: EXAMPLES[kb].short };
-    initViz(mergeGraphs(A, B), `Comparing SCLC TF networks: ${EXAMPLES[ka].cite} and ${EXAMPLES[kb].cite}`);
+  const sel = appMode === "compare" ? $("#sel-compare") : $("#sel-example");
+  const v = sel.value;
+  store.update(st => { st.appMode = appMode; st.selected[appMode] = v; });
+  $("#btn-forget").hidden = !v.startsWith("saved:");
+  $("#btn-share").hidden = true;
+  const fallback = () => { sel.value = appMode === "compare" ? "wooten2019|bhattacharya2026" : "wooten2019"; loadSample(); };
+  if (v.startsWith("saved:")) {
+    const net = store.get().nets.find(n => n.id === v.slice(6));
+    if (net && openUserNet(v, net.mode, net.name, net.data)) return;
+    return fallback();
+  }
+  if (v.startsWith("public:")) {
+    const id = v.slice(7), info = publicList.find(n => n.id === id);
+    $("#meta").textContent = "Loading shared network…";
+    fetchPublicNet(id).then(row => {
+      if (sel.value !== v) return;   // the visitor picked something else meanwhile
+      const who = row.author ? ` (shared by ${row.author})` : "";
+      if (!openUserNet(v, row.mode, row.name + who, row.data, row.data && row.data.view)) throw new Error("unreadable");
+      $("#btn-share").hidden = true;
+      if (row.description) $("#meta").title = row.description;
+    }).catch(err => {
+      console.warn("Could not open shared network", info && info.name, err);
+      if (sel.value !== v) return;
+      fallback();
+      $("#meta").textContent += " · that shared network could not be loaded";
+    });
     return;
   }
-  const key = $("#sel-example").value in EXAMPLES ? $("#sel-example").value : "wooten2019";
-  initViz(exampleGraph(key), EXAMPLES[key].label);
+  if (appMode === "compare") {
+    const [ka, kb] = (v.includes("|") ? v : "wooten2019|bhattacharya2026").split("|");
+    const A = { g: exampleGraph(ka), name: EXAMPLES[ka].short }, B = { g: exampleGraph(kb), name: EXAMPLES[kb].short };
+    showNet("cmp:" + ka + "|" + kb, `Comparing SCLC TF networks: ${EXAMPLES[ka].cite} and ${EXAMPLES[kb].cite}`, mergeGraphs(A, B));
+    return;
+  }
+  const key = v in EXAMPLES ? v : "wooten2019";
+  showNet("ex:" + key, EXAMPLES[key].label, exampleGraph(key));
 }
+function showNet(view, label, g, extra = {}) {
+  current = { view, label, ...extra };
+  $("#meta").title = "";
+  initViz(g, label);
+  restoreView(view, extra.defaultView);
+}
+// Rebuild a network from its CSV rows (saved in this browser or shared publicly). Returns false if it can't.
+function openUserNet(view, mode, name, data, defaultView) {
+  try {
+    let g, label;
+    if (mode === "compare") {
+      const A = { g: buildUser(data.A.src), name: String(data.A.name) }, B = { g: buildUser(data.B.src), name: String(data.B.name) };
+      g = mergeGraphs(A, B); label = `Comparing ${A.name} and ${B.name}`;
+      if (view.startsWith("public:")) label = `${name}: ${label}`;
+    } else { g = buildUser(data.src); label = name; }
+    showNet(view, label, g, { mode, data, defaultView });
+    $("#btn-share").hidden = !(PUBLIC_DB.url && view.startsWith("saved:"));
+    return true;
+  } catch (err) { console.warn("Could not rebuild network", err); return false; }
+}
+
+/* ---------------- Remembered in this browser ----------------
+   localStorage only: networks people load and their color/size/group choices stay on their own device.
+   Nothing is sent anywhere. Every access is guarded because storage can be blocked or full. */
+const STORE_KEY = "network-explorer.v1", MAX_SAVED = 12;
+const store = {
+  get() {
+    let st = null;
+    try { st = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { st = null; }
+    st = st && typeof st === "object" ? st : {};
+    return { nets: Array.isArray(st.nets) ? st.nets : [], views: st.views || {}, selected: st.selected || {}, appMode: st.appMode };
+  },
+  set(st) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); return true; } catch (e) { return false; }
+  },
+  update(fn) { const st = this.get(); fn(st); return this.set(st); },
+};
+let current = { view: null, label: "" };
+function rememberNet(mode, name, data) {
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const st = store.get();
+  st.nets.unshift({ id, mode, name, data, savedAt: new Date().toISOString() });
+  while (st.nets.length > MAX_SAVED) { const old = st.nets.pop(); delete st.views["saved:" + old.id]; }
+  st.selected[mode] = "saved:" + id;
+  // Files too big for this browser's storage still open; they just aren't remembered.
+  let ok = store.set(st);
+  while (!ok && st.nets.length > 1) { const old = st.nets.pop(); delete st.views["saved:" + old.id]; ok = store.set(st); }
+  if (!ok) {
+    st.nets = st.nets.filter(n => n.id !== id); st.selected[mode] = undefined; store.set(st);
+    $("#meta").textContent += " · too large to remember in this browser";
+    $("#btn-share").hidden = !PUBLIC_DB.url;
+    return;
+  }
+  current.view = "saved:" + id;
+  renderSavedOptions();
+  (mode === "compare" ? $("#sel-compare") : $("#sel-example")).value = "saved:" + id;
+  $("#btn-forget").hidden = false;
+  $("#btn-share").hidden = !PUBLIC_DB.url;
+  saveView();
+}
+function renderSavedOptions() {
+  const nets = store.get().nets;
+  for (const [mode, sel] of [["explore", $("#sel-example")], ["compare", $("#sel-compare")]]) {
+    sel.querySelector("optgroup.saved")?.remove();
+    const mine = nets.filter(n => n.mode === mode);
+    if (!mine.length) continue;
+    const og = document.createElement("optgroup");
+    og.className = "saved"; og.label = "Saved in this browser";
+    for (const n of mine) {
+      const o = document.createElement("option");
+      o.value = "saved:" + n.id;
+      o.textContent = n.name + " (" + new Date(n.savedAt).toLocaleDateString() + ")";
+      og.append(o);
+    }
+    sel.append(og);
+  }
+}
+const currentViewSettings = () => ({
+  colorKey: state.colorKey, sizeKey: state.sizeKey, edgeKey: state.edgeKey, mode: state.mode,
+  links: $("#chk-links").checked, arrows: $("#chk-arrows").checked, labels: $("#chk-labels").checked,
+});
+function saveView() {
+  if (!current.view) return;
+  store.update(st => { st.views[current.view] = currentViewSettings(); });
+}
+function restoreView(view, fallbackView) {
+  const v = store.get().views[view] || (fallbackView && typeof fallbackView === "object" ? fallbackView : null);
+  if (!v) return;
+  const setSel = (id, key) => { const el = $(id); if (typeof key === "string" && [...el.options].some(o => o.value === key) && el.value !== key) { el.value = key; el.dispatchEvent(new Event("change")); } };
+  const setChk = (id, on) => { const el = $(id); if (typeof on === "boolean" && el.checked !== on) { el.checked = on; el.dispatchEvent(new Event("change")); } };
+  setSel("#sel-color", v.colorKey); setSel("#sel-size", v.sizeKey); setSel("#sel-edge", v.edgeKey);
+  setChk("#chk-links", v.links); setChk("#chk-arrows", v.arrows); setChk("#chk-labels", v.labels);
+  if (v.mode && v.mode !== "network") document.querySelector(`.tab[data-key="${CSS.escape(v.mode)}"]`)?.click();
+}
+["#sel-color", "#sel-size", "#sel-edge", "#chk-links", "#chk-arrows", "#chk-labels"].forEach(id => $(id).addEventListener("change", saveView));
+$("#tabs").addEventListener("click", e => { if (e.target.closest(".tab")) saveView(); });
+$("#btn-forget").addEventListener("click", () => {
+  const sel = appMode === "compare" ? $("#sel-compare") : $("#sel-example");
+  if (!sel.value.startsWith("saved:")) return;
+  const id = sel.value.slice(6), net = store.get().nets.find(n => n.id === id);
+  if (!confirm(`Remove “${net ? net.name : "this network"}” from this browser? Your original files are not affected.`)) return;
+  store.update(st => { st.nets = st.nets.filter(n => n.id !== id); delete st.views["saved:" + id]; });
+  renderSavedOptions();
+  sel.value = appMode === "compare" ? "wooten2019|bhattacharya2026" : "wooten2019";
+  loadSample();
+});
+
+/* ---------------- Shared by others (public list) ----------------
+   A Supabase table holds networks visitors chose to share. Setup: apps/network-explorer/SHARING_SETUP.md.
+   The key below is Supabase's public "anon"/"publishable" key: it is meant to be in web pages, and the
+   table's row-level security only lets visitors read visible rows and add new ones (never edit or delete).
+   Leave url empty to turn sharing off; the button and list then stay hidden. */
+const PUBLIC_DB = { url: "", key: "" };
+const MAX_SHARE_BYTES = 1500000;
+let publicList = [];
+function dbHeaders(extra = {}) {
+  const h = { apikey: PUBLIC_DB.key, ...extra };
+  if (PUBLIC_DB.key.startsWith("eyJ")) h.Authorization = "Bearer " + PUBLIC_DB.key;   // legacy anon JWT keys
+  return h;
+}
+const dbUrl = q => PUBLIC_DB.url.replace(/\/+$/, "") + "/rest/v1/public_networks" + q;
+async function fetchPublicList() {
+  if (!PUBLIC_DB.url) return [];
+  const r = await fetch(dbUrl("?select=id,name,description,author,mode,created_at&order=created_at.desc&limit=200"), { headers: dbHeaders() });
+  if (!r.ok) throw new Error("list " + r.status);
+  const rows = await r.json();
+  return Array.isArray(rows) ? rows.filter(n => n && typeof n.id === "string" && (n.mode === "explore" || n.mode === "compare")) : [];
+}
+async function fetchPublicNet(id) {
+  const r = await fetch(dbUrl("?select=name,description,author,mode,data&id=eq." + encodeURIComponent(id)), { headers: dbHeaders() });
+  if (!r.ok) throw new Error("get " + r.status);
+  const rows = await r.json();
+  if (!rows.length) throw new Error("not found");
+  return rows[0];
+}
+function renderPublicOptions() {
+  for (const [mode, sel] of [["explore", $("#sel-example")], ["compare", $("#sel-compare")]]) {
+    sel.querySelector("optgroup.public")?.remove();
+    const list = publicList.filter(n => n.mode === mode);
+    if (!list.length) continue;
+    const og = document.createElement("optgroup");
+    og.className = "public"; og.label = "Shared by others";
+    for (const n of list) {
+      const o = document.createElement("option");
+      o.value = "public:" + n.id;
+      o.textContent = String(n.name).slice(0, 80) + (n.author ? " · " + String(n.author).slice(0, 40) : "");
+      if (n.description) o.title = String(n.description);
+      og.append(o);
+    }
+    sel.append(og);
+  }
+}
+async function refreshPublic() {
+  try { publicList = await fetchPublicList(); } catch (err) { console.warn("Shared networks unavailable", err); publicList = []; }
+  renderPublicOptions();
+}
+const shareDlg = $("#share-dlg");
+const shareStatus = (msg, err) => { const el = $("#share-status"); el.textContent = msg || ""; el.classList.toggle("err", !!err); };
+$("#btn-share").addEventListener("click", () => {
+  if (!current.data) return;
+  $("#share-name").value = (current.mode === "compare" ? `${current.data.A.name} vs ${current.data.B.name}` : current.label.replace(/\.csv\b/gi, "")).slice(0, 80);
+  $("#share-desc").value = ""; $("#share-ok").checked = false;
+  $("#share-submit").disabled = false; $("#share-submit").textContent = "Share";
+  shareStatus("");
+  shareDlg.showModal();
+});
+$("#share-close").addEventListener("click", () => shareDlg.close());
+$("#share-cancel").addEventListener("click", () => shareDlg.close());
+$("#share-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("#share-name").value.trim();
+  if (!name) return shareStatus("Give the network a name.", true);
+  if (!$("#share-ok").checked) return shareStatus("Tick the box to confirm you can share this data.", true);
+  const body = { name, description: $("#share-desc").value.trim() || null, author: $("#share-author").value.trim() || null,
+    mode: current.mode, data: { ...current.data, view: currentViewSettings() } };
+  const json = JSON.stringify(body);
+  if (new Blob([json]).size > MAX_SHARE_BYTES) return shareStatus("This network is too large to share here (limit about 1.5 MB of CSV data).", true);
+  $("#share-submit").disabled = true; $("#share-submit").textContent = "Sharing…"; shareStatus("");
+  try {
+    const r = await fetch(dbUrl(""), { method: "POST", headers: dbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }), body: json });
+    if (!r.ok) throw new Error(r.status === 429 || r.status === 400 ? "Sharing is busy or the network was refused. Try again later." : `The server said no (${r.status}).`);
+    try { localStorage.setItem("network-explorer.author", body.author || ""); } catch (err) { /* storage blocked */ }
+    shareStatus("Shared. It is now in the “Shared by others” list.");
+    $("#share-submit").textContent = "Shared";
+    await refreshPublic();
+    setTimeout(() => shareDlg.close(), 1400);
+  } catch (err) {
+    shareStatus(err.message.startsWith("Failed to fetch") ? "Could not reach the sharing server. Check your connection and try again." : err.message, true);
+    $("#share-submit").disabled = false; $("#share-submit").textContent = "Share";
+  }
+});
+try { $("#share-author").value = localStorage.getItem("network-explorer.author") || ""; } catch (err) { /* storage blocked */ }
+
+/* ---------------- Save picture / tables ---------------- */
+function download(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const fileStem = () => (current.label || "network").replace(/\.csv\b/gi, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "network";
+const STYLE_PROPS = ["fill", "fill-opacity", "stroke", "stroke-opacity", "stroke-width", "stroke-dasharray", "opacity",
+  "font-family", "font-size", "font-weight", "text-anchor", "dominant-baseline", "paint-order", "stop-color", "stop-opacity"];
+function pictureSVG() {
+  const src = svg.node(), clone = src.cloneNode(true);
+  const a = [src, ...src.querySelectorAll("*")], b = [clone, ...clone.querySelectorAll("*")];
+  const drop = [];
+  a.forEach((el, i) => {
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" && el.tagName !== "defs" && !el.closest("defs")) { drop.push(b[i]); return; }
+    b[i].removeAttribute("class");
+    if (i === 0) return;
+    b[i].setAttribute("style", STYLE_PROPS.map(p => `${p}:${cs.getPropertyValue(p)}`).join(";"));
+  });
+  drop.forEach(el => el.remove());
+  const css = getComputedStyle(document.documentElement);
+  const bg = css.getPropertyValue("--bg").trim() || "#fff", ink = css.getPropertyValue("--ink").trim() || "#000";
+  const muted = css.getPropertyValue("--muted").trim() || "#666", missing = css.getPropertyValue("--missing").trim() || "#bbb";
+  const font = getComputedStyle(document.body).fontFamily;
+  const NS = "http://www.w3.org/2000/svg", mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); parent && parent.append(e); return e; };
+
+  // Color key on the right, matching the rail legend
+  const LW = 230, legend = mk("g", { transform: `translate(${W + 16}, 20)`, style: `font-family:${font}` });
+  let y = 0;
+  const title = (t) => { mk("text", { x: 0, y, "font-size": 13, "font-weight": 700, fill: ink }, legend).textContent = t; y += 18; };
+  const item = (fillVal, text) => {
+    mk("circle", { cx: 6, cy: y - 4, r: 6, fill: fillVal }, legend);
+    mk("text", { x: 18, y, "font-size": 12, fill: ink }, legend).textContent = text.length > 30 ? text.slice(0, 29) + "…" : text;
+    y += 17;
+  };
+  const ca = attrBy(state.colorKey);
+  if (ca) {
+    title(ca.key);
+    if (ca.type === "num") {
+      const gid = "export-num", lg = mk("linearGradient", { id: gid }, clone.querySelector("defs") || mk("defs", {}, clone));
+      d3.range(0, 1.01, 0.1).forEach(t => mk("stop", { offset: t, "stop-color": ca.scale(ca.scale.domain()[0] + t * (ca.max - ca.scale.domain()[0])) }, lg));
+      mk("rect", { x: 0, y: y - 10, width: 160, height: 10, fill: `url(#${gid})` }, legend); y += 14;
+      mk("text", { x: 0, y, "font-size": 11, fill: muted }, legend).textContent = fmtNum(ca.min);
+      mk("text", { x: 160, y, "font-size": 11, fill: muted, "text-anchor": "end" }, legend).textContent = fmtNum(ca.max);
+      y += 20;
+    } else {
+      const items = ca.parts ? [...ca.parts, ...ca.order.filter(c => !String(c).includes(" + ") && !ca.parts.includes(c))] : ca.order;
+      items.forEach(c => {
+        const col = c === MISSING ? missing : ca.parts && ca.partColors.get(c) ? ca.partColors.get(c)
+          : splitParts(ca, c) ? `url(#split-${ca.order.indexOf(c)})` : ca.colors.get(c);
+        item(col, vlabel(c));
+      });
+      y += 8;
+    }
+  }
+  const ea = edgeAttrBy(state.edgeKey);
+  if (ea && ea.type === "cat" && $("#chk-links").checked) {
+    title("Connections: " + ea.key);
+    ea.order.forEach(c => {
+      mk("line", { x1: 0, x2: 14, y1: y - 4, y2: y - 4, stroke: c === MISSING ? missing : ea.colors.get(c), "stroke-width": 2.5 }, legend);
+      mk("text", { x: 20, y, "font-size": 12, fill: ink }, legend).textContent = vlabel(c);
+      y += 17;
+    });
+    y += 8;
+  }
+  const cap = mk("text", { x: 0, y: y + 6, "font-size": 10.5, fill: muted }, legend);
+  cap.textContent = "Network Explorer · smgroves.github.io";
+
+  const TH = $("#meta").textContent ? 30 : 0, w = Math.round(W + LW), h = Math.round(Math.max(H, y + 40) + TH);
+  clone.setAttribute("xmlns", NS); clone.setAttribute("width", w); clone.setAttribute("height", h);
+  clone.setAttribute("viewBox", `0 0 ${w} ${h}`); clone.removeAttribute("aria-label"); clone.removeAttribute("id");
+  const body = mk("g", { transform: `translate(0, ${TH})` });
+  while (clone.firstChild) body.append(clone.firstChild);
+  const defsEl = body.querySelector("defs"); if (defsEl) clone.append(defsEl);
+  mk("rect", { x: 0, y: 0, width: w, height: h, fill: bg }, clone);
+  if (TH) mk("text", { x: 14, y: 20, "font-size": 13, "font-weight": 600, fill: ink, style: `font-family:${font}` }, clone).textContent = $("#meta").textContent;
+  clone.append(body); body.append(legend);
+  return { text: new XMLSerializer().serializeToString(clone), w, h };
+}
+function savePicture(kind) {
+  const { text, w, h } = pictureSVG();
+  const blob = new Blob([text], { type: "image/svg+xml;charset=utf-8" });
+  if (kind === "svg") return download(blob, fileStem() + ".svg");
+  const img = new Image(), url = URL.createObjectURL(blob), scale = 2;
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = w * scale; c.height = h * scale;
+    const ctx = c.getContext("2d"); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    c.toBlob(b => b && download(b, fileStem() + ".png"), "image/png");
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); alert("Could not draw the picture. Try the SVG version."); };
+  img.src = url;
+}
+function saveTable(kind) {
+  let fields, rows;
+  if (kind === "nodes") {
+    fields = ["id", ...state.attrs.map(a => a.key)];
+    rows = state.nodes.map(d => [d.label, ...state.attrs.map(a => d.attrs[a.key] ?? "")]);
+  } else {
+    fields = ["source", "target", ...state.edgeAttrs.map(a => a.key)];
+    rows = state.links.map(l => [l.source.label, l.target.label, ...state.edgeAttrs.map(a => l.attrs[a.key] ?? "")]);
+  }
+  download(new Blob([Papa.unparse({ fields, data: rows })], { type: "text/csv;charset=utf-8" }), `${fileStem()}_${kind === "nodes" ? "nodes" : "connections"}.csv`);
+}
+document.querySelectorAll("[data-save]").forEach(b => b.addEventListener("click", () => {
+  $("#save-menu").open = false;
+  const k = b.dataset.save;
+  if (k === "png" || k === "svg") savePicture(k); else saveTable(k);
+}));
+document.addEventListener("click", e => { if (!e.target.closest("#save-menu")) $("#save-menu").open = false; });
 $("#sel-example").addEventListener("change", loadSample);
 $("#sel-compare").addEventListener("change", loadSample);
 
-requestAnimationFrame(loadSample);
+renderSavedOptions();
+async function startup() {
+  const st = store.get();
+  const wantsPublic = [st.selected.explore, st.selected.compare].some(v => typeof v === "string" && v.startsWith("public:"));
+  const pub = refreshPublic();
+  if (wantsPublic) await Promise.race([pub, new Promise(r => setTimeout(r, 4000))]);
+  const pick = (sel, v) => { if (v && [...sel.options].some(o => o.value === v)) sel.value = v; };
+  pick($("#sel-example"), st.selected.explore); pick($("#sel-compare"), st.selected.compare);
+  if (st.appMode === "compare") {
+    appMode = "compare";
+    $("#mode-explore").setAttribute("aria-pressed", "false"); $("#mode-compare").setAttribute("aria-pressed", "true");
+    $("#sel-example").hidden = true; $("#sel-compare").hidden = false;
+    $("#btn-load").textContent = "Load two networks"; $("#btn-sample").textContent = "Show example comparison";
+  }
+  requestAnimationFrame(loadSample);
+}
+startup();
 })();
 </script>
 
