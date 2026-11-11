@@ -35,4 +35,4 @@ elevation:
   type: "static"
   date: "2025-03-30"
   static_url: "https://nbviewer.org/urls/smgroves.github.io/jupyter/elevation.ipynb"
-  binder_url: "https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?filepath=jupyter/elevation.ipynb"
+  binder_url: "https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?urlpath=lab/tree/jupyter/elevation.ipynb"

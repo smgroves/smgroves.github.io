@@ -194,6 +194,7 @@ exclude:
   - pluto-deployment-environment/
   - cloud-run/
   - jupyterlite/
+  - binder/
   - Dockerfile.jekyll
   - explainers/
   - unused/
