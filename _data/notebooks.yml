@@ -36,3 +36,12 @@ elevation:
   date: "2025-03-30"
   static_url: "https://nbviewer.org/urls/smgroves.github.io/jupyter/elevation.ipynb"
   binder_url: "https://mybinder.org/v2/gh/smgroves/smgroves.github.io/HEAD?urlpath=lab/tree/jupyter/elevation.ipynb"
+
+data_science_essentials:
+  title: "Data Science Essentials: Access to Healthcare in Tennessee"
+  description: "Final project for the Data Science Essentials course: using Medicare disparities data to identify Tennessee communities that most need expanded access to healthcare."
+  tags: ["python", "maps", "jupyter"]
+  type: "static"
+  date: "2022-10-14"
+  static_url: "https://nbviewer.org/urls/raw.githubusercontent.com/smgroves/data-science-essentials-4/main/project/Final%20Project.ipynb"
+  colab_url: "https://colab.research.google.com/github/smgroves/data-science-essentials-4/blob/main/project/Final%20Project.ipynb"

@@ -1,14 +1,10 @@
 ---
-layout: page
+layout: post
 title: Phantom Traffic Jams
-description: Writing Project for Partial Differential Equations Course
-img: assets/img/traffic2.gif
-importance: 1
-category: fun
-status: past
-# TODO: write your paragraph about this project
-blurb: >
-  Writing project for a Partial Differential Equations course on why traffic jams form with no bottleneck at all.
+description: Why traffic jams form with no bottleneck at all. A writing project for a Partial Differential Equations course.
+date: 2015-04-29
+tags: math pde
+thumbnail: assets/img/traffic2.gif
 ---
 
 # Introduction
@@ -93,8 +89,8 @@ functions. The simplest way to formulate this model is by imagining a
 one-lane highway with all the cars moving in the same direction, and no
 on-off ramps. Thus, the number of vehicles is constant, and there are no
 external factors that might confound the effects of a phantom traffic
-jam. We can also imagine that each car $i$ has some velocity, $v_i(t)$,
-and a location $x_i(t)$ at time $t$. This coordinate of a particle
+jam. We can also imagine that each car $$i$$ has some velocity, $$v_i(t)$$,
+and a location $$x_i(t)$$ at time $$t$$. This coordinate of a particle
 vehicle is often called the Lagrangian coordinate \[7\]. To an observer
 of the entire roadway, the individual cars are not as important as the
 overall flow of the cars. Thus a general principle can be used in
@@ -103,26 +99,26 @@ will move \[6\]. The continuum model tells us that we can replace the
 discrete objects with a moving continuum, so that the discrete
 velocities associated with each car can be replaced by a ''Eulerian
 velocity field ''\[7\]. This field is represented by the function
-$u(x,t)$, a continuous function with a value at every point in space and
-time (rather than only a value at the locations $x_i$ of each car).
+$$u(x,t)$$, a continuous function with a value at every point in space and
+time (rather than only a value at the locations $$x_i$$ of each car).
 However, by using this Eulerian field, we can \"go backwards\" in the
 calculation and still find the velocity of a particular car by
 specifying a time and location at which we would like to know the
-velocity. Thus $u(x,t)=\frac{dx}{dt}$.
+velocity. Thus $$u(x,t)=\frac{dx}{dt}$$.
 
 A second parameter we can define for this model is the traffic density,
-$\rho(x,t)$, which described the average number of vehicles per unit
-length of road at a specified position $(x)$ and time $(t)$ \[7\]. If
-all the vehicles have the same length $L$, for example, and the space
-between the cars is the distance $d$, then $\frac{1}{L+d}$ vehicles will
+$$\rho(x,t)$$, which described the average number of vehicles per unit
+length of road at a specified position $$(x)$$ and time $$(t)$$ \[7\]. If
+all the vehicles have the same length $$L$$, for example, and the space
+between the cars is the distance $$d$$, then $$\frac{1}{L+d}$$ vehicles will
 be present per unit length of road. Thus, in this simplistic
 calculation, the density of the road is constant:
-$\rho(x,t)=\frac{1}{L+d}$. Another parameter used in the continuum model
+$$\rho(x,t)=\frac{1}{L+d}$$. Another parameter used in the continuum model
 is the traffic flux, or flow of traffic, which is represented by
-$q(x,t)$. This is the number of cars per unit time that cross a
+$$q(x,t)$$. This is the number of cars per unit time that cross a
 specified location, and is meant to parallel the flux of a fluid through
 a volume. Physics intuition allows these three variables to be related
-in the model by the equation $q(x,t)=\rho(x,t) \cdot u(x,t)$ \[6\]. Thus
+in the model by the equation $$q(x,t)=\rho(x,t) \cdot u(x,t)$$ \[6\]. Thus
 the rate of cars that pass a point is equal to the velocity of the cars
 at that point times the density of cars that pass that location.
 
@@ -131,7 +127,7 @@ phenomena, physical laws can help to elucidate the relationships between
 variables of the model. An important idea for deriving our partial
 differential equations is the conservation of the number of vehicles
 \[3\]. If the focus is placed on a certain sublength of the road between
-two points (call them $x= A$ and $x=B$), it is clear that the number of
+two points (call them $$x= A$$ and $$x=B$$), it is clear that the number of
 cars in this length depends on time. The flux, or traffic flow, at the
 endpoints A and B affect the number of cars in the length; for example,
 if the flux is greater at A than B (and more cars flow into the length),
@@ -139,61 +135,86 @@ the number will increase. More explicitly, the rate of change in the
 number of vehicles in the segment is equal to the different in fluxes at
 the endpoints. We also know that the number of vehicles in this length
 comes from \"adding up\" the density at each point in the interval:
-$$\label{1}
-N_{AB}(t)= \int_A^B \rho(x,t)dx.$$ The derivative with respect to time
+
+$$
+N_{AB}(t)= \int_A^B \rho(x,t)dx. \tag{1}
+$$
+
+The derivative with respect to time
 of this integral thus equals the flow out (flux at B) subtracted from
-the flow in (flux at A): $$\label{2}
-\frac{d}{dt} \int_A^B \rho(x,t)dx=\int_A^B \frac{\partial \rho}{\partial t}dx=-q(B,t)+q(A,t).$$
+the flow in (flux at A):
+
+$$
+\frac{d}{dt} \int_A^B \rho(x,t)dx=\int_A^B \frac{\partial \rho}{\partial t}dx=-q(B,t)+q(A,t). \tag{2}
+$$
+
 This is the global conservation law for the traffic flow \[7\]. There is
 another relation that we can derive from the fundamental theorem of
-calculus: $$\label{3}
-\int_A^B \frac{\partial q(x,t)}{\partial x}dx=q(B,t)-q(A,t).$$ The right
+calculus:
+
+$$
+\int_A^B \frac{\partial q(x,t)}{\partial x}dx=q(B,t)-q(A,t). \tag{3}
+$$
+
+The right
 hand side of this equation is then the additive inverse of the right
-hand side of equation $\ref{2}$, so we can add these two equations to
-get $$\label{4}
-\int_A^B \left ( \frac{\partial \rho(x,t)}{\partial t} + \frac{\partial q(x,t)}{\partial x} \right ) dx=0.$$
+hand side of equation (2), so we can add these two equations to
+get
 
-This is crucial for the continuum model. Because the interval from $x=A$
-to $x=B$ can be any interval along the road, and thus the integral is 0
+$$
+\int_A^B \left ( \frac{\partial \rho(x,t)}{\partial t} + \frac{\partial q(x,t)}{\partial x} \right ) dx=0. \tag{4}
+$$
+
+This is crucial for the continuum model. Because the interval from $$x=A$$
+to $$x=B$$ can be any interval along the road, and thus the integral is 0
 for whatever interval chosen, it must be true that the integrand itself
-is 0 for all $x$ and $t$ on the road, according to the Vanishing Theorem
+is 0 for all $$x$$ and $$t$$ on the road, according to the Vanishing Theorem
 \[10\]. Thus, we arrive at our partial differential equation:
-$$\label{5}
-\frac{\partial \rho}{\partial t} + \frac{\partial (\rho u)}{\partial x}=0.$$
 
-::: center
-![Empirical data for velocity and density of traffic on major roadways.
-(a) A Toronto highway (b) An Amsterdam freeway (c) Lincoln Tunnel and
-(d) Merritt Parkway. \[8\]](Velocity_density_PRES2.png){#vd}
-:::
+$$
+\frac{\partial \rho}{\partial t} + \frac{\partial (\rho u)}{\partial x}=0. \tag{5}
+$$
+
+<figure id="vd" style="text-align:center; margin: 1.5rem 0;">
+  <img src="/assets/img/phantom-traffic-jams/Velocity_density_PRES2.png" alt="Figure 1" style="max-width:100%;">
+  <figcaption style="font-size:0.9em; color:#555;">Figure 1. Empirical data for velocity and density of traffic on major roadways. (a) A Toronto highway (b) An Amsterdam freeway (c) Lincoln Tunnel and (d) Merritt Parkway. [8]</figcaption>
+</figure>
 
 This differential equation is the basis for the continuum model. More
 information is needed for this model to accurately replicate what is
 seen in reality, because right now the partial different equation has
-two seemingly unrelated variables: $\rho$ and $u$. However, most
+two seemingly unrelated variables: $$\rho$$ and $$u$$. However, most
 mathematical models for traffic flow make the important assumption that
 velocity is only a function of density; in other words, the velocity
 field is entirely dependent on the density at each location \[7\]. This
 is a reasonable assumption because it is well known that the closer the
 vehicles are (high density), the slower the cars move (low velocity), as
-shown in figure $\ref{vd}$. Therefore equation ($\ref{5}$) is sometimes
-rewritten as $$\label{6}
-\frac{\partial \rho}{\partial t} + \frac{dQ(\rho)}{d\rho} \frac{\partial (\rho)}{\partial x}=0,$$
-where $Q(\rho)=\rho u(\rho).$ (Often $\frac{dQ}{d\rho}$ will be written
-as $c(\rho)=u_{max}(1-2\rho/\rho_{max}$, for reasons explained below.)
+shown in figure 1. Therefore equation (5) is sometimes
+rewritten as
+
+$$
+\frac{\partial \rho}{\partial t} + \frac{dQ(\rho)}{d\rho} \frac{\partial (\rho)}{\partial x}=0, \tag{6}
+$$
+
+where $$Q(\rho)=\rho u(\rho).$$ (Often $$\frac{dQ}{d\rho}$$ will be written
+as $$c(\rho)=u_{max}(1-2\rho/\rho_{max}$$, for reasons explained below.)
 But how is this velocity dependent on density? We could assume a
 velocity that is constant with respect to density, but this model is not
 very realistic (except possibly for low densities). A common
-approximation used for $u(\rho)$ is called Greenshields model:
-$$\label{7}
-u(\rho)=u_{max}(1-\rho/\rho_{max}),$$ with $u_{max}$ and $\rho_{max}$
+approximation used for $$u(\rho)$$ is called Greenshields model:
+
+$$
+u(\rho)=u_{max}(1-\rho/\rho_{max}), \tag{7}
+$$
+
+with $$u_{max}$$ and $$\rho_{max}$$
 equaling the upper limits on the velocity and density, respectively
 \[8\]. They both must be nonnegative of course, but they must have upper
-bounds as well. The maximum speed, $u_{max}$ can be restricted by a
+bounds as well. The maximum speed, $$u_{max}$$ can be restricted by a
 number of things, including a speed limit or road conditions. The
-maximum density, $\rho_{max}$, occurs in bumber to bumber traffic, when
+maximum density, $$\rho_{max}$$, occurs in bumber to bumber traffic, when
 the velocity of the cars is zero. If the length of the vehicles is on
-average $L$, this maximum density can reasonably be $\rho_{max}=1/L$.
+average $$L$$, this maximum density can reasonably be $$\rho_{max}=1/L$$.
 
 ## Solutions to the Model
 
@@ -203,20 +224,29 @@ traffic jams. If, on a one-lane highway, the density in vehicles is some
 constant of freely-flowing traffic, then there are no jams where the
 density is extremely high and the velocity is close to zero. Thus we can
 imagine the case where traffic density is slightly perturbed from an
-equilibrium state, $\rho_0$. Thus $\rho(x,t)=\rho_0+\tilde{\rho}(x,t)$,
-where $\tilde{\rho}(x,t)$ is the small addition to the equilibrium
-density \[3\]. By this assumption, where $\rho_0$ is a constant, we
-obtain: $$\label{12}
-\frac{\partial \tilde{\rho}(x,t)}{\partial t} + (Q'(\rho_0)+\tilde{\rho}(x,t)Q''(\rho_0))\frac{\partial \tilde{\rho}(x,t)}{\partial x} =0.$$
+equilibrium state, $$\rho_0$$. Thus $$\rho(x,t)=\rho_0+\tilde{\rho}(x,t)$$,
+where $$\tilde{\rho}(x,t)$$ is the small addition to the equilibrium
+density \[3\]. By this assumption, where $$\rho_0$$ is a constant, we
+obtain:
 
-and the equation, after keeping the linear terms in $\tilde{\rho}$,
-becomes \[3\]: $$\label{8}
-\frac{\partial \tilde{\rho}(x,t)}{\partial t} + Q'(\rho_0) \frac{\partial \tilde{\rho}(x,t)}{\partial x} =0.$$
+$$
+\frac{\partial \tilde{\rho}(x,t)}{\partial t} + (Q'(\rho_0)+\tilde{\rho}(x,t)Q''(\rho_0))\frac{\partial \tilde{\rho}(x,t)}{\partial x} =0. \tag{8}
+$$
+
+and the equation, after keeping the linear terms in $$\tilde{\rho}$$,
+becomes \[3\]:
+
+$$
+\frac{\partial \tilde{\rho}(x,t)}{\partial t} + Q'(\rho_0) \frac{\partial \tilde{\rho}(x,t)}{\partial x} =0. \tag{9}
+$$
 
 By using a wave ansatz, we find the exponential solution:
 
-$$\label{9}
-\tilde{\rho}(x,t)=Ae^{ik(x-ct)}$$ with $c=Q'(\rho_0)$ \[3\]. A few
+$$
+\tilde{\rho}(x,t)=Ae^{ik(x-ct)} \tag{10}
+$$
+
+with $$c=Q'(\rho_0)$$ \[3\]. A few
 things become clear from this solution. If there is a slight
 perturbation in the density of the traffic flow (such as a jam), it will
 travel as a linear wave propogation of higher density through the line
@@ -246,12 +276,12 @@ This shows the stability of traffic flow at low densities; however, when
 it reaches a critical density, the traffic flow changes to a congested
 regime nonlinearly. This is demonstrated in a \"fundamental diagram,\"
 which shows the relationship between flux and density for a one-lane
-roadway, as in figure ($\ref{fd}$) \[3\].
+roadway, as in figure 2 \[3\].
 
-::: center
-![An empirical fundamental diagram using data from the German freeway
-A43.\[3\]](Fundamental_diagram_STILL.png){#fd}
-:::
+<figure id="fd" style="text-align:center; margin: 1.5rem 0;">
+  <img src="/assets/img/phantom-traffic-jams/Fundamental_diagram_STILL.png" alt="Figure 2" style="max-width:100%;">
+  <figcaption style="font-size:0.9em; color:#555;">Figure 2. An empirical fundamental diagram using data from the German freeway A43.[3]</figcaption>
+</figure>
 
 Lastly, the model may be too restrictive in definition of velocity, and
 its ability to account for external factors. Velocity may not be
@@ -273,31 +303,39 @@ disequilibrium. Thus the continuum model, though not necessarily
 inaccurate, is restricted in scope and cannot fully explicate the event
 of a traffic jam. The Payne-Whitham model adds another equation
 alongside the first order partial differential equation in the continuum
-model (equation [\[5\]](#5){reference-type="ref" reference="5"}) to
-define traffic acceleration. This model approximates $u(x,t)$ by the
-equilibrium velocity $u_0$, which is the \"fundamental diagram.\" The
+model (equation (5)) to
+define traffic acceleration. This model approximates $$u(x,t)$$ by the
+equilibrium velocity $$u_0$$, which is the \"fundamental diagram.\" The
 second equation, which defines acceleration, is a momentum equation for
-$u(x,t)$, giving the completed model:
+$$u(x,t)$$, giving the completed model:
 $$\frac{\partial \rho}{\partial t}+ \frac{\partial (\rho u)}{\partial x}=0$$
-$$\label{10}
-\frac{\partial u}{\partial t} +u \frac{\partial u}{\partial x} +\frac{a(\rho)}{\rho}\frac{\partial \rho}{\partial x}= \frac{u_0(\rho)-u}{T(\rho)},$$
-where $a(\rho)$ is the \"anticipation coefficient\" and $T(\rho)$
-accounts for human relaxation time \[1\]. With $q=\rho u$, the model can
+
+$$
+\frac{\partial u}{\partial t} +u \frac{\partial u}{\partial x} +\frac{a(\rho)}{\rho}\frac{\partial \rho}{\partial x}= \frac{u_0(\rho)-u}{T(\rho)}, \tag{11}
+$$
+
+where $$a(\rho)$$ is the \"anticipation coefficient\" and $$T(\rho)$$
+accounts for human relaxation time \[1\]. With $$q=\rho u$$, the model can
 be rewritten as
 
 $$\left( \begin{array}{cc}  \rho \\ q \end{array} \right )_{t}+ \left( \begin{array}{cc} q \\ \frac{q^2}{\rho}+a(\rho)\rho \end{array} \right )_{x} = \left( \begin{array}{cc} 0 \\ \frac{f_0(\rho)-q}{T(\rho)} \end{array} \right ).$$
 
-This model can be written in a conservative form $$\label{11}
-w_t+f(w)_x= s(w)$$ where $w$ is the vector $(\rho,q)$ \[9\]. The model
+This model can be written in a conservative form
+
+$$
+w_t+f(w)_x= s(w) \tag{12}
+$$
+
+where $$w$$ is the vector $$(\rho,q)$$ \[9\]. The model
 can be solved numerically, but we may also care to investigate the
 homogeneous solution to this system of equations, where the right hand
-side of the system $s(u)=0$. The continuum model of traffic flow is
+side of the system $$s(u)=0$$. The continuum model of traffic flow is
 actually a degenerate system of this model, and thus this model
 \"absorbs\" the characteristics of the simpler continuum model \[9\].
 The homogeneous system of equations can be solved with the \"frozen
-characteristic speeds\" of the system, $\lambda_{1,2}$. These are the
+characteristic speeds\" of the system, $$\lambda_{1,2}$$. These are the
 eigenvalues of the homogeneous system, where
-$\lambda_{1,2} = u \mp \sqrt{a}$ \[9\]. More complicated calculations
+$$\lambda_{1,2} = u \mp \sqrt{a}$$ \[9\]. More complicated calculations
 can be derived for the solution to the inhomogenous Payne-Whitham model.
 The solutions fall into two regimes: free-flow solutions and
 congested-flow solutions. When the traffic densities are low and the
@@ -330,12 +368,10 @@ for example).
 
 ## Further Commentary on the Continuum Model
 
-::: center
-![The vehicles move along the circle (these pictures were taken with a
-specific camera to allow for the 360 degree view). In (a), the vehicles
-are moving in free flow. In (b), a jam has formed at the top of this
-circle. \[11\]](Experiment_TRAFFIC_JAMS.png){#pic}
-:::
+<figure id="pic" style="text-align:center; margin: 1.5rem 0;">
+  <img src="/assets/img/phantom-traffic-jams/Experiment_TRAFFIC_JAMS.png" alt="Figure 3" style="max-width:100%;">
+  <figcaption style="font-size:0.9em; color:#555;">Figure 3. The vehicles move along the circle (these pictures were taken with a specific camera to allow for the 360 degree view). In (a), the vehicles are moving in free flow. In (b), a jam has formed at the top of this circle. [11]</figcaption>
+</figure>
 
 The predictions that come from the Payne-Whitham model of traffic flow
 regarding traffic jams are easily tested on a circular road. Using a
@@ -359,7 +395,7 @@ al.:
 > fluctuations to grow enough to break down the free flow. The free flow
 > has been disturbed and the vehicles cannot move homogeneously any
 > more. Finally, several vehicles are forced to stop completely for a
-> moment (figure [3](#pic){reference-type="ref" reference="pic"}(b)). A
+> moment (figure 3(b)). A
 > clear 'stop-and-go wave' is observed, and furthermore, it propagates
 > in the opposite direction to the movement of vehicles, which is
 > nothing but a jam. The jam cluster moves as a solitary wave and
