@@ -45,6 +45,18 @@
         "/Users/xpz5km/Documents/GitHub/smgroves.github.io/apps"
       ],
       "port": 8767
+    },
+    {
+      "name": "swim-relay-test",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8768",
+        "--directory",
+        "/private/tmp/claude-502/-Users-xpz5km--claude-spares-spare-ayk6Hx/3b515ec3-124b-4d0a-acd3-36d87b39282c/scratchpad/app"
+      ],
+      "port": 8768
     }
   ]
 }

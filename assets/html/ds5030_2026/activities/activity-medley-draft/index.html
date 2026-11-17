@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Medley Draft</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: pool-deck utility. Header + tabs; draft = swimmer table beside team lanes; race = scoreboard canvas. */
+:root{
+  --bg:#eef4f7; --panel:#ffffff; --fg:#0f2230; --muted:#587080; --line:#d2dee6;
+  --water:#1d6e9e; --water-2:#2c86b8; --deck:#0f2a3d; --rope:#d94a2b; --good:#2f8a4e; --warn:#b7791f;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b161e; --panel:#122330; --fg:#e4edf2; --muted:#8fa6b4; --line:#23394a;
+  --water:#185b84; --water-2:#2379aa; --deck:#06121b; --rope:#ef6a4a; --good:#5cc27c; --warn:#e0a84a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b161e; --panel:#122330; --fg:#e4edf2; --muted:#8fa6b4; --line:#23394a;
+  --water:#185b84; --water-2:#2379aa; --deck:#06121b; --rope:#ef6a4a; --good:#5cc27c; --warn:#e0a84a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:30px;line-height:1}
+h2{font-size:21px}
+h3{font-size:17px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 11px}
+button:hover:not(:disabled){border-color:var(--water-2)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--water);border-color:var(--water);color:#fff}
+button.danger{border-color:var(--rope);color:var(--rope)}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--water-2);outline-offset:2px}
+input,select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:18px 12px}
+header .title{display:flex;align-items:baseline;gap:12px}
+.phase{font-family:var(--display);font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:4px;border:1.5px solid currentColor}
+.phase.setup{color:var(--muted)} .phase.draft{color:var(--good)} .phase.closed{color:var(--warn)} .phase.raced{color:var(--water-2)}
+header .me{margin-left:auto;display:flex;align-items:center;gap:8px}
+nav{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:16px}
+nav a{font-family:var(--display);font-size:18px;letter-spacing:.03em;padding:6px 14px;color:var(--muted);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-2px}
+nav a.on{color:var(--fg);border-color:var(--rope)}
+.note{padding:8px 12px;border-left:3px solid var(--warn);background:var(--panel);margin-bottom:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--deck);color:#fff;padding:9px 16px;border-radius:6px;z-index:20;max-width:calc(100% - 32px)}
+
+.draft{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.draft{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.filters input[type=search]{width:150px}
+.tablebox{overflow:auto;max-height:68vh;border-top:1px solid var(--line)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;font-size:12px;color:var(--muted);position:sticky;top:0;background:var(--panel);z-index:1}
+th.sort{cursor:pointer} th.sort:hover{color:var(--fg)}
+tr.taken td{color:var(--muted)}
+.legbtns{display:flex;gap:3px}
+.legbtns button{padding:2px 6px;font-size:12px;font-weight:600;min-width:30px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.spec{font-size:12px;color:var(--muted)}
+
+.lanes{display:flex;flex-direction:column;gap:8px}
+.lane{border:1px solid var(--line);border-left:6px solid var(--c);border-radius:6px;padding:8px 10px;background:var(--panel)}
+.lane.mine{box-shadow:0 0 0 2px var(--c)}
+.lane .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lane .legs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}
+.slot{font-size:12px;min-width:0}
+.slot b{display:block;font-family:var(--display);font-size:13px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.slot span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.submitted{color:var(--good);font-weight:600;font-size:12px}
+.myteam .legrow{display:grid;grid-template-columns:52px minmax(0,1fr) 86px 70px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.myteam .legrow input{width:100%}
+.myteam .foot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}
+
+.instructor{margin-top:20px;border-style:dashed}
+.instructor .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.teamnames{display:flex;flex-wrap:wrap;gap:6px}
+.teamnames input{width:120px}
+#keyfile{max-width:100%;min-width:0}
+
+.scoreboard{background:var(--deck);border-radius:8px;padding:12px;color:#e8f1f6}
+.scoreboard .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scoreboard .clock{font-family:var(--display);font-size:34px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.scoreboard button,.scoreboard select{background:#16384f;border-color:#2d5873;color:#e8f1f6}
+canvas{display:block;width:100%;border-radius:4px}
+.standings{margin-top:16px}
+.standings td.total{font-weight:600}
+.place{font-family:var(--display);font-size:18px}
+
+.reveal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.reveal-grid th,.reveal-grid td{padding:4px 5px}
+.decomp{display:grid;grid-template-columns:auto auto;gap:2px 14px;margin-top:8px;font-size:13px}
+.decomp .v{text-align:right;font-variant-numeric:tabular-nums}
+.strip{margin-top:6px}
+.strip svg{width:100%;height:auto;display:block}
+.strip text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="title"><h1>Medley Draft</h1><span id="phase" class="phase setup">Setup</span></div>
+    <div class="me"><label for="myteam" class="muted">Your team</label><select id="myteam"></select></div>
+  </header>
+  <nav>
+    <a href="#draft" data-view="draft">Draft board</a>
+    <a href="#race" data-view="race">Race</a>
+    <a href="#reveal" data-view="reveal">Reveal</a>
+  </nav>
+  <div id="notes"></div>
+
+  <section id="view-draft">
+    <div class="draft">
+      <div class="panel">
+        <h2>Swimmers</h2>
+        <div class="filters">
+          <input id="q" type="search" placeholder="Search id or name" aria-label="Search swimmers">
+          <select id="fspec" aria-label="Filter by specialty">
+            <option value="">All specialties</option><option value="back">Back</option><option value="breast">Breast</option><option value="fly">Fly</option><option value="free">Free</option>
+          </select>
+          <label><input id="hide" type="checkbox"> Hide claimed</label>
+          <span id="count" class="muted num"></span>
+        </div>
+        <div class="tablebox"><table>
+          <thead><tr><th class="sort" data-sort="id">ID</th><th>Name</th><th>Specialty</th><th class="sort num" data-sort="free50">50 free (s)</th><th>Claim for leg</th></tr></thead>
+          <tbody id="board"></tbody>
+        </table></div>
+      </div>
+      <div>
+        <div id="mypanel" class="panel myteam"></div>
+        <h2 style="margin:18px 0 8px">Teams</h2>
+        <div id="lanes" class="lanes"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-race" hidden>
+    <div class="scoreboard">
+      <div class="bar">
+        <div><span id="heatlabel" style="font-family:var(--display);font-size:20px">4×100 Medley</span></div>
+        <div class="clock" id="clock">0:00.00</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label for="speed" class="muted" style="color:#9fb8c7">Speed</label>
+          <select id="speed"><option value="5">5×</option><option value="10" selected>10×</option><option value="20">20×</option></select>
+          <span id="heatbtns" style="display:flex;gap:6px"></span>
+        </div>
+      </div>
+      <canvas id="pool" height="300" aria-label="Animated pool showing each team's relay"></canvas>
+    </div>
+    <div class="panel standings"><h2>Standings</h2><div id="standings" class="muted">No races yet. The instructor runs three heats once the draft closes.</div></div>
+  </section>
+
+  <section id="view-reveal" hidden>
+    <div id="reveal"></div>
+  </section>
+
+  <div id="instr" class="panel instructor" hidden>
+    <h2>Instructor</h2>
+    <div class="row">
+      <label for="nteams">Teams</label>
+      <select id="nteams"></select>
+      <div id="teamnames" class="teamnames"></div>
+      <button id="saveteams">Save teams</button>
+    </div>
+    <div class="row">
+      <button id="open" class="primary">Open draft</button>
+      <button id="close">Close draft</button>
+      <span class="muted" id="drafttime"></span>
+    </div>
+    <div class="row">
+      <label for="keyfile">Answer key</label>
+      <input id="keyfile" type="file" accept=".csv">
+      <span id="keystatus" class="muted">Not loaded. Stays on this laptop only.</span>
+    </div>
+    <div class="row">
+      <button id="runrace" class="primary">Run 3 heats</button>
+      <span class="muted">Uses the answer key plus race-day noise. Only race times are shared.</span>
+    </div>
+    <div class="row">
+      <button id="reset" class="danger">Reset game</button>
+      <span class="muted" id="resetmsg"></span>
+    </div>
+  </div>
+</div>
+
+<script>const SWIMMERS = [{"id": "S001", "name": "Eli Eddy", "specialty": "fly", "free50": 24.53}, {"id": "S002", "name": "Yuri Carrow", "specialty": "breast", "free50": 23.65}, {"id": "S003", "name": "Ada Drift", "specialty": "back", "free50": 22.61}, {"id": "S004", "name": "Finn Drift", "specialty": "free", "free50": 23.73}, {"id": "S005", "name": "Xan Drift", "specialty": "back", "free50": 22.88}, {"id": "S006", "name": "Tam Quarry", "specialty": "breast", "free50": 23.41}, {"id": "S007", "name": "Bea Rook", "specialty": "breast", "free50": 23.17}, {"id": "S008", "name": "Sol Cove", "specialty": "breast", "free50": 24.16}, {"id": "S009", "name": "Nia Drift", "specialty": "fly", "free50": 23.78}, {"id": "S010", "name": "Jo Lagoon", "specialty": "breast", "free50": 22.67}, {"id": "S011", "name": "Oli Gill", "specialty": "back", "free50": 24.13}, {"id": "S012", "name": "Jo Jessup", "specialty": "back", "free50": 23.57}, {"id": "S013", "name": "Dev Jessup", "specialty": "free", "free50": 24.03}, {"id": "S014", "name": "Oli Wick", "specialty": "free", "free50": 25.32}, {"id": "S015", "name": "Bea Marsh", "specialty": "back", "free50": 24.07}, {"id": "S016", "name": "Kit Underhill", "specialty": "breast", "free50": 23.52}, {"id": "S017", "name": "Cal Ingram", "specialty": "free", "free50": 23.9}, {"id": "S018", "name": "Ari Gale", "specialty": "back", "free50": 23.23}, {"id": "S019", "name": "Bea Vane", "specialty": "breast", "free50": 22.97}, {"id": "S020", "name": "Kit Ellery", "specialty": "breast", "free50": 24.14}, {"id": "S021", "name": "Jo Gill", "specialty": "back", "free50": 21.9}, {"id": "S022", "name": "Jax Cove", "specialty": "breast", "free50": 23.77}, {"id": "S023", "name": "Cal Ellery", "specialty": "breast", "free50": 25.17}, {"id": "S024", "name": "Quin Drift", "specialty": "breast", "free50": 24.03}, {"id": "S025", "name": "Gia Jessup", "specialty": "breast", "free50": 23.69}, {"id": "S026", "name": "Yuri Harbor", "specialty": "back", "free50": 22.22}, {"id": "S027", "name": "Mo Vane", "specialty": "free", "free50": 24.22}, {"id": "S028", "name": "Ines Sallow", "specialty": "back", "free50": 24.6}, {"id": "S029", "name": "Jo Kestrel", "specialty": "fly", "free50": 22.7}, {"id": "S030", "name": "Hal Brisk", "specialty": "fly", "free50": 22.8}, {"id": "S031", "name": "Rae Nash", "specialty": "breast", "free50": 25.05}, {"id": "S032", "name": "Ivy Harbor", "specialty": "fly", "free50": 23.83}, {"id": "S033", "name": "Bo Fairweather", "specialty": "free", "free50": 22.62}, {"id": "S034", "name": "Ivy Larkin", "specialty": "breast", "free50": 22.41}, {"id": "S035", "name": "Jo Gale", "specialty": "breast", "free50": 22.05}, {"id": "S036", "name": "Gia Hollis", "specialty": "breast", "free50": 24.16}, {"id": "S037", "name": "Fen Wade", "specialty": "fly", "free50": 22.9}, {"id": "S038", "name": "Bo Carrow", "specialty": "back", "free50": 23.86}, {"id": "S039", "name": "Hal Nash", "specialty": "free", "free50": 23.41}, {"id": "S040", "name": "Eli Sallow", "specialty": "back", "free50": 22.97}, {"id": "S041", "name": "Mo Neap", "specialty": "back", "free50": 22.57}, {"id": "S042", "name": "Cy Fairweather", "specialty": "breast", "free50": 22.96}, {"id": "S043", "name": "Ari Ellery", "specialty": "breast", "free50": 24.03}, {"id": "S044", "name": "Dev Quarry", "specialty": "free", "free50": 25.05}, {"id": "S045", "name": "Lux Ellery", "specialty": "free", "free50": 23.97}, {"id": "S046", "name": "Gia Gale", "specialty": "back", "free50": 22.52}, {"id": "S047", "name": "Yuri Eddy", "specialty": "back", "free50": 23.61}, {"id": "S048", "name": "Yuri Nash", "specialty": "free", "free50": 23.31}, {"id": "S049", "name": "Nia Isle", "specialty": "breast", "free50": 23.75}, {"id": "S050", "name": "Jax Vane", "specialty": "back", "free50": 24.48}, {"id": "S051", "name": "Edie Okafor", "specialty": "back", "free50": 22.65}, {"id": "S052", "name": "Dax Kestrel", "specialty": "fly", "free50": 22.29}, {"id": "S053", "name": "Zed Jessup", "specialty": "fly", "free50": 22.21}, {"id": "S054", "name": "Tam Rook", "specialty": "free", "free50": 25.02}, {"id": "S055", "name": "Gia Abara", "specialty": "fly", "free50": 23.89}, {"id": "S056", "name": "Fen Brisk", "specialty": "back", "free50": 24.17}, {"id": "S057", "name": "Dev Gill", "specialty": "back", "free50": 23.05}, {"id": "S058", "name": "Dev Abara", "specialty": "free", "free50": 23.88}, {"id": "S059", "name": "Dev Cove", "specialty": "breast", "free50": 23.32}, {"id": "S060", "name": "Mara Fairweather", "specialty": "back", "free50": 23.62}, {"id": "S061", "name": "Xan Thorne", "specialty": "fly", "free50": 23.5}, {"id": "S062", "name": "Ned Wick", "specialty": "breast", "free50": 24.42}, {"id": "S063", "name": "Bo Quarry", "specialty": "fly", "free50": 21.74}, {"id": "S064", "name": "Finn Keel", "specialty": "breast", "free50": 22.71}, {"id": "S065", "name": "Cal Fairweather", "specialty": "back", "free50": 24.72}, {"id": "S066", "name": "Dev Ashby", "specialty": "breast", "free50": 24.8}, {"id": "S067", "name": "Ines Drift", "specialty": "fly", "free50": 23.65}, {"id": "S068", "name": "Fen Tide", "specialty": "breast", "free50": 23.57}, {"id": "S069", "name": "Edie Ashby", "specialty": "breast", "free50": 22.34}, {"id": "S070", "name": "Fen Pell", "specialty": "free", "free50": 24.01}, {"id": "S071", "name": "Mara Ellery", "specialty": "back", "free50": 23.74}, {"id": "S072", "name": "Hal Reef", "specialty": "breast", "free50": 23.44}, {"id": "S073", "name": "Bo Ingram", "specialty": "fly", "free50": 21.92}, {"id": "S074", "name": "Pax Oar", "specialty": "breast", "free50": 22.94}, {"id": "S075", "name": "Jax Sallow", "specialty": "fly", "free50": 23.59}, {"id": "S076", "name": "Wren Ingram", "specialty": "fly", "free50": 24.3}, {"id": "S077", "name": "Lux Zeller", "specialty": "back", "free50": 22.97}, {"id": "S078", "name": "Ivy Oar", "specialty": "back", "free50": 24.49}, {"id": "S079", "name": "Fen Hollis", "specialty": "free", "free50": 24.72}, {"id": "S080", "name": "Fen Fathom", "specialty": "breast", "free50": 23.58}, {"id": "S081", "name": "Mara Fathom", "specialty": "back", "free50": 25.38}, {"id": "S082", "name": "Zed Tide", "specialty": "breast", "free50": 22.95}, {"id": "S083", "name": "Lux Vane", "specialty": "fly", "free50": 24.02}, {"id": "S084", "name": "Lux Underhill", "specialty": "breast", "free50": 24.17}, {"id": "S085", "name": "Nia Fairweather", "specialty": "back", "free50": 23.35}, {"id": "S086", "name": "Uma Abara", "specialty": "breast", "free50": 24.52}, {"id": "S087", "name": "Kai Harbor", "specialty": "fly", "free50": 23.62}, {"id": "S088", "name": "Ivy Neap", "specialty": "back", "free50": 22.62}, {"id": "S089", "name": "Ada Jessup", "specialty": "free", "free50": 23.82}, {"id": "S090", "name": "Xan Fairweather", "specialty": "breast", "free50": 24.4}, {"id": "S091", "name": "Ada Yarrow", "specialty": "back", "free50": 23.5}, {"id": "S092", "name": "Yuri Wade", "specialty": "breast", "free50": 22.56}, {"id": "S093", "name": "Uma Wick", "specialty": "free", "free50": 22.9}, {"id": "S094", "name": "Dev Eddy", "specialty": "back", "free50": 23.47}, {"id": "S095", "name": "Fen Ashby", "specialty": "back", "free50": 23.98}, {"id": "S096", "name": "Tam Oar", "specialty": "back", "free50": 22.06}, {"id": "S097", "name": "Finn Carrow", "specialty": "breast", "free50": 24.66}, {"id": "S098", "name": "Rae Thorne", "specialty": "back", "free50": 23.48}, {"id": "S099", "name": "Bo Pike", "specialty": "free", "free50": 24.29}, {"id": "S100", "name": "Edie Zeller", "specialty": "free", "free50": 24.19}, {"id": "S101", "name": "Mara Vane", "specialty": "back", "free50": 24.12}, {"id": "S102", "name": "Mara Pell", "specialty": "back", "free50": 24.36}, {"id": "S103", "name": "Fen Ellery", "specialty": "back", "free50": 24.09}, {"id": "S104", "name": "Lux Cove", "specialty": "free", "free50": 23.31}, {"id": "S105", "name": "Zed Larkin", "specialty": "breast", "free50": 24.32}, {"id": "S106", "name": "Zed Hollis", "specialty": "free", "free50": 23.41}, {"id": "S107", "name": "Hux Gale", "specialty": "breast", "free50": 23.17}, {"id": "S108", "name": "Finn Reef", "specialty": "back", "free50": 24.11}, {"id": "S109", "name": "Kit Nash", "specialty": "back", "free50": 23.23}, {"id": "S110", "name": "Dax Jessup", "specialty": "free", "free50": 23.14}, {"id": "S111", "name": "Jax Quarry", "specialty": "breast", "free50": 22.75}, {"id": "S112", "name": "Mara Brook", "specialty": "fly", "free50": 22.79}, {"id": "S113", "name": "Jo Tide", "specialty": "back", "free50": 24.51}, {"id": "S114", "name": "Uma Cove", "specialty": "fly", "free50": 23.69}, {"id": "S115", "name": "Mo Gill", "specialty": "fly", "free50": 22.47}, {"id": "S116", "name": "Gia Ellery", "specialty": "breast", "free50": 24.14}, {"id": "S117", "name": "Cal Pike", "specialty": "free", "free50": 22.83}, {"id": "S118", "name": "Kit Zeller", "specialty": "fly", "free50": 24.85}, {"id": "S119", "name": "Oli Brook", "specialty": "fly", "free50": 26.27}, {"id": "S120", "name": "Hal Merrow", "specialty": "breast", "free50": 23.99}];</script>
+<script>
+(() => {
+const LEGS = ["back", "breast", "fly", "free"];
+const LABEL = {back:"Back", breast:"Breast", fly:"Fly", free:"Free"};
+const SHORT = {back:"BK", breast:"BR", fly:"FL", free:"FR"};
+const COLORS = ["#2a9d8f","#e76f51","#7b61c9","#d99a23","#3a86c8","#d14d8b","#6a994e","#a1887f"];
+const RACE_SD = 0.35, HEATS = 3;
+const byId = Object.fromEntries(SWIMMERS.map(s => [s.id, s]));
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lsGet = k => { try { return localStorage.getItem("medley:" + k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem("medley:" + k, v); } catch {} };
+
+function defaultTeams(n){ return Array.from({length:n}, (_, i) => ({id:"t" + (i+1), name:"Team " + (i+1)})); }
+const S = { game:{phase:"setup", teams:defaultTeams(3)}, claims:{}, subs:{}, results:null };
+let key = null;                       // id -> row from answer_key.csv (instructor laptop only)
+let db = null, user = null, viewerId = "local-" + Math.random().toString(36).slice(2);
+let instructor = true, live = false;
+let myTeam = lsGet("team") || "";
+let view = "draft", sortBy = "id";
+let confirmSubmit = false, confirmReset = false;
+
+// ---------- helpers ----------
+const teamById = id => S.game.teams.find(t => t.id === id);
+const teamIdx = id => S.game.teams.findIndex(t => t.id === id);
+const color = id => COLORS[Math.max(0, teamIdx(id)) % COLORS.length];
+function lineup(tid){
+  const l = {};
+  for (const [sid, c] of Object.entries(S.claims)) if (c && c.team === tid) l[c.leg] = sid;
+  return l;
+}
+function fmt(t){ if (t == null || isNaN(t)) return "–"; const m = Math.floor(t/60), s = t - 60*m; return (m ? m + ":" + (s < 10 ? "0" : "") : "") + s.toFixed(2); }
+function toast(msg){ const d = document.createElement("div"); d.className = "toast"; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+function gauss(){ let u = 0, v = 0; while(!u) u = Math.random(); while(!v) v = Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+// ---------- store ----------
+async function setDoc(path, data){
+  if (db) return db.doc(path).set(data);
+  const [col, id] = path.split("/");
+  if (col === "game") { if (id === "state") S.game = data; else S.results = data; }
+  else S[col][id] = data;
+  render();
+}
+async function delDoc(path){
+  if (db) return db.doc(path).delete();
+  const [col, id] = path.split("/");
+  if (col === "game") S.results = null; else delete S[col][id];
+  render();
+}
+
+async function connect(){
+  render();
+  if (!window.claude || !window.claude.use) { localMode(); return; }
+  try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch { db = null; }
+  if (!db) { localMode(); return; }
+  live = true;
+  try { instructor = !!((user && await user.canEdit()) || (user && await user.isOwner())); } catch { instructor = false; }
+  try { const id = user && await user.id(); if (id) viewerId = id; } catch {}
+  const loading = setTimeout(() => note("The draft board can't be reached yet. Check your connection; it will update by itself."), 10000);
+  const fail = e => note("Lost the connection to the draft board (" + (e && e.code) + "). Reload the page.");
+  db.doc("game/state").onSnapshot(s => { clearTimeout(loading); note(""); S.game = s.exists ? s.data() : {phase:"setup", teams:defaultTeams(3)}; render(); }, fail);
+  db.doc("game/results").onSnapshot(s => { S.results = s.exists ? s.data() : null; render(); }, fail);
+  db.collection("claims").onSnapshot(q => { S.claims = {}; q.docs.forEach(d => { const v = d.data(); if (v && v.team) S.claims[d.id] = v; }); render(); }, fail);
+  db.collection("subs").onSnapshot(q => { S.subs = {}; q.docs.forEach(d => S.subs[d.id] = d.data()); render(); }, fail);
+  render();
+}
+function localMode(){ live = false; instructor = true; note("Single-screen mode: nothing is shared between laptops. Pick a team at the top and claim for it; switch teams to claim for the next one."); render(); }
+function note(msg){ $("notes").innerHTML = msg ? '<div class="note">' + esc(msg) + "</div>" : ""; }
+
+// ---------- actions ----------
+function myState(){
+  const t = teamById(myTeam);
+  return { t, l: t ? lineup(t.id) : {}, submitted: t ? !!S.subs[t.id] : false };
+}
+async function claim(sid, leg){
+  const {t, l, submitted} = myState();
+  if (!t) return toast("Pick your team at the top first.");
+  if (S.game.phase !== "draft") return toast("The draft isn't open.");
+  if (submitted) return toast("Your lineup is already submitted.");
+  if (l[leg]) return toast("You already have a " + LABEL[leg].toLowerCase() + " swimmer. Release them first.");
+  if (S.claims[sid]) return toast(byId[sid].name + " is already taken.");
+  if (!db) { S.claims[sid] = {team:t.id, leg, at:Date.now()}; render(); return; }
+  try {
+    const ref = db.doc("claims/" + sid);
+    const lease = await ref.acquire({holder: viewerId + ":" + Math.random().toString(36).slice(2), ttlMs: 3000});
+    if (!lease.acquired) return toast("Another team is claiming " + byId[sid].name + " right now.");
+    const cur = await ref.get();
+    const d = cur.exists ? cur.data() : null;
+    if (d && d.team) return toast(byId[sid].name + " was just taken by " + (teamById(d.team)?.name || "another team") + ".");
+    await ref.set({team:t.id, leg, at:Date.now()});
+  } catch (e) { toast("Claim failed (" + (e && e.code || "error") + "). Try again."); }
+}
+async function release(sid){
+  const {t, submitted} = myState();
+  const c = S.claims[sid];
+  if (!t || !c || c.team !== t.id || submitted || S.game.phase !== "draft") return;
+  try { await delDoc("claims/" + sid); } catch (e) { toast("Release failed (" + (e && e.code) + ")."); }
+}
+async function setPred(sid, val){
+  const c = S.claims[sid]; if (!c) return;
+  const pred = val === "" ? null : Number(val);
+  if (pred !== null && !isFinite(pred)) return;
+  if (c.pred === pred) return;
+  try { await setDoc("claims/" + sid, {...c, pred}); } catch {}
+}
+async function submit(){
+  const {t, l, submitted} = myState();
+  if (!t || submitted || LEGS.some(g => !l[g])) return;
+  if (!confirmSubmit) { confirmSubmit = true; render(); return; }
+  confirmSubmit = false;
+  try { await setDoc("subs/" + t.id, {at:Date.now()}); toast(t.name + " submitted."); } catch (e) { toast("Submit failed (" + (e && e.code) + ")."); }
+}
+
+// ---------- instructor ----------
+async function saveTeams(){
+  const n = +$("nteams").value;
+  const names = [...$("teamnames").querySelectorAll("input")].map((x, i) => x.value.trim() || "Team " + (i+1));
+  const teams = Array.from({length:n}, (_, i) => ({id:"t" + (i+1), name:names[i] || "Team " + (i+1)}));
+  await setDoc("game/state", {...S.game, teams});
+  toast("Teams saved.");
+}
+async function setPhase(phase){
+  const g = {...S.game, phase};
+  if (phase === "draft" && !g.openedAt) g.openedAt = Date.now();
+  if (phase === "closed") g.closedAt = Date.now();
+  await setDoc("game/state", g);
+}
+async function resetGame(){
+  if (!confirmReset) { confirmReset = true; $("resetmsg").textContent = "Click again to clear every claim, submission and race."; return; }
+  confirmReset = false; $("resetmsg").textContent = "";
+  for (const sid of Object.keys(S.claims)) await delDoc("claims/" + sid);
+  for (const tid of Object.keys(S.subs)) await delDoc("subs/" + tid);
+  if (S.results) await delDoc("game/results");
+  await setDoc("game/state", {phase:"setup", teams:S.game.teams});
+  toast("Game reset.");
+}
+function loadKey(file){
+  const r = new FileReader();
+  r.onload = () => {
+    const lines = String(r.result).trim().split(/\r?\n/);
+    const head = lines[0].split(",");
+    const need = ["id", ...LEGS.map(g => "T_" + g), ...LEGS.map(g => "V_" + g)];
+    if (need.some(h => !head.includes(h))) { $("keystatus").textContent = "That file isn't answer_key.csv (missing columns)."; return; }
+    const k = {};
+    for (const line of lines.slice(1)) {
+      const cells = line.split(","); const row = {};
+      head.forEach((h, i) => row[h] = cells[i]);
+      k[row.id] = row;
+    }
+    const missing = SWIMMERS.filter(s => !k[s.id]).length;
+    if (missing) { $("keystatus").textContent = "Key doesn't match this swimmer pool (" + missing + " ids missing)."; return; }
+    key = k; $("keystatus").textContent = "Loaded (" + Object.keys(k).length + " swimmers). Only on this laptop.";
+    render();
+  };
+  r.readAsText(file);
+}
+const T = (sid, leg) => +key[sid]["T_" + leg];
+async function runRace(){
+  if (!key) return toast("Load the answer key first.");
+  const teams = S.game.teams.filter(t => LEGS.every(g => lineup(t.id)[g]));
+  if (!teams.length) return toast("No team has a full lineup yet.");
+  const heats = [];
+  for (let h = 0; h < HEATS; h++) {
+    const times = {};
+    for (const t of teams) { const l = lineup(t.id); times[t.id] = LEGS.map(g => +(T(l[g], g) + RACE_SD * gauss()).toFixed(2)); }
+    heats.push({times});
+  }
+  await setDoc("game/results", {heats, at:Date.now()});
+  if (S.game.phase !== "raced") await setPhase("raced");
+  location.hash = "race";
+  setTimeout(() => animate(0), 150);
+}
+
+// ---------- render ----------
+function render(){
+  const phase = S.game.phase || "setup";
+  $("phase").className = "phase " + phase;
+  $("phase").textContent = {setup:"Setup", draft:"Draft open", closed:"Draft closed", raced:"Raced"}[phase];
+  // team picker
+  const sel = $("myteam");
+  const opts = '<option value="">Choose…</option>' + S.game.teams.map(t => '<option value="' + t.id + '">' + esc(t.name) + "</option>").join("");
+  if (sel.dataset.opts !== opts) { sel.innerHTML = opts; sel.dataset.opts = opts; }
+  if (myTeam && !teamById(myTeam)) myTeam = "";
+  sel.value = myTeam;
+  document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.view === view));
+  ["draft", "race", "reveal"].forEach(v => $("view-" + v).hidden = v !== view);
+  $("instr").hidden = !instructor;
+  renderBoard(); renderLanes(); renderMine(); renderInstr(); renderStandings(); renderHeatBtns(); renderReveal();
+  if (!anim) drawPool(null);
+}
+
+function renderBoard(){
+  const q = $("q").value.trim().toLowerCase(), fs = $("fspec").value, hide = $("hide").checked;
+  const {t, l, submitted} = myState();
+  const open = S.game.phase === "draft" && t && !submitted;
+  let rows = SWIMMERS.filter(s => (!fs || s.specialty === fs) && (!q || s.id.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)) && !(hide && S.claims[s.id]));
+  if (sortBy === "free50") rows = rows.slice().sort((a, b) => a.free50 - b.free50);
+  $("count").textContent = rows.length + " shown · " + Object.keys(S.claims).length + " claimed";
+  $("board").innerHTML = rows.map(s => {
+    const c = S.claims[s.id];
+    let act;
+    if (c) {
+      const tm = teamById(c.team);
+      const mine = t && c.team === t.id;
+      act = '<span class="chip"><span class="dot" style="background:' + color(c.team) + '"></span>' + esc(tm ? tm.name : "?") + " · " + SHORT[c.leg] + "</span>" +
+        (mine && open ? ' <button data-release="' + s.id + '" style="padding:1px 7px;font-size:12px">Release</button>' : "");
+    } else {
+      act = '<span class="legbtns">' + LEGS.map(g => '<button data-claim="' + s.id + '" data-leg="' + g + '"' + (!open || l[g] ? " disabled" : "") + ' title="Claim for ' + LABEL[g] + '">' + SHORT[g] + "</button>").join("") + "</span>";
+    }
+    return '<tr class="' + (c ? "taken" : "") + '"><td class="num">' + s.id + "</td><td>" + esc(s.name) + '</td><td class="spec">' + LABEL[s.specialty] + '</td><td class="num">' + s.free50.toFixed(2) + "</td><td>" + act + "</td></tr>";
+  }).join("");
+}
+
+function renderLanes(){
+  $("lanes").innerHTML = S.game.teams.map(t => {
+    const l = lineup(t.id);
+    return '<div class="lane' + (t.id === myTeam ? " mine" : "") + '" style="--c:' + color(t.id) + '"><div class="top"><h3>' + esc(t.name) + "</h3>" +
+      (S.subs[t.id] ? '<span class="submitted">Submitted</span>' : '<span class="muted">' + LEGS.filter(g => l[g]).length + "/4</span>") +
+      '</div><div class="legs">' + LEGS.map(g => '<div class="slot"><b>' + LABEL[g] + "</b><span>" + (l[g] ? esc(byId[l[g]].name) : '<span class="muted">–</span>') + "</span></div>").join("") + "</div></div>";
+  }).join("");
+}
+
+function renderMine(){
+  const box = $("mypanel");
+  const {t, l, submitted} = myState();
+  if (!t) { box.innerHTML = '<h2>Your lineup</h2><p class="muted">Choose your team at the top right to start claiming swimmers.</p>'; box.dataset.sig = ""; return; }
+  const full = LEGS.every(g => l[g]);
+  let total = 0, allPred = true;
+  LEGS.forEach(g => { const c = l[g] && S.claims[l[g]]; if (c && c.pred != null) total += c.pred; else allPred = false; });
+  // Same lineup as last render: only refresh the total, so inputs keep focus and typed text.
+  const sig = [t.id, ...LEGS.map(g => l[g] || ""), submitted, S.game.phase, confirmSubmit, S.game.teams.length].join("|");
+  if (box.dataset.sig === sig) { const tt = $("predtotal"); if (tt) tt.textContent = allPred ? fmt(total) : "–"; return; }
+  box.dataset.sig = sig;
+  total = 0; allPred = true;
+  const rows = LEGS.map(g => {
+    const sid = l[g], c = sid && S.claims[sid];
+    if (c && c.pred != null) total += c.pred; else allPred = false;
+    return '<div class="legrow"><b style="font-family:var(--display)">' + LABEL[g] + "</b><span>" + (sid ? esc(byId[sid].name) + ' <span class="spec">' + sid + " · " + LABEL[byId[sid].specialty] + "</span>" : '<span class="muted">empty</span>') + "</span>" +
+      (sid ? '<input class="num" type="number" step="0.01" inputmode="decimal" placeholder="pred (s)" aria-label="Predicted ' + LABEL[g] + ' time" data-pred="' + sid + '" value="' + (c.pred != null ? c.pred : "") + '"' + (submitted ? " disabled" : "") + ">" : "<span></span>") +
+      (sid && !submitted && S.game.phase === "draft" ? '<button data-release="' + sid + '">Release</button>' : "<span></span>") + "</div>";
+  }).join("");
+  box.innerHTML = '<h2 style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:' + color(t.id) + '"></span>' + esc(t.name) + "</h2>" +
+    '<p class="muted" style="margin:4px 0 6px">Enter each leg\'s predicted time from your notebook so we can check your model after the race.</p>' + rows +
+    '<div class="foot"><span class="num">Predicted relay: <b id="predtotal">' + (allPred ? fmt(total) : "–") + "</b></span>" +
+    (submitted ? '<span class="submitted">Submitted. Good luck.</span>' :
+      '<button class="primary" id="submit"' + (full && S.game.phase === "draft" ? "" : " disabled") + ">" + (confirmSubmit ? "Confirm: lock this lineup" : "Submit lineup") + "</button>") + "</div>";
+}
+
+function renderInstr(){
+  if (!instructor) return;
+  const n = S.game.teams.length;
+  const nsel = $("nteams");
+  if (!nsel.options.length) nsel.innerHTML = [2,3,4,5,6,7,8].map(k => "<option>" + k + "</option>").join("");
+  if (document.activeElement !== nsel && !$("teamnames").contains(document.activeElement)) { nsel.value = n; drawNameInputs(n); }
+  const p = S.game.phase;
+  $("open").disabled = p === "draft";
+  $("close").disabled = p !== "draft";
+  $("runrace").disabled = !key;
+  $("saveteams").disabled = Object.keys(S.claims).length > 0;
+  $("saveteams").title = $("saveteams").disabled ? "Reset the game to change teams" : "";
+  const o = S.game.openedAt;
+  $("drafttime").textContent = o ? "Opened " + new Date(o).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "";
+}
+function drawNameInputs(n){
+  const cur = [...$("teamnames").querySelectorAll("input")].map(x => x.value);
+  $("teamnames").innerHTML = Array.from({length:n}, (_, i) => '<input id="tn' + i + '" aria-label="Team ' + (i+1) + ' name" value="' + esc(cur[i] ?? (S.game.teams[i]?.name || "Team " + (i+1))) + '">').join("");
+}
+
+function standingsData(){
+  if (!S.results) return [];
+  const ids = Object.keys(S.results.heats[0].times);
+  return ids.map(id => {
+    const tots = S.results.heats.map(h => h.times[id].reduce((a, b) => a + b, 0));
+    return {id, tots, mean: tots.reduce((a, b) => a + b, 0) / tots.length};
+  }).sort((a, b) => a.mean - b.mean);
+}
+function renderStandings(){
+  const d = standingsData();
+  if (!d.length) return;
+  $("standings").classList.remove("muted");
+  $("standings").innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>Place</th><th>Team</th>' + S.results.heats.map((_, i) => '<th class="num">Heat ' + (i+1) + "</th>").join("") + '<th class="num">Average</th><th class="num">Behind</th></tr></thead><tbody>' +
+    d.map((r, i) => '<tr><td class="place">' + (i+1) + '</td><td><span class="chip"><span class="dot" style="background:' + color(r.id) + '"></span>' + esc(teamById(r.id)?.name || r.id) + "</span></td>" +
+      r.tots.map(t => '<td class="num">' + fmt(t) + "</td>").join("") + '<td class="num total">' + fmt(r.mean) + '</td><td class="num muted">' + (i ? "+" + (r.mean - d[0].mean).toFixed(2) : "") + "</td></tr>").join("") + "</tbody></table></div>";
+}
+function renderHeatBtns(){
+  const box = $("heatbtns");
+  const html = S.results ? S.results.heats.map((_, i) => '<button data-heat="' + i + '">Heat ' + (i+1) + "</button>").join("") : "";
+  if (box.innerHTML !== html) box.innerHTML = html;
+}
+
+// ---------- pool animation ----------
+let anim = null;
+function drawPool(state){
+  const cv = $("pool"), box = cv.parentElement;
+  const W = Math.max(300, box.clientWidth - 24);
+  const ids = S.results ? Object.keys(S.results.heats[0].times) : S.game.teams.map(t => t.id);
+  const laneH = 34, top = 18, H = top + ids.length * laneH + 14;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + "px"; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const css = getComputedStyle(document.documentElement);
+  const x0 = 110, x1 = W - 90;
+  g.fillStyle = css.getPropertyValue("--water").trim(); g.fillRect(0, 0, W, H);
+  g.fillStyle = "rgba(255,255,255,.08)";
+  for (let x = x0; x <= x1; x += (x1 - x0) / 10) g.fillRect(x, 0, 1, H);
+  g.fillStyle = "rgba(255,255,255,.75)"; g.fillRect(x0 - 3, 0, 3, H); g.fillRect(x1, 0, 3, H);
+  g.font = "11px Inter, system-ui, sans-serif"; g.fillStyle = "rgba(255,255,255,.7)";
+  g.fillText("0 m", x0 - 8, 12); g.fillText("50 m", x1 - 14, 12);
+  ids.forEach((id, i) => {
+    const y = top + i * laneH;
+    for (let x = 0; x < W; x += 12) { g.fillStyle = (Math.floor(x / 12) % 4 === 0) ? css.getPropertyValue("--rope").trim() : "rgba(255,255,255,.85)"; g.fillRect(x, y, 8, 2); }
+    g.fillStyle = "#fff"; g.font = "600 14px 'Barlow Condensed', 'Arial Narrow', sans-serif";
+    const nm = teamById(id)?.name || id;
+    g.fillText(nm.length > 14 ? nm.slice(0, 13) + "…" : nm, 8, y + laneH / 2 + 5);
+    if (!state) return;
+    const legs = state.times[id];
+    let cum = 0, leg = 0;
+    while (leg < 4 && state.t > cum + legs[leg]) { cum += legs[leg]; leg++; }
+    const done = leg >= 4;
+    const f = done ? 1 : (state.t - cum) / legs[leg];
+    const pos = done ? 0 : (f < .5 ? f * 2 : 2 - f * 2);
+    const x = x0 + pos * (x1 - x0), cy = y + laneH / 2 + 1;
+    g.beginPath(); g.arc(x, cy, 8, 0, Math.PI * 2); g.fillStyle = color(id); g.fill();
+    g.lineWidth = 2; g.strokeStyle = "#fff"; g.stroke();
+    g.fillStyle = "#fff"; g.font = "600 12px Inter, system-ui, sans-serif";
+    const total = legs.reduce((a, b) => a + b, 0);
+    if (done) {
+      const place = state.order.indexOf(id) + 1;
+      g.fillText(place + ".  " + fmt(total), x1 + 10, cy + 4);
+    } else {
+      g.fillText(SHORT[LEGS[leg]], Math.min(x + 12, x1 - 22), cy - 6);
+    }
+  });
+}
+function animate(h){
+  if (!S.results || !S.results.heats[h]) return;
+  if (anim) cancelAnimationFrame(anim.raf);
+  const times = S.results.heats[h].times;
+  const order = Object.keys(times).sort((a, b) => times[a].reduce((x, y) => x + y) - times[b].reduce((x, y) => x + y));
+  const end = Math.max(...Object.values(times).map(l => l.reduce((a, b) => a + b, 0)));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const speed = +$("speed").value;
+  const start = performance.now();
+  $("heatlabel").textContent = "Heat " + (h + 1) + " · 4×100 Medley";
+  const step = now => {
+    const t = reduce ? end + 1 : (now - start) / 1000 * speed;
+    drawPool({t, times, order});
+    $("clock").textContent = fmt(Math.min(t, end));
+    if (t <= end) anim.raf = requestAnimationFrame(step); else anim = null;
+  };
+  anim = {raf: requestAnimationFrame(step)};
+}
+
+// ---------- reveal ----------
+function bestRelay(avail){
+  const pools = LEGS.map(g => avail.slice().sort((a, b) => T(a, g) - T(b, g)).slice(0, 10));
+  let best = null;
+  for (const a of pools[0]) for (const b of pools[1]) { if (b === a) continue;
+    for (const c of pools[2]) { if (c === a || c === b) continue;
+      for (const d of pools[3]) { if (d === a || d === b || d === c) continue;
+        const tot = T(a, "back") + T(b, "breast") + T(c, "fly") + T(d, "free");
+        if (!best || tot < best.tot) best = {tot, ids:[a, b, c, d]};
+      } } }
+  return best;
+}
+function strip(leg){
+  const vals = SWIMMERS.map(s => T(s.id, leg)), lo = Math.floor(Math.min(...vals)), hi = Math.ceil(Math.max(...vals));
+  const W = 600, H = 64, L = 70, R = 12, sx = v => L + (v - lo) / (hi - lo) * (W - L - R);
+  const picks = {};
+  for (const [sid, c] of Object.entries(S.claims)) if (c.leg === leg) picks[sid] = c.team;
+  let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="True ' + LABEL[leg] + ' times for every swimmer">';
+  s += '<text x="0" y="30" style="font-weight:600;fill:var(--fg)">' + LABEL[leg] + "</text>";
+  for (let v = lo; v <= hi; v++) { const x = sx(v); s += '<line x1="' + x + '" x2="' + x + '" y1="14" y2="40" stroke="var(--line)"/>' + ((hi - lo) <= 14 || v % 2 === 0 ? '<text x="' + x + '" y="56" text-anchor="middle">' + v + "</text>" : ""); }
+  SWIMMERS.forEach(sw => { if (!picks[sw.id]) s += '<circle cx="' + sx(T(sw.id, leg)).toFixed(1) + '" cy="27" r="3" fill="var(--muted)" fill-opacity=".45"/>'; });
+  Object.entries(picks).forEach(([sid, tid]) => { s += '<circle cx="' + sx(T(sid, leg)).toFixed(1) + '" cy="27" r="7" fill="' + color(tid) + '" stroke="var(--panel)" stroke-width="2"><title>' + esc(byId[sid].name) + " (" + esc(teamById(tid)?.name || "") + "): " + T(sid, leg).toFixed(2) + " s</title></circle>"; });
+  return s + "</svg>";
+}
+function renderReveal(){
+  const box = $("reveal");
+  if (!key) { box.innerHTML = '<div class="panel"><h2>Reveal</h2><p class="muted">' + (instructor ? "Load answer_key.csv in the instructor panel to reveal every swimmer's true aptitudes." : "The true aptitudes are revealed on the projector after the race.") + "</p></div>"; return; }
+  const all = SWIMMERS.map(s => s.id);
+  const best = bestRelay(all);
+  const cards = S.game.teams.filter(t => LEGS.every(g => lineup(t.id)[g])).map(t => {
+    const l = lineup(t.id);
+    const subAt = S.subs[t.id] ? S.subs[t.id].at : Date.now();
+    const takenBefore = new Set(Object.entries(S.claims).filter(([, c]) => c.team !== t.id && c.at < subAt).map(([sid]) => sid));
+    const avail = bestRelay(all.filter(id => !takenBefore.has(id)));
+    let tot = 0, pt = 0, allPred = true;
+    const rows = LEGS.map(g => {
+      const sid = l[g], c = S.claims[sid], tt = T(sid, g); tot += tt;
+      if (c.pred != null) pt += c.pred; else allPred = false;
+      const V = g === "free" ? 0 : +key[sid]["V_" + g];
+      return "<tr><td>" + LABEL[g] + "</td><td>" + esc(byId[sid].name) + ' <span class="spec">' + LABEL[byId[sid].specialty] + '</span></td><td class="num">' + (g === "free" ? '<span class="muted">0 (ref)</span>' : V.toFixed(2)) + '</td><td class="num">' + (c.pred != null ? fmt(c.pred) : "–") + '</td><td class="num">' + fmt(tt) + "</td></tr>";
+    }).join("");
+    return '<div class="panel" style="border-left:6px solid ' + color(t.id) + '"><h3>' + esc(t.name) + '</h3><div style="overflow-x:auto"><table><thead><tr><th>Leg</th><th>Swimmer</th><th class="num">True V</th><th class="num">Pred</th><th class="num">True</th></tr></thead><tbody>' + rows +
+      '<tr><td colspan="3"><b>Relay</b></td><td class="num">' + (allPred ? fmt(pt) : "–") + '</td><td class="num"><b>' + fmt(tot) + "</b></td></tr></tbody></table></div>" +
+      '<div class="decomp"><span>Best relay from the full pool</span><span class="v">' + fmt(best.tot) + "</span>" +
+      "<span>Best still available when you submitted</span><span class=\"v\">" + fmt(avail.tot) + "</span>" +
+      '<span>Cost of waiting</span><span class="v">+' + (avail.tot - best.tot).toFixed(2) + " s</span>" +
+      '<span>Cost of the model</span><span class="v">+' + (tot - avail.tot).toFixed(2) + " s</span></div></div>";
+  }).join("");
+  box.innerHTML = '<div class="panel" style="margin-bottom:14px"><h2>What the model couldn\'t see</h2>' +
+    '<p class="muted" style="margin:4px 0 0;max-width:70ch">True V is each swimmer\'s real aptitude for that stroke relative to freestyle: the latent variable your MNL estimated. "True" is their expected 100 m time without race-day noise. The costs split your gap to the best possible relay into the swimmers other teams took first and the picks your model got wrong.</p>' +
+    '<p style="margin:8px 0 0">Best possible relay: ' + best.ids.map((id, i) => esc(byId[id].name) + ' <span class="spec">(' + LABEL[LEGS[i]] + ", specialty " + LABEL[byId[id].specialty].toLowerCase() + ")</span>").join(", ") + ' · <b class="num">' + fmt(best.tot) + "</b></p></div>" +
+    '<div class="reveal-grid">' + (cards || '<p class="muted">No team has a full lineup.</p>') + "</div>" +
+    '<div class="panel" style="margin-top:14px"><h2>Every swimmer, every stroke</h2><p class="muted" style="margin:4px 0 0">True 100 m time for each leg (grey) with the swimmers each team put there. Further left is faster.</p>' +
+    '<div class="legend">' + S.game.teams.map(t => '<span class="chip"><span class="dot" style="background:' + color(t.id) + '"></span>' + esc(t.name) + "</span>").join("") + "</div>" +
+    LEGS.map(g => '<div class="strip">' + strip(g) + "</div>").join("") + "</div>";
+}
+
+// ---------- events ----------
+function route(){ const h = location.hash.slice(1); view = ["draft", "race", "reveal"].includes(h) ? h : "draft"; render(); if (view === "race") drawPool(null); }
+window.addEventListener("hashchange", route);
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  if (b.dataset.claim) claim(b.dataset.claim, b.dataset.leg);
+  else if (b.dataset.release) release(b.dataset.release);
+  else if (b.dataset.heat) animate(+b.dataset.heat);
+  else if (b.id === "submit") submit();
+  else if (b.id === "saveteams") saveTeams();
+  else if (b.id === "open") setPhase("draft");
+  else if (b.id === "close") setPhase("closed");
+  else if (b.id === "runrace") runRace();
+  else if (b.id === "reset") resetGame();
+  if (b.id !== "submit" && confirmSubmit) { confirmSubmit = false; renderMine(); }
+  if (b.id !== "reset" && confirmReset) { confirmReset = false; $("resetmsg").textContent = ""; }
+});
+document.addEventListener("change", e => {
+  const x = e.target;
+  if (x.id === "myteam") { myTeam = x.value; lsSet("team", myTeam); confirmSubmit = false; render(); }
+  else if (x.dataset.pred) setPred(x.dataset.pred, x.value);
+  else if (x.id === "nteams") drawNameInputs(+x.value);
+  else if (x.id === "keyfile" && x.files[0]) loadKey(x.files[0]);
+  else if (x.id === "fspec" || x.id === "hide") renderBoard();
+});
+$("q").addEventListener("input", renderBoard);
+document.querySelectorAll("th.sort").forEach(th => th.addEventListener("click", () => { sortBy = th.dataset.sort; renderBoard(); }));
+window.addEventListener("resize", () => { if (!anim) drawPool(null); });
+
+route();
+connect();
+})();
+</script>
+
+</body></html>
