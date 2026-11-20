@@ -3,7 +3,7 @@ layout: post
 title: What predicts the results of the Great British Bake Off?
 description: Technical rankings, Hollywood handshakes, judges' comments, and theme weeks across nine series of the Bake Off, and whether any of them can pick the winner.
 date: 2026-11-13
-tags: data-visualization python
+tags: visual python
 thumbnail: assets/img/blog/gbbo/thumb.png
 ---
 
