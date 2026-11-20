@@ -200,6 +200,7 @@ exclude:
   - unused/
   - analysis/
   - CLAUDE.md
+  - lab-guidelines-src/
 keep_files:
   - CNAME
   - .nojekyll

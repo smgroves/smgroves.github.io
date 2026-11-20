@@ -1016,3 +1016,49 @@ html.transition *:after {
     color: var(--global-theme-color);
   }
 }
+
+// Lab Guidelines (password page)
+#lab-lock-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1rem 0 0.5rem;
+
+  input {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 3px;
+    background: var(--global-bg-color);
+    color: var(--global-text-color);
+  }
+
+  button {
+    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--global-theme-color);
+    border-radius: 3px;
+    background: var(--global-theme-color);
+    color: #fff;
+  }
+}
+
+.lab-lock-msg {
+  min-height: 1.5em;
+  color: var(--global-text-color-light);
+}
+
+.lab-tabs {
+  border-bottom: 1px solid var(--global-divider-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  a {
+    margin-right: 1.5rem;
+    color: var(--global-text-color);
+
+    &[aria-current="page"] {
+      color: var(--global-theme-color);
+      font-weight: 700;
+    }
+  }
+}

@@ -23,4 +23,8 @@ Current and past research projects, each with a short summary and the related pa
 
 Packages and web apps I've developed for researchers and data enthusiasts, including BooleaBayes, BoBa-T and the Network Explorer.
 
+## [Lab Guidelines]({{ '/research/lab-guidelines/' | relative_url }})
+
+Expectations and getting-started notes for students in my lab (password required).
+
 If you are interested in working together, please [reach out](mailto:smgroves@virginia.edu).

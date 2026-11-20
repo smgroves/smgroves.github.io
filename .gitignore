@@ -11,3 +11,6 @@ vendor
 
 *.tif
 .jupyterlite.doit.db
+
+# Lab Guidelines plaintext (only the encrypted copy is committed)
+lab-guidelines-src/
