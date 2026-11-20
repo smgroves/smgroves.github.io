@@ -211,18 +211,14 @@ blockquote {
 }
 
 // Research-style dropdowns: the label links to an overview page; on desktop the
-// menu opens on hover (or keyboard focus). On mobile, tapping goes to the page.
+// menu opens on hover or keyboard focus (script at the end of header.html adds
+// .show, with a close delay). On mobile, tapping goes to the page.
 @media (min-width: 576px) {
   .navbar .nav-hover-dropdown {
     position: relative;
 
     > .dropdown-menu {
       margin-top: 0;
-    }
-
-    &:hover > .dropdown-menu,
-    &:focus-within > .dropdown-menu {
-      display: block;
     }
   }
 }

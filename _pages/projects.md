@@ -4,7 +4,7 @@ title: Projects
 permalink: /projects/
 description: "A collection of projects I've worked on and things I'm currently working on. If you are interested in working with me, please reach out!"
 nav: false
-display_sections: [active, past]
+display_sections: [active]  # add "past" back to show past projects
 ---
 
 <!-- pages/projects.md -->

@@ -77,7 +77,7 @@
               <span class="sr-only">(current)</span>
               {%- endif -%}
             </a>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown-{{ forloop.index }}">
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown-{{ forloop.index }}">
               {%- for child in p.children -%}
               {%- if child.title == 'divider' %}
               <div class="dropdown-divider"></div>
@@ -114,4 +114,29 @@
       </div>
     </div>
   </nav>
+  <script>
+    // Hover dropdowns (Research, Writing): open on hover on desktop, with a short
+    // delay before closing so the menu doesn't vanish while the mouse moves to it.
+    (function () {
+      var items = document.querySelectorAll(".nav-hover-dropdown");
+      var desktop = window.matchMedia("(min-width: 576px)");
+      items.forEach(function (li) {
+        var menu = li.querySelector(".dropdown-menu");
+        var timer;
+        function open() {
+          if (!desktop.matches) return;
+          clearTimeout(timer);
+          items.forEach(function (o) { if (o !== li) o.querySelector(".dropdown-menu").classList.remove("show"); });
+          menu.classList.add("show");
+        }
+        function close() {
+          timer = setTimeout(function () { menu.classList.remove("show"); }, 300);
+        }
+        li.addEventListener("mouseenter", open);
+        li.addEventListener("mouseleave", close);
+        li.addEventListener("focusin", open);
+        li.addEventListener("focusout", function (e) { if (!li.contains(e.relatedTarget)) close(); });
+      });
+    })();
+  </script>
 </header>
