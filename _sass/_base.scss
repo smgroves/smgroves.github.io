@@ -620,6 +620,12 @@ footer.sticky-bottom {
       margin-bottom: 0.5rem;
     }
 
+    // Blurb text a touch larger so it fills the space beside the image
+    > p:not(.project-links) {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
     .project-img {
       float: right;
       max-width: 300px;
